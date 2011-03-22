@@ -1,4 +1,4 @@
-# Do you know {{{JavaScript and JQuery}}}?
+# Do you know JavaScript and JQuery?
 If you are a web developer, chances are you are forced to.  Then why not use it on the server too?  You don't have to mark up your html templates with special code snippets or attributes.  Your html document gets loaded into a document object (on the server), and you manipulate it similar to using [http://jquery.org/ jQuery].  For example, you can do this with both JQuery in the browser and fincayra on the server..
 
 `$("body").append("<p>Another paragraph</p>");`
