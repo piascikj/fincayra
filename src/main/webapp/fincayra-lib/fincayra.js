@@ -10,6 +10,8 @@ Object.prototype.extend = function(oSuper) {
 
 var config = {};
 var opt = {
+	preInit:function(){},
+	postInit:function(){},
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
 	name:"Fincayra",
@@ -29,6 +31,8 @@ var opt = {
 load("../application/server-js/config.js");
 
 opt.extend(config);
+
+opt.preInit();
 
 $app().setPersistenceManager(new org.innobuilt.fincayra.persistence.PersistenceManager());
 $app().setUrl(opt.url);
@@ -55,3 +59,5 @@ $app().setMailManager(mailManager);
 
 $app().getPersistenceManager().init();
 $app().getMailManager().init();
+
+opt.postInit();
