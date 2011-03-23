@@ -14,9 +14,11 @@ Check out the [API Docs here!](http://piascikj.github.com/fincayra/docs/js/)
 * Download the [http://code.google.com/p/fincayra/downloads/list latest release].  It comes bundled with jetty and ModeShape.
 * Unpack it and, go to the bin directory on the command line and execute the shell script
 
-`jpiasci:~/tmp/fincayra-0.1.4$ ls
+<pre>
+jpiasci:~/tmp/fincayra-0.1.4$ ls
 bin  docs  etc  jcr-repo  lib  webapps
 jpiasci:~/tmp/fincayra-0.1.4$ cd bin
-jpiasci:~/tmp/fincayra-0.1.4/bin$ ./fincayra.sh`
+jpiasci:~/tmp/fincayra-0.1.4/bin$ ./fincayra.sh
+</pre>
 
 More to come...
