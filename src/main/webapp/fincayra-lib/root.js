@@ -546,11 +546,7 @@ Array.prototype.each = function(callback,end) {
  */
 Object.prototype.extend = function(oSuper) { 
 	for (sProperty in oSuper) {
-		if (typeof this[sProperty] == "object") {
-			this[sProperty].extend(oSuper[sProperty]);
-		} else {
-			this[sProperty] = oSuper[sProperty]; 
-		}
+		this[sProperty] = oSuper[sProperty]; 
 	}
 	
 	return this;
