@@ -1,11 +1,16 @@
+load("json2.js");
+
 function $app() { return org.innobuilt.fincayra.FincayraApplication.get(); };
 Object.prototype.extend = function(oSuper) { 
 	for (sProperty in oSuper) {
-		//$log().debug("this.{} = {}".tokenize(sProperty,sProperty));
-        this[sProperty] = oSuper[sProperty]; 
-    }
-    
-    return this;
+		if (typeof this[sProperty] == "object") {
+			this[sProperty].extend(oSuper[sProperty]);
+		} else {
+			this[sProperty] = oSuper[sProperty]; 
+		}
+	}
+	
+	return this;
 };
 
 var config = {};
@@ -28,10 +33,18 @@ var opt = {
 	}
 }
 	
-load("../application/server-js/config.js");
+//Include the application config overides
+load("../application/server-js/app-config.js");
 
 opt.extend(config);
+logger().debug("Using Config:{}", JSON.stringify(opt, null, "   "));
 
+//Set some system properties
+java.lang.System.setProperty("fincayra.home", $app().getRootDir());
+logger().info("fincayra.home={}", $app().getRootDir());
+
+//Run the pre init callback
+logger().info("Running config.preInit");
 opt.preInit();
 
 $app().setPersistenceManager(new org.innobuilt.fincayra.persistence.PersistenceManager());
@@ -57,7 +70,11 @@ mailManager.setTemplateDir(opt.mailSender.templateDir);
 
 $app().setMailManager(mailManager);
 
+logger().info("Initializing PersistenceManager");
 $app().getPersistenceManager().init();
+logger().info("Initializing MailManager");
 $app().getMailManager().init();
 
+//Run the post init callback
+logger().info("Running config.postInit");
 opt.postInit();

@@ -51,14 +51,6 @@
       <outputDirectory>docs/</outputDirectory>
       <filtered>false</filtered>
     </fileSet>
-    <fileSet>
-      <directory>jcr-repo</directory>
-      <outputDirectory>jcr-repo/</outputDirectory>
-      <includes>
-        <include>repository.xml</include>
-      </includes>
-      <filtered>false</filtered>
-    </fileSet>    
   </fileSets>
 
 </assembly>
