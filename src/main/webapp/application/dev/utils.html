@@ -1,4 +1,23 @@
-<div id="alerts" class="feedback_container container"></div>
-<div id="utils_controls"></div>
+<head>
+<script language="JavaScript">
+	$(document).ready(function() {
+		$('#log-level').change(function() {
+			var str = "";
+			$("#log-level option:selected").each(function () {
+				setContentType("application/json");
+				$.ajaxSetup({async:false});
+				$.get("api/setLogLevel?level={}".tokenize($(this).val()), function(result) {
+					alert("Log level changed to " + result.level);
+				},"json");
+			});
+		});
+	});
+</script>
+</head>
+<div id="alerts" class="feedback_container container">
+<p>FileCache is <span id="file-cache"></span></p>
+<p style="padding-top:5px"><form><label style="float:left">Root log level is:</label><select id="log-level" style="width:100px"></select></form></p>
+</div>
+<div id="utils_controls" style="clear:left"></div>
 <div id="utils_records"></div>
 <div id="extra"></div>

@@ -24,6 +24,11 @@
 	var alerts = $("#alerts");
 	var records = $("#utils_records");
 	var controls = $("#utils_controls");
+
+	var div = function(el, str) {
+		return el.append("<div id='this-div'>" + str + "</div>").select("#this-div").removeAttr("id");
+	};
+
 	var p = function(el, str) {
 			return el.append("<p>" + str + "</p>");
 	};
@@ -63,25 +68,30 @@
 		FileCache.clear();
 		p(alerts, "FileCache cleared : " + (new Date()).format("MMM d, yyyy @ H:m:ss a"));
 	} else if (params.toggleLog) {
-		Logging.enable(!Logging.enable());
+		//Logging.enable(!Logging.enable());
 	} else if (params.toggleCache) {
 		FileCache.enable(!FileCache.enable());
 	}
 	
-	var logging = Logging.enable()?"enabled":"disabled";
-	p(alerts, "JavaScript Logging is " + logging);
+	//var logging = Logging.enable()?"enabled":"disabled";
+	//p(alerts, "JavaScript Logging is " + logging);
 
 	var caching = FileCache.enable()?"enabled":"disabled";
-	p(alerts, "FileCache is " + caching);
+	$('#file-cache').html(caching);
+	var select = $('#log-level');
+	for (i in $log.Level) {
+		var selected=(new String($getLogLevel().toString()) == i)?' selected="yes"':'';
+		if ($log.Level.hasOwnProperty(i)) select.append('<option val="{}"{}>{}</option>'.tokenize(i,selected,i));
+	}
 
 	//Add a link to reload root scope
 	controls.append("<a href='?init=true'>Reload root scope</a>");
 	controls.append(" | <a href='?invalidate=true'>Invalidate Session</a>");
 	controls.append(" | <a href='?clearFileCache=true'>Clear FileCache</a>");
 	controls.append(" | <a href='?toggleCache=true'>Toggle File Caching</a>");
-	controls.append(" | <a href='?toggleLog=true'>Toggle Logging</a>");
-	controls.append(" | <a href='test'>Test Page</a>");
-	controls.append("<br/>");
+	controls.append("<hr/>");
+	controls.append("<a href='test'>Test Page</a>");
+	controls.append("<hr/>");
 
 	//Add a button to delete each type
 	for (type in $om.classDefs) {
@@ -92,9 +102,9 @@
 					h2(records, type + ' records');
 					controls.append('<a href="#' + type + '">' + type + ' records</a> | ');
 					objects.each(function(i) {
-							p(records, "<a href='?type=" + type + "&action=remove&id=" + i.id + "'>remove</a><pre>" + JSON.stringify(i, null, "   ") + "</pre>");
+						p(records, "<a href='?type={}&action=remove&id={}'>remove {} </a><pre>{}</pre>".tokenize(type,i.id,type,JSON.stringify(i, null, "   ")));
 					});
 			}
 	}
-	//$source();
+	$source();
 })();
