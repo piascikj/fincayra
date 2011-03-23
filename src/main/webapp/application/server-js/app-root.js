@@ -29,7 +29,7 @@ if (!$app().reloadRootScope) {
 }
 */
 FileCache.enable(false);
-Logging.enable(true);
+$setLogLevel({level:$log.Level.DEBUG});
 
 //Expose some paths
 $expose(["css","images","js"]);

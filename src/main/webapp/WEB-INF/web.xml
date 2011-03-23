@@ -5,10 +5,6 @@
 <web-app>
   <!-- TODO We should change this at startup with the name of the app -->
   <display-name>Fincayra</display-name>
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>/WEB-INF/applicationContext.xml</param-value>
-	</context-param>
 	<filter>
 		<filter-name>FincayraFilter</filter-name>
 		<filter-class>org.innobuilt.fincayra.FincayraFilter</filter-class>

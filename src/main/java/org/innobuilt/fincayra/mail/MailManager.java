@@ -79,7 +79,7 @@ public class MailManager {
 		mergeEngine = new MergeEngine();
 		mergeEngine.setPageDir(FincayraApplication.get().getRootDir() + "/" + FincayraApplication.get().getPageDir() + "/" + templateDir + "/");
 		mergeEngine.setJsDir(FincayraApplication.get().getMergeEngine().getJsDir());
-		mergeEngine.init();
+		mergeEngine.init(false);
 		mergeEngine.setTopScope(FincayraApplication.get().getMergeEngine().getTopScope());
 	}
 	

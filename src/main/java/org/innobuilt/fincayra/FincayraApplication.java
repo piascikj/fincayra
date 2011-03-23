@@ -29,7 +29,7 @@ import org.springframework.context.ApplicationContextAware;
 *   See the License for the specific language governing permissions and
 *   limitations under the License.
 */
-public class FincayraApplication implements ApplicationContextAware{
+public class FincayraApplication {
 	private static Logger LOGGER = LoggerFactory.getLogger(FincayraApplication.class);
 	private String rootDir = null;
 	private String pageDir = null;
@@ -74,18 +74,15 @@ public class FincayraApplication implements ApplicationContextAware{
 	}
 
 	//Spring stuff
-	private static ApplicationContext context = null;
+	private static FincayraApplication application = null;
 
-	public void setApplicationContext(ApplicationContext ctx) throws BeansException {
-		context = ctx;
-	}
 	
-	public static ApplicationContext getContext() {
-		return context;
-	}
-	
-	public static FincayraApplication get() {
-		return (FincayraApplication)FincayraApplication.getContext().getBean("application");
+	public static final FincayraApplication get() {
+		if (application == null) {
+			application = new FincayraApplication(); 
+		}
+		
+		return application;
 	}
 
 	public void setMailManager(MailManager mailManager) {

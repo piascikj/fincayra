@@ -31,32 +31,19 @@ Methods = {
 rootScope = this;
 
 /*
+ * Function: $app
+ * Returns:
+ * A reference to the fincayra application
+ */
+function $app() { return org.innobuilt.fincayra.FincayraApplication.get(); };
+
+/*
 	Func:$rootScope
 	get the root scope
 */
 function $rootScope() {
 	return rootScope; 
 }
-
-/*
- * Function: $bean
- * Get a Spring bean by id
- * 
- * Parameters:
- * beanId - The id of the bean to get
- * 
- * Returns:
- * The bean instance
- */
-function $bean(beanId) { return org.innobuilt.fincayra.FincayraApplication.getContext().getBean(beanId); };
-
-/*
- * Function: $app
- * Returns:
- * A reference to the fincayra application
- */
-function $app() { return $bean("application"); };
-
 
 /*
   Func: $getJsDir
@@ -615,7 +602,10 @@ String.prototype.isLike = function(str) {
 }
 
 //-----------------------------------------------------------------
-$watch("root.js");
+
+
+//-----------------------------------------------------------------
+//$watch("root.js");
 
 //Load our libraries
 $l("owl-util.js");
@@ -1374,6 +1364,7 @@ SessionManager.prototype.getAuthSession = function() {
 SessionManager.prototype.setMaxInactiveInterval = function(seconds) {
 	this.getHttpSession().setMaxInactiveInterval(seconds);
 }
+
 
 
 

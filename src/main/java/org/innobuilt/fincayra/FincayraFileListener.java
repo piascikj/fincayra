@@ -47,7 +47,7 @@ public class FincayraFileListener implements FileListener{
 			//Swallow it!!!
 		}
 		try {
-			FincayraApplication.get().getMergeEngine().init();
+			FincayraApplication.get().getMergeEngine().init(false);
 		} catch (RhinoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -30,8 +30,9 @@ public class MergeEngine {
 	private String pageDir = null;
 	private String jsDir = null;
 	private FincayraScriptable topScope = null;
-	
-	public void init() throws RhinoException, IOException {
+
+	public void init(boolean mainEngine) throws RhinoException, IOException {
+		
 		Context cx = Context.enter();
 		topScope = new FincayraScriptable(this);
 		topScope.initStandardObjects(cx,false);
@@ -44,12 +45,23 @@ public class MergeEngine {
 		String[] names = { "print", "load", "logger", "hasProperty" };
 		topScope.defineFunctionProperties(names, FincayraScriptable.class, ScriptableObject.DONTENUM);
 		
+		
+		if (mainEngine){
+			//***************************************************
+			//Load fincayra JavaScript file
+			//***************************************************
+			String fincayraJs = jsDir + "/fincayra.js";
+			LOGGER.info("Loading fincayra javascript into topScope:{}", fincayraJs);
+			FincayraScriptable.loadFile(cx, topScope, fincayraJs);
+		}
+		
 		//***************************************************
 		//Load global JavaScript file
 		//***************************************************
 		String rootJs = jsDir + "/root.js";
-		LOGGER.debug("Loading root javascript into topScope:{}", rootJs);
+		LOGGER.info("Loading root javascript into topScope:{}", rootJs);
 		FincayraScriptable.loadFile(cx, topScope, rootJs);
+		//starting = false;
 	}
 
 	/**

@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jsoup.nodes.Element;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +25,32 @@ public class FincayraFilter implements Filter {
 	public FilterConfig config = null;
 	private static Logger LOGGER = LoggerFactory.getLogger(FincayraFilter.class);
 	private FincayraApplication app;
+	private String jsDir = "fincayra-lib";
+	private String pageDir = "application";
 	
 	/*
 	 * This is where the entire application is initialized.
 	 * TODO It would be better if this were done via json and not spring
 	 */
+	public void init(FilterConfig config) throws ServletException {
+		this.config = config;
+		this.app = FincayraApplication.get();
+		app.setJsDir(jsDir);
+		app.setPageDir(pageDir);
+		
+		app.setRootDir(config.getServletContext().getRealPath("."));
+		app.getMergeEngine().setPageDir(config.getServletContext().getRealPath(app.getPageDir()));
+		app.getMergeEngine().setJsDir(config.getServletContext().getRealPath(app.getJsDir()));
+		
+		try {
+			LOGGER.info("Initializing MergeEngine");
+			app.getMergeEngine().init(true);
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+	}
+	
+/*
 	public void init(FilterConfig config) throws ServletException {
 		this.config = config;
 		this.app = FincayraApplication.get();
@@ -44,7 +67,7 @@ public class FincayraFilter implements Filter {
 		}
 		
 	}
-	
+*/	
 	public void destroy() {
 		app.getPersistenceManager().destroy();
 	}

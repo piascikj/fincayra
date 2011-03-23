@@ -80,8 +80,12 @@ public class FincayraScriptable extends ImporterTopLevel {
 			Function funObj) throws RhinoException, IOException {
 		FincayraScriptable shell = (FincayraScriptable) getTopLevelScope(scope);
 		for (int i = 0; i < args.length; i++) {
-			String jsFile = ((FincayraScriptable)shell).getMergeEngine().getJsDir()
-			+ "/" + Context.toString(args[i]);
+			String jsFile = Context.toString(args[i]);
+			if (!jsFile.startsWith("/")) {
+				jsFile = ((FincayraScriptable)shell).getMergeEngine().getJsDir()
+				+ "/" + jsFile;
+			}
+			
 			loadFile(cx, shell, jsFile);
 		}
 	}
