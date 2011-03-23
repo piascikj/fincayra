@@ -11,7 +11,7 @@ Check out the [API Docs here!](http://piascikj.github.com/fincayra/docs/js/)
 
 # Getting Started
 
-* Download the [http://code.google.com/p/fincayra/downloads/list latest release].  It comes bundled with jetty and ModeShape.
+* [Download the latest release](https://github.com/downloads/piascikj/fincayra/fincayra-0.2.zip).  It comes bundled with jetty and ModeShape.
 * Unpack it and, go to the bin directory on the command line and execute the shell script
 
 <pre>
