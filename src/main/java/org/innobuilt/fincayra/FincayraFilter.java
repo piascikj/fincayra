@@ -28,7 +28,6 @@ public class FincayraFilter implements Filter {
 	
 	/*
 	 * This is where the entire application is initialized.
-	 * TODO It would be better if this were done via json and not spring
 	 */
 	public void init(FilterConfig config) throws ServletException {
 		this.config = config;
