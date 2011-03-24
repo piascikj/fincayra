@@ -1,6 +1,5 @@
-load("json2.js");
+this.includes = true;load("includes.js");
 
-function $app() { return org.innobuilt.fincayra.FincayraApplication.get(); };
 Object.prototype.extend = function(oSuper) { 
 	for (sProperty in oSuper) {
 		if (typeof this[sProperty] == "object") {
@@ -72,8 +71,11 @@ $app().setMailManager(mailManager);
 
 logger().info("Initializing PersistenceManager");
 $app().getPersistenceManager().init();
+
+
 logger().info("Initializing MailManager");
 $app().getMailManager().init();
+logger().info("Done Initializing MailManager");
 
 //Run the post init callback
 logger().info("Running config.postInit");

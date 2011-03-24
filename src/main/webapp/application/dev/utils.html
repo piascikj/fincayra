@@ -4,7 +4,7 @@
 		$('#log-level').change(function() {
 			var str = "";
 			$("#log-level option:selected").each(function () {
-				setContentType("application/json");
+				fincayra.setContentType("application/json");
 				$.ajaxSetup({async:false});
 				$.get("api/setLogLevel?level={}".tokenize($(this).val()), function(result) {
 					alert("Log level changed to " + result.level);

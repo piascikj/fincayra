@@ -1,6 +1,7 @@
 function prop(key) {
 	return java.lang.System.getProperty(key);
 }
+
 config = {
 	name:"Fincayra2"
 }
