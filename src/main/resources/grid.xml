@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan>
-<default>
-     <loaders passivation="false" shared="false" preload="true">
-          <loader class="org.infinispan.loaders.file.FileCacheStore" fetchPersistentState="true"
-               ignoreModifications="false" purgeOnStartup="false">
-				<properties>
-					<property name="location" value="${fincayra.home}/fincayra-store"/>
-               </properties>
-          </loader>
-     </loaders>
-</default>
+	<global>
+		<transport clusterName="fincayra-grid-cluster" transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
+			<properties>
+			  <property name="configurationFile" value="${fincayra.infinispan.cluster}"/>
+			</properties>
+		</transport>
+	</global>
+	<default>
+		 <loaders passivation="false" shared="false" preload="true">
+			  <loader class="org.infinispan.loaders.file.FileCacheStore" fetchPersistentState="true"
+				   ignoreModifications="false" purgeOnStartup="false">
+					<properties>
+						<property name="location" value="${fincayra.store}"/>
+				   </properties>
+			  </loader>
+		 </loaders>
+		<!--
+		This element specifies that the cache is clustered.
+		modes supported: distribution (d), replication (r) or invalidation (i).
+		-->
+		<clustering mode="d">
+			<stateRetrieval timeout="20000" />
+			<sync replTimeout="200000" />
+			<l1 enabled="true" lifespan="60000"/>
+			<hash numOwners="2" rehashRpcTimeout="60000"/>
+		</clustering>
+	</default>
 </infinispan>

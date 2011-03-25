@@ -2,7 +2,6 @@
 
 <configuration xmlns:mode="http://www.modeshape.org/1.0"
 	xmlns:jcr="http://www.jcp.org/jcr/1.0">
-
 	<!--
 
 		Define the sources for the content. These sources are directly

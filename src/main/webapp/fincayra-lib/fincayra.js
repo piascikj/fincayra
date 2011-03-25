@@ -1,5 +1,7 @@
 this.includes = true;load("includes.js");
 
+$hide(["config"]);
+
 Object.prototype.extend = function(oSuper) { 
 	for (sProperty in oSuper) {
 		if (typeof this[sProperty] == "object") {
@@ -29,18 +31,29 @@ var opt = {
 		auth:true,
 		starttls:true,
 		timeout:25000
+	},
+	store: {
+		name: "fincayra-store",
+		infinispanCluster: "infinispan-cluster-udp.xml"
 	}
+	
 }
 	
 //Include the application config overides
-load("../application/server-js/app-config.js");
+load("../application/config/app-config.js");
 
 opt.extend(config);
-logger().debug("Using Config:{}", JSON.stringify(opt, null, "   "));
+logger().debug("Using Config:{}", JSON.stringify(opt, function(key, val) { return key == "password" ? "*****":val;}, "   "));
 
-//Set some system properties
-java.lang.System.setProperty("fincayra.home", $app().getRootDir());
+//Set some system properties that are needed for xml config files
+$setProperty("fincayra.home", $app().getRootDir());
 logger().info("fincayra.home={}", $app().getRootDir());
+$setProperty("fincayra.store", $app().getRootDir() + "/" + opt.store.name);
+logger().info("fincayra.store={}", $getProperty("fincayra.store"));
+$setProperty("fincayra.infinispan.cluster", $app().getRootDir() + "/application/config/" + opt.store.infinispanCluster);
+logger().info("fincayra.infinispan.cluster={}", $getProperty("fincayra.infinispan.cluster"));
+//$setProperty("java.net.preferIPv4Stack","true");
+
 
 //Run the pre init callback
 logger().info("Running config.preInit");
@@ -70,7 +83,12 @@ mailManager.setTemplateDir(opt.mailSender.templateDir);
 $app().setMailManager(mailManager);
 
 logger().info("Initializing PersistenceManager");
-$app().getPersistenceManager().init();
+//TODO get this out of Java and into js
+try {
+	$app().getPersistenceManager().init();
+} catch (e) {
+	e.printStackTrace();
+}
 
 
 logger().info("Initializing MailManager");

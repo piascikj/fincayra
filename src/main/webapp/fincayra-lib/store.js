@@ -353,6 +353,7 @@ function ObjectManager() {
 			try {
 				session = manager.getSession();
 	            root = session.getRootNode();
+	            $log().debug("rootNodeUuid:{}", root.getIdentifier());
 	            var id = root.getNode(path).getIdentifier();
 	            $log().debug("NODE ID FOR [" + path + "] :" + id);
 	        } catch (e) {

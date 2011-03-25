@@ -15,6 +15,14 @@ Methods = {
 	DELETE: "DELETE"
 }
 
+function $setProperty(key, value) {
+	java.lang.System.setProperty(key, value);
+}
+
+function $getProperty(key) {
+	return java.lang.System.getProperty(key);
+}
+
 /*
  * Function: $app
  * Returns:
