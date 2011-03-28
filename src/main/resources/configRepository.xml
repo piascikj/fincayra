@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <configuration xmlns:mode="http://www.modeshape.org/1.0"
 	xmlns:jcr="http://www.jcp.org/jcr/1.0">
 	<!--
@@ -25,8 +24,9 @@
 
 			mode:description="The repository for our content"
 
-			mode:defaultworkspaceName="prod">
+			mode:defaultworkspaceName="objects">
 
+			<mode:predefinedWorkspaceNames>objects</mode:predefinedWorkspaceNames>
 			<mode:predefinedWorkspaceNames>system</mode:predefinedWorkspaceNames>
 			<mode:cacheConfigurationName>/grid.xml</mode:cacheConfigurationName>
 		</mode:source>
@@ -72,6 +72,7 @@
 	</mode:repositories>
 
 
+	<mode:clustering clusterName="fincayra-repository-cluster" configuration="/modeshape-cluster-udp.xml"/>
 	<!-- MIME type detectors and JCR repositories would be defined below -->
 
 </configuration>

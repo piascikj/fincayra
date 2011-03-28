@@ -402,7 +402,10 @@ function ObjectManager() {
 				$log().debug("DUMPING NODE");
 				pm.dump(node);
 			}
-			if (s == undefined) session.save();
+			if (s == undefined) {
+				session.save();
+				$log().debug("Session saved for node:{}", obj.id);
+			}
 		} catch (e) {
 			if (s == undefined) session.refresh(false);
 			$log().error("CAUGHT EXCEPTION WHILE TRYING TO SAVE OBJECT");

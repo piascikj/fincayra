@@ -64,10 +64,13 @@ public class PersistenceManager {
 		};
 		
 		//Create a session so we get this repository up and running
+		Session s = null;
 		try {
-			getSession();
+			s = getSession();
 		} catch (RepositoryException e) {
 			LOGGER.error("PROBLEM CONNECTING TO JCR-REPOSITORY", e);
+		} finally {
+			s.logout();
 		}
 	}
 	

@@ -1,5 +1,6 @@
 this.includes = true;load("includes.js");
 
+//Hide the config folder
 $hide(["config"]);
 
 Object.prototype.extend = function(oSuper) { 
@@ -33,11 +34,13 @@ var opt = {
 		timeout:25000
 	},
 	store: {
-		name: "fincayra-store",
-		infinispanCluster: "infinispan-cluster-udp.xml"
+		name: "fincayra-store"
 	}
 	
 }
+//Only set if tcp cluster is used
+$setProperty("java.net.preferIPv4Stack","true");
+
 	
 //Include the application config overides
 load("../application/config/app-config.js");
@@ -50,9 +53,7 @@ $setProperty("fincayra.home", $app().getRootDir());
 logger().info("fincayra.home={}", $app().getRootDir());
 $setProperty("fincayra.store", $app().getRootDir() + "/" + opt.store.name);
 logger().info("fincayra.store={}", $getProperty("fincayra.store"));
-$setProperty("fincayra.infinispan.cluster", $app().getRootDir() + "/application/config/" + opt.store.infinispanCluster);
-logger().info("fincayra.infinispan.cluster={}", $getProperty("fincayra.infinispan.cluster"));
-//$setProperty("java.net.preferIPv4Stack","true");
+
 
 
 //Run the pre init callback

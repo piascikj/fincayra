@@ -3,7 +3,7 @@
 	<global>
 		<transport clusterName="fincayra-grid-cluster" transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
 			<properties>
-			  <property name="configurationFile" value="${fincayra.infinispan.cluster}"/>
+			  <property name="configurationFile" value="/infinispan-cluster-udp.xml"/>
 			</properties>
 		</transport>
 	</global>
@@ -23,7 +23,7 @@
 		<clustering mode="d">
 			<stateRetrieval timeout="20000" />
 			<sync replTimeout="200000" />
-			<l1 enabled="true" lifespan="60000"/>
+			<!--<l1 enabled="true" lifespan="60000"/>-->
 			<hash numOwners="2" rehashRpcTimeout="60000"/>
 		</clustering>
 	</default>
