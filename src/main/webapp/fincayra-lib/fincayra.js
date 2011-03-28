@@ -32,11 +32,7 @@ var opt = {
 		auth:true,
 		starttls:true,
 		timeout:25000
-	},
-	store: {
-		name: "fincayra-store"
 	}
-	
 }
 //Only set if tcp cluster is used
 $setProperty("java.net.preferIPv4Stack","true");
@@ -51,10 +47,6 @@ logger().debug("Using Config:{}", JSON.stringify(opt, function(key, val) { retur
 //Set some system properties that are needed for xml config files
 $setProperty("fincayra.home", $app().getRootDir());
 logger().info("fincayra.home={}", $app().getRootDir());
-$setProperty("fincayra.store", $app().getRootDir() + "/" + opt.store.name);
-logger().info("fincayra.store={}", $getProperty("fincayra.store"));
-
-
 
 //Run the pre init callback
 logger().info("Running config.preInit");
