@@ -80,8 +80,10 @@ var Type = {
 		msg - the detail message.
 */ 
 function SessionUnavailableException(e) {
-	this.extend(e || new Error());
+	this.extend(e || {});
+	this.name = "SessionUnavailableException";
 }
+SessionUnavailableException.prototype = new Error();
 
 /*
 	Class: NotStorableException
@@ -94,9 +96,10 @@ function SessionUnavailableException(e) {
 		msg - the detail message.	
 */ 
 function NotStorableException(e) {
-	this.extend(e || new Error());
+	this.extend(e || {});
+	this.name="NotStorableException";
 }
-
+NotStorableException.prototype = new Error();
 /*
 	Class: UniqueValueConstraintException
 	This Exception is thrown when the PersistenceManager encounters a unique value constraint violation
@@ -108,8 +111,10 @@ function NotStorableException(e) {
 		msg - the detail message.	
 */ 
 function UniqueValueConstraintException(e) {
-	this.extend(e || new Error());
+	this.extend(e||{});
+	this.name="UniqueValueConstraintException";
 }
+UniqueValueConstraintException.prototype = new Error();
 /*
 	Property: field
 	The Storable field for which the Exception was thrown
@@ -127,9 +132,10 @@ UniqueValueConstraintException.prototype.field = null;
 		msg - the detail message.	
 */ 
 function CascadingException(e) {
-	this.extend(e || new Error());
+	this.extend(e || {});
+	this.name="CascadingException";
 }
-
+CascadingException.prototype = new Error();
 /*
 	Class: CustomClassException
 	This Exception is thrown when the PersistenceManager is expecting a simple type, but encounters a custom class.
@@ -141,9 +147,10 @@ function CascadingException(e) {
 		msg - the detail message.	
 */ 
 function CustomClassException(e) {
-	this.extend(e || new Error());
+	this.extend(e || {});
+	this.name="CustomClassException";
 }
-
+CustomClassException.prototype = new Error();
 /*
 	Class: RequiredPropertyException
 	This Exception is thrown when a required property is not set.
@@ -155,9 +162,10 @@ function CustomClassException(e) {
 		msg - the detail message.	
 */ 
 function RequiredPropertyException(e) {
-	this.extend(e || new Error());
+	this.extend(e || {});
+	this.name="RequiredPropertyException";
 }
-
+RequiredPropertyException.prototype = new Error();
 /*
 	class: ObjectManager
 	Responsible for managing object persistence

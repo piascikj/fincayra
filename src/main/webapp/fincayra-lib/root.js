@@ -14,7 +14,10 @@
  */
 rootScope = this;
 
-if(rootScope.includes == undefined) load("includes.js");
+if(rootScope.includes == undefined) {
+	load("includes.js");
+}
+
 load("store.js");
 
 //Set the $load function to load from the server-js dir for application convenience
@@ -33,7 +36,6 @@ $l("app-root.js");
 */
 function Request(scope) { 
 	this.sessionMgr = new SessionManager(scope);
-	scope.extend(this); 
 	this.scope = scope;
 }
 

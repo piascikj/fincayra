@@ -16,7 +16,10 @@
 var scope = this;
 
 try {
-	new Request(scope);
+	var req = new Request(scope);
+
+	//Put all request functions in scope
+	for (prop in req) {scope[prop] = req[prop];}
 
 	//load the custom, every request js
 	$l("app-request.js");

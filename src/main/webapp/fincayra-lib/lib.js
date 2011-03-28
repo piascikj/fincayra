@@ -490,6 +490,7 @@ Error.prototype.printStackTrace = function() {
 	if (this.javaException != undefined) {
 		this.javaException.printStackTrace();
 	} else if (this.rhinoException != undefined) {
+		java.lang.System.out.println(this.name);
 		this.rhinoException.printStackTrace();
 	} else {
 		java.lang.System.out.println(this.message);
@@ -541,7 +542,7 @@ Object.prototype.extend = function(oSuper) {
 	for (sProperty in oSuper) {
 		this[sProperty] = oSuper[sProperty]; 
 	}
-	
+
 	return this;
 };
 

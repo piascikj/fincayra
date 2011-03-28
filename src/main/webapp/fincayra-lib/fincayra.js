@@ -3,16 +3,16 @@ this.includes = true;load("includes.js");
 //Hide the config folder
 $hide(["config"]);
 
-Object.prototype.extend = function(oSuper) { 
+function extend(object, oSuper) { 
 	for (sProperty in oSuper) {
-		if (typeof this[sProperty] == "object") {
-			this[sProperty].extend(oSuper[sProperty]);
+		if (typeof object[sProperty] == "object") {
+			extend(object[sProperty],oSuper[sProperty]);
 		} else {
-			this[sProperty] = oSuper[sProperty]; 
+			object[sProperty] = oSuper[sProperty]; 
 		}
 	}
 	
-	return this;
+	return object;
 };
 
 var config = {};
@@ -38,7 +38,7 @@ var opt = {
 //Include the application config overides
 load("../application/config/app-config.js");
 
-opt.extend(config);
+extend(opt,config);
 $log().debug("Using Config:{}", JSON.stringify(opt, function(key, val) { return key == "password" ? "*****":val;}, "   "));
 
 //Set some system properties that are needed for xml config files
