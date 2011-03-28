@@ -28,8 +28,7 @@ if (!$app().reloadRootScope) {
 	$hide(["dev"]);
 }
 */
-FileCache.enable(false);
-$setLogLevel({level:$log.Level.DEBUG});
+
 
 //Expose some paths
 $expose(["css","images","js"]);

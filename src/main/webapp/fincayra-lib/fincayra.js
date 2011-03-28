@@ -34,22 +34,19 @@ var opt = {
 		timeout:25000
 	}
 }
-//Only set if tcp cluster is used
-$setProperty("java.net.preferIPv4Stack","true");
-
 	
 //Include the application config overides
 load("../application/config/app-config.js");
 
 opt.extend(config);
-logger().debug("Using Config:{}", JSON.stringify(opt, function(key, val) { return key == "password" ? "*****":val;}, "   "));
+$log().debug("Using Config:{}", JSON.stringify(opt, function(key, val) { return key == "password" ? "*****":val;}, "   "));
 
 //Set some system properties that are needed for xml config files
 $setProperty("fincayra.home", $app().getRootDir());
-logger().info("fincayra.home={}", $app().getRootDir());
+$log().info("fincayra.home={}", $app().getRootDir());
 
 //Run the pre init callback
-logger().info("Running config.preInit");
+$log().info("Running config.preInit");
 opt.preInit();
 
 $app().setPersistenceManager(new org.innobuilt.fincayra.persistence.PersistenceManager());
@@ -75,7 +72,7 @@ mailManager.setTemplateDir(opt.mailSender.templateDir);
 
 $app().setMailManager(mailManager);
 
-logger().info("Initializing PersistenceManager");
+$log().info("Initializing PersistenceManager");
 //TODO get this out of Java and into js
 try {
 	$app().getPersistenceManager().init();
@@ -84,10 +81,10 @@ try {
 }
 
 
-logger().info("Initializing MailManager");
+$log().info("Initializing MailManager");
 $app().getMailManager().init();
-logger().info("Done Initializing MailManager");
+$log().info("Done Initializing MailManager");
 
 //Run the post init callback
-logger().info("Running config.postInit");
+$log().info("Running config.postInit");
 opt.postInit();
