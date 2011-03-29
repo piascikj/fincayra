@@ -341,10 +341,10 @@ Request.prototype.$source = function() {
 	
 	var html = body.html();
 
-	var wrap = this.$("<div id='source_head' class='container'><a href='#source_code'>Jump to source!</a>" +
-				"<h4>(IDEA:  it would be great to show all //TODOs here!)</h4></div>" +
-				"<hr/><div id='source_body'></div>" +
-				"<div id='source' class='container' style='clear:both;'><a name='source_code'><hr/><h3>The source...</h3><pre>" +
+	var wrap = this.$("<div id='src_link'><a href='#'>Show Source</a></div><div style='display:none' id='source_head' class='container'><a href='#source_code'>Jump to source!</a>" +
+				"<h4>(IDEA:  it would be great to show all //TODOs here!)</h4><hr/></div>" +
+				"<div id='source_body'></div>" +
+				"<div id='source' class='container' style='display:none;clear:both;'><a name='source_code'><hr/><h3>The source...</h3><pre>" +
 				org.apache.commons.lang.StringEscapeUtils.escapeHtml(this.$getPageSource()) + "</pre></div>");
 	
 	body.html(wrap.html());
@@ -353,6 +353,7 @@ Request.prototype.$source = function() {
 	this.$("#source_body").html(html);
 	
 	var srcHead = this.$("#source_head");
+	srcHead.append('<script>$(document).ready(function() {$("#src_link").click(function(){$("#source_head").toggle();$("#source").toggle();})});</script');
 	var p = function(str) {
 			srcHead.append("<p>" + str + "</p>");
 	};
