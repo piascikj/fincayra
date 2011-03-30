@@ -341,7 +341,7 @@ Request.prototype.$source = function() {
 	
 	var html = body.html();
 
-	var wrap = this.$("<div id='src_link'><a href='#'>Show Source</a></div><div style='display:none' id='source_head' class='container'><a href='#source_code'>Jump to source!</a>" +
+	var wrap = this.$("<div id='src_link'><a href='#'>Toggle Source</a></div><div style='display:none' id='source_head' class='container'><a href='#source_code'>Jump to source!</a>" +
 				"<h4>(IDEA:  it would be great to show all //TODOs here!)</h4><hr/></div>" +
 				"<div id='source_body'></div>" +
 				"<div id='source' class='container' style='display:none;clear:both;'><a name='source_code'><hr/><h3>The source...</h3><pre>" +
