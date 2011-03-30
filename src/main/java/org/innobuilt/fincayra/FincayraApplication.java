@@ -134,10 +134,6 @@ public class FincayraApplication {
 		return bundleDir;
 	}
 
-	public void setPersistenceManager(PersistenceManager persistenceManager) {
-		this.persistenceManager = persistenceManager;
-	}
-
 	public PersistenceManager getPersistenceManager() {
 		return persistenceManager;
 	}
