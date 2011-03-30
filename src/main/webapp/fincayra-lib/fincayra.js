@@ -49,7 +49,6 @@ $log().info("fincayra.home={}", $app().getRootDir());
 $log().info("Running config.preInit");
 opt.preInit();
 
-$app().setPersistenceManager(new org.innobuilt.fincayra.persistence.PersistenceManager());
 $app().setUrl(opt.url);
 $app().setSecureUrl(opt.secureUrl);
 $app().setName(opt.name);
@@ -75,7 +74,7 @@ $app().setMailManager(mailManager);
 $log().info("Initializing PersistenceManager");
 //TODO get this out of Java and into js
 try {
-	$app().getPersistenceManager().init();
+	if (!$app().getPersistenceManager().isUp()) $app().getPersistenceManager().init();
 } catch (e) {
 	e.printStackTrace();
 }

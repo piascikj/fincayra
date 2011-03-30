@@ -57,8 +57,7 @@
 	if (params.action && params.id && params.type && actions[params.action]) {
 			actions[params.action](params.id, params.type);
 	} else if (params.init) {
-		$app().mergeEngine.init();
-		$app().mailManager.init();
+		$init();
 		//MMM d, yyyy @ H:m a
 		p(alerts, "Root scope reloaded : " + (new Date()).format("MMM d, yyyy @ H:m:ss a"));
 	} else if (params.invalidate) {

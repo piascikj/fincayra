@@ -360,10 +360,12 @@ function ObjectManager() {
 			var root = null;
 			try {
 				session = manager.getSession();
-	            root = session.getRootNode();
-	            $log().debug("rootNodeUuid:{}", root.getIdentifier());
-	            var id = root.getNode(path).getIdentifier();
-	            $log().debug("NODE ID FOR [" + path + "] :" + id);
+				if (session != null) {
+					root = session.getRootNode();
+					$log().debug("rootNodeUuid:{}", root.getIdentifier());
+					var id = root.getNode(path).getIdentifier();
+					$log().debug("NODE ID FOR [" + path + "] :" + id);
+				}
 	        } catch (e) {
 	            if (e.javaException instanceof javax.jcr.PathNotFoundException) {
 	            	root = session.getRootNode();
@@ -374,7 +376,7 @@ function ObjectManager() {
 	            	throw e;
 	            }
 			} finally {
-	            session.logout();
+	            if (session != null) session.logout();
 	        }
 		}
 	};

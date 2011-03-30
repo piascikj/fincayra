@@ -28,7 +28,7 @@ public class PersistenceManager {
 	private static Logger LOGGER = LoggerFactory.getLogger(PersistenceManager.class);
 	
 	public void init() {
-        if (engine != null) return; // already started
+        if (engine != null) this.destroy(); // already started
 
         // Load the configuration from a file, as provided by the user interface ...
         JcrConfiguration configuration = new JcrConfiguration();
@@ -48,7 +48,7 @@ public class PersistenceManager {
         // Now create the JCR engine ...
         engine = configuration.build();
         engine.start();
-
+        
         if (engine.getProblems().hasProblems()) {
             for (Problem problem : engine.getProblems()) {
                 System.err.println(problem.getMessageString());
@@ -56,12 +56,12 @@ public class PersistenceManager {
             throw new RuntimeException("Could not start due to problems");
         }
 		
-		try {
+        try {
 			repository = engine.getRepository("fincayra-repository");
 		} catch (RepositoryException e1) {
-			// TODO Auto-generated catch block
+			LOGGER.error("Unable to start fincayra-repository");
 			e1.printStackTrace();
-		};
+		}
 		
 		//Create a session so we get this repository up and running
 		Session s = null;
@@ -102,7 +102,7 @@ public class PersistenceManager {
         try {
             // Tell the engine to shut down, and then wait up to 5 seconds for it to complete...
             engine.shutdown();
-            engine.awaitTermination(5, TimeUnit.SECONDS);
+            engine.awaitTermination(20, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -143,6 +143,10 @@ public class PersistenceManager {
         while (nodes.hasNext()) {
             dump(nodes.nextNode());
         }
+    }
+    
+    public boolean isUp() {
+    	return engine != null;
     }
 	
 }

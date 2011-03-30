@@ -15,6 +15,10 @@ Methods = {
 	DELETE: "DELETE"
 }
 
+function $init() {
+	$app().mergeEngine.init(true);
+};
+
 function $setProperty(key, value) {
 	java.lang.System.setProperty(key, value);
 }

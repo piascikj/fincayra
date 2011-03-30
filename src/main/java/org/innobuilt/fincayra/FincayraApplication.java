@@ -34,7 +34,7 @@ public class FincayraApplication {
 	private String bundleDir = null;
 	private MergeEngine mergeEngine = new MergeEngine();
 	private MailManager mailManager = null;
-	private PersistenceManager persistenceManager = null;
+	private PersistenceManager persistenceManager = new PersistenceManager();
 	private String url = "http://localhost:8080/fincayra/";
 	private String secureUrl;
 	private String name;
