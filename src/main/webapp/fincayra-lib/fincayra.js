@@ -15,7 +15,6 @@ function extend(object, oSuper) {
 	return object;
 };
 
-var config = {};
 var opt = {
 	preInit:function(){},
 	postInit:function(){},
@@ -34,12 +33,16 @@ var opt = {
 		timeout:25000
 	}
 }
-	
+
+function $config(config) {
+	extend(opt,config);
+}
+
 //Include the application config overides
 load("../application/config/app-config.js");
 
-extend(opt,config);
 $log().debug("Using Config:{}", JSON.stringify(opt, function(key, val) { return key == "password" ? "*****":val;}, "   "));
+
 
 //Set some system properties that are needed for xml config files
 $setProperty("fincayra.home", $app().getRootDir());

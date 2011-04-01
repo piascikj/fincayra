@@ -47,7 +47,7 @@ function AuthRequiredException(msg) {
 	this.message = "You must sign in to see this page.";
 	this.extend(new Exception(msg));
 }
-
+		
 //Define some model objects
 function User(clone) {
 	

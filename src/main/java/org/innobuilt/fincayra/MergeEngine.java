@@ -3,7 +3,6 @@ package org.innobuilt.fincayra;
 import java.io.File;
 import java.io.IOException;
 
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.RhinoException;

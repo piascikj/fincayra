@@ -257,6 +257,17 @@ Request.prototype.$getRequestURL = function() {
 };
 
 /*
+	Func: $getRequestURI
+	Get the requested URI
+	
+	Returns: 
+	The requested URI - String
+*/
+Request.prototype.$getRequestURI = function() {
+	return new String(this.scope.context.getRequest().requestURI);
+};
+
+/*
 	Func: $getRequestId
 	Get the request Id, guaranteed to be unique to this instance of fincayra
 	
@@ -313,7 +324,8 @@ Request.prototype.$getRealPath = function() {
 Request.prototype.$getExtraPath = function() {
 	var uri = this.scope.context.getRequest().getRequestURI();
 	var begin = uri.indexOf(this.$getCurrentPageUri()) + this.$getCurrentPageUri().length + 1;
-	return new String(uri.substring(begin));
+	var result=(begin < uri.length())?new String(uri.substring(begin)):"";
+	return result;
 };
 
 /*
