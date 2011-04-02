@@ -1,1 +1,3 @@
+mkdir -p docs/js
+mkdir -p naturaldocs
 ~/NaturalDocs/NaturalDocs -r -i src/main/webapp/fincayra-lib -o FramedHTML docs/js -p naturaldocs

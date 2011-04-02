@@ -1,3 +1,4 @@
+var fincayra = {};
 this.includes = true;load("includes.js");
 
 //Hide the config folder
@@ -21,6 +22,7 @@ var opt = {
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
 	name:"Fincayra",
+	errorPage:"/error",
 	mailSender: {
 		host:"smtp.gmail.com",
 		port:587,
@@ -35,7 +37,7 @@ var opt = {
 }
 
 function $config(config) {
-	extend(opt,config);
+	fincayra.config = extend(opt,config);
 }
 
 //Include the application config overides

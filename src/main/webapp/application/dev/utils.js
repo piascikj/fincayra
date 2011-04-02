@@ -93,10 +93,10 @@
 	controls.append("<hr/>");
 
 	//Add a button to delete each type
-	for (type in $om.classDefs) {
+	for (type in $om().classDefs) {
 			if (!{}[type]) {
 					var instance = $getInstance(type);
-					var objects = $om.getAll(instance);
+					var objects = $om().getAll(instance);
 					a(records, type);
 					h2(records, type + ' records');
 					controls.append('<a href="#' + type + '">' + type + ' records</a> | ');

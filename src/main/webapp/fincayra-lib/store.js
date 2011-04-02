@@ -798,7 +798,7 @@ function ObjectManager() {
 						var values = property.getValues();
 						values.each(function(value) {
 							$log().debug("FOUND hasMany PROPERTY " + prop + "|" + propType);
-							var propNode = $om.getSession().getNodeByUUID(value.getString()); 
+							var propNode = $om().getSession().getNodeByUUID(value.getString()); 
 							if(!finder.nodeVisited(propNode)) {
 								$log().debug("Getting objects for property {}", prop);
 								obj[prop].push(finder.getObject(propType, propNode));
@@ -885,10 +885,13 @@ function ObjectManager() {
 	manager.ensureNodeExists(objectsNodeName);
 }
 
+ObjectManager.instance = new ObjectManager();
+
 /*
- * Create the ObjectManager instance.  This is our bridge to the repository.
- */
-var $om = objectManager = new ObjectManager();
+	Function: $om
+	Returns the current ObjectManager
+*/
+function $om() {return ObjectManager.instance;}
 
 /*
 	Class: Storable
@@ -958,7 +961,7 @@ function Storable(clone) {
 			* error - (Optional) An error message for failed validation
 */
 Storable.prototype.define = function(classDef) {
-	if (!objectManager.hasStorable(this)) {
+	if (!$om().hasStorable(this)) {
 		for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
 			$log().debug(prop + ":" + classDef[prop]);
 			var propSpecs = classDef[prop];
@@ -984,7 +987,7 @@ Storable.prototype.define = function(classDef) {
 			}
 
 		}}
-		objectManager.addStorable(this, classDef);
+		$om().addStorable(this, classDef);
 	}
 };
 
@@ -1012,7 +1015,7 @@ Storable.prototype.onValidate = function() {
 	> }
 */
 Storable.prototype.validate = function() {
-	var classDef = $om.getClassDef($type(this));
+	var classDef = $om().getClassDef($type(this));
 	var result = this.onValidate();//result will contain names of properties that did not pass inspection, with values of the error text
 	for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
 		var propSpec = classDef[prop];
@@ -1055,7 +1058,7 @@ Storable.prototype.equals = function(s) {
 	The saved object
 */
 Storable.prototype.save = function(session) {
-	return $om.save(this, session);
+	return $om().save(this, session);
 };
 
 /*
@@ -1074,7 +1077,7 @@ Storable.prototype.onSave = function() {
 	boolean - true if successful
 */
 Storable.prototype.remove = function(session) {
-	return $om.remove(this, session);
+	return $om().remove(this, session);
 };
 
 /*
@@ -1093,7 +1096,7 @@ Storable.prototype.onRemove = function() {
 	An array of matching objects
 */
 Storable.prototype.findByProperty = function(prop) {
-	return $om.findByProperty(this,prop);
+	return $om().findByProperty(this,prop);
 };
 
 
@@ -1106,7 +1109,7 @@ Storable.prototype.findByProperty = function(prop) {
 	An array of matching objects
 */
 Storable.prototype.search = function(qry, offset, limit, session) {
-	return $om.search(this, qry, offset, limit, session);
+	return $om().search(this, qry, offset, limit, session);
 };
 
 /*
@@ -1117,15 +1120,15 @@ Storable.prototype.search = function(qry, offset, limit, session) {
 	The matching object.
 */
 Storable.prototype.findById = function(s) {
-	return $om.findById(this, this.id,s);
+	return $om().findById(this, this.id,s);
 };
 
 Storable.prototype.lock = function(s, timeout) {
-	return $om.lock(this.id, s, timeout);
+	return $om().lock(this.id, s, timeout);
 };
 
 Storable.prototype.unlock = function(s) {
-	return $om.lock(this.id, s);
+	return $om().lock(this.id, s);
 };
 
 //-------------------------------------------------------------------------------------------------

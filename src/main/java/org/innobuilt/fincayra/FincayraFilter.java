@@ -46,25 +46,7 @@ public class FincayraFilter implements Filter {
 			throw new ServletException(e);
 		}
 	}
-	
-/*
-	public void init(FilterConfig config) throws ServletException {
-		this.config = config;
-		this.app = FincayraApplication.get();
-		app.getPersistenceManager().init();
-		app.setRootDir(config.getServletContext().getRealPath("."));
-		//Pass the full path to the page directory to the merge engine
-		app.getMergeEngine().setPageDir(config.getServletContext().getRealPath(app.getPageDir()));
-		app.getMergeEngine().setJsDir(config.getServletContext().getRealPath(app.getJsDir()));
-		try {
-			app.getMergeEngine().init();
-			app.getMailManager().init();
-		} catch (Exception e) {
-			throw new ServletException(e);
-		}
-		
-	}
-*/	
+
 	public void destroy() {
 		app.getPersistenceManager().destroy();
 	}
@@ -96,11 +78,15 @@ public class FincayraFilter implements Filter {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND); 
 		} else if (isExposed(request.getRequestURL().toString())) {
 			forward(path, request, response);
-		} else if (app.getMergeEngine().exists(pageJs) || app.getMergeEngine().exists(pageHtml)) {
+		} else {
 			
 			//Do the work
 			FincayraContext context = new FincayraContext(app.getMergeEngine(),request, response);
-			context.merge(pageJs);
+			if (app.getMergeEngine().exists(pageJs) || app.getMergeEngine().exists(pageHtml)) {
+				context.merge(pageJs);
+			} else {
+				context.merge(null);
+			}
 			
 			//Check for redirect
 			String redirect = (String)request.getAttribute("fincayra.redirect");
@@ -126,8 +112,6 @@ public class FincayraFilter implements Filter {
 			if (json != null || el != null) {
 				out.flush();
 			}
-		} else {
-			chain.doFilter(req, res);
 		}
 		
 	}
@@ -140,7 +124,7 @@ public class FincayraFilter implements Filter {
 	}
 	
 	private String getRequestedPage(String page) {
-		
+		page = page.replaceAll("\\.[hH][tT][mM][lL]$", "");
 		if (pageExists(page) && page.endsWith("/")) {
 			//an index page exists
 			return page + "index";

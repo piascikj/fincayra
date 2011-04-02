@@ -26,7 +26,12 @@ try {
 	
 	//Here we execute the requested page
 	$log().debug("Loading requested page: {}", $getCurrentPage());
-	$e($getCurrentPage());
+	var currentPage = $getCurrentPage();
+	if (currentPage != null) {
+		$e(currentPage);
+	} else {
+		$redirect($getErrorPage());
+	}
 
 } catch(e) {
 	$log().error("Caught an exception while running global request file");
@@ -36,7 +41,7 @@ try {
 	if ($api.isAPI) {
 		$j({error:e});
 	} else {
-		$f(errorPage);
+		$f($getErrorPage());
 	}
 } finally {
 	

@@ -279,18 +279,13 @@ var $expose = function(paths) {
 	});
 };
 
-var errorPage;
 /*
-  Func: $setErrorPage
+  Func: $getErrorPage
   
-	Set the error page that will handle exceptions
-  
-  Parameters:
-	
-	path - The path to the page with application.pageDir as root.
+	Get the error page that will handle exceptions
 */
-var $errorPage = function(path) {
-	errorPage = path;
+var $getErrorPage = function() {
+	return fincayra.config.errorPage;
 };
 
 /*
