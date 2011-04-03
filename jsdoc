@@ -1,3 +1,22 @@
-mkdir -p docs/js
-mkdir -p naturaldocs
-~/NaturalDocs/NaturalDocs -r -i src/main/webapp/fincayra-lib -o FramedHTML docs/js -p naturaldocs
+#!/bin/bash
+work="$HOME/tmp/fincayra"
+
+echo "Generating fincayra docs."
+echo "Working directory is $work"
+
+docs="$work/docs/js"
+dict="$work/naturaldocs"
+
+rm -rf $work
+
+mkdir -p $docs
+mkdir -p $dict
+
+~/NaturalDocs/NaturalDocs -r -i src/main/webapp/fincayra-lib -o FramedHTML $docs -p $dict
+
+git checkout gh-pages
+
+rm -rf docs/js/*
+
+cp -r $docs docs/js
+
