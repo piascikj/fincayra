@@ -18,5 +18,5 @@ git checkout gh-pages
 
 rm -rf docs/js/*
 
-cp -r $docs docs/js
+cp -r $docs docs
 
