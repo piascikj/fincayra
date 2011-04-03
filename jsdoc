@@ -20,3 +20,7 @@ rm -rf docs/js/*
 
 cp -r $docs docs
 
+git commit docs/js -m "jsdocs generated"
+
+git checkout master
+
