@@ -1,3 +1,4 @@
+//This is loaded once on startup
 var fincayra = {};
 this.includes = true;load("includes.js");
 
@@ -19,7 +20,7 @@ function extend(object, oSuper) {
 var opt = {
 	preInit:function(){},
 	postInit:function(){},
-	env:"dev", //TODO create an enum and make this functional
+	allowAPIAccess:function(){return true;},
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
 	name:"Fincayra",
@@ -38,7 +39,11 @@ var opt = {
 }
 
 function $config(config) {
-	fincayra.config = extend(opt,config);
+	if (config != undefined && fincayra.config == undefined) {
+		fincayra.config = extend(opt,config);
+	} else {
+		return fincayra.config;
+	}
 }
 
 //Include the application config overides
