@@ -37,8 +37,8 @@ try {
 	$log().error("Caught an exception while running global request file");
 	e.printStackTrace();
 	$setPageParams({error:e});
-
-	if ($api.isAPI) {
+	$log().debug("isAPI:{}", scope.isAPI);
+	if (scope.isAPI == true) {
 		$j({error:e});
 	} else {
 		$f($getErrorPage());

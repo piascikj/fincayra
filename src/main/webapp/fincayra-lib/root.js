@@ -36,6 +36,7 @@ $l("app-root.js");
 */
 function Request(scope) { 
 	this.sessionMgr = new SessionManager(scope);
+	this.isAPI = false;
 	this.scope = scope;
 }
 
@@ -162,7 +163,7 @@ Request.prototype.$redirect = function(loc) {
 */
 Request.prototype.$getPageParams = function(checkJson) {
 
-	if (!this.params) {
+	if (this.params == undefined) {
 		var obj = {};
 		var names = this.scope.context.getRequest().getParameterNames();
 		var name;
@@ -173,8 +174,8 @@ Request.prototype.$getPageParams = function(checkJson) {
 			}
 		} else if (checkJson && (this.$getMethod() == Methods.POST || this.$getMethod() == Methods.PUT)) {
 			var req = this.$getRequestBody();
-			$log().debug("requestBody={}", req);
-			obj = JSON.parse(req);
+			$log().debug("$getPageParams requestBody={}", req);
+			if (req != "") obj = JSON.parse(req);
 		}
 		
 		this.params = obj;
@@ -556,7 +557,7 @@ Request.prototype.$headCSS = function(path) {
 Request.prototype.$api = function(actions) {
 	var action = this.$getExtraPath().split("/")[0];
 	if (actions[action] != undefined) {
-		this.$api.isAPI = true;
+		this.isAPI = true;
 		actions[action]();
 	}
 };
@@ -573,8 +574,8 @@ Request.prototype.$api = function(actions) {
  * 
  * An object instance 
  */
-Request.prototype.$getInstance = function(type) {
-	return eval("new " + type + "();");
+Request.prototype.$getInstance = function(type, params) {
+	return eval("new " + type + "(params);");
 };
 
 /*

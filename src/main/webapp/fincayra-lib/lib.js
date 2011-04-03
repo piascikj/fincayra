@@ -580,7 +580,7 @@ String.prototype.tokenize = function() {
 	
 	Compare this string to string passed in.
 	
-	Params:
+	Parameters:
 
 	str - The string to check existence of
 	
@@ -592,4 +592,3 @@ String.prototype.isLike = function(str) {
 	myRE = new RegExp(str, "i");
 	return this.match(myRE) != null;
 }
-

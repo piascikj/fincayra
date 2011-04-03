@@ -19,6 +19,7 @@ function extend(object, oSuper) {
 var opt = {
 	preInit:function(){},
 	postInit:function(){},
+	env:"dev", //TODO create an enum and make this functional
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
 	name:"Fincayra",

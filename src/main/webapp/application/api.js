@@ -1,15 +1,20 @@
 (function() {
-	
+	$requestScope().isAPI = true;
+	$log().debug("IN api.js");
+	var htmlRegex = /\.[hH][tT][mM][lL]$/;
 	var info = {
 		requestURI:$getRequestURI(),
-		extraPath:pathAry,
+		extraPath:$getExtraPath(),
 		currentPage:$getCurrentPage(),
 		classDefs:$om().classDefs,
 		constructors:$om().constructors,
-		htmlRequest:(new String($getRequestURI())).match(/\.[hH][tT][mM][lL]$/) != null
+		htmlRequest:(new String($getRequestURI())).match(htmlRegex) != null,
+		requestObject:$getPageParams(true)
 	};
-	
-	var pathAry = $getExtraPath().split("/");
+
+	if (info.htmlRequest) info.extraPath = info.extraPath.replace(htmlRegex, "");
+	var pathAry = info.extraPath.split("/");
+	var result;
 	
 	//Check for Objects
 	if (pathAry.length > 0) {
@@ -27,28 +32,42 @@
 			var method = $getMethod();
 			//Now check for method
 			if (Methods.GET == method) {
+				//Get the object requested
 				if (info.objectId != undefined) {
 					var object = $getInstance(objName);
 					object.id = info.objectId;
-					//TODO check for null and return an error
-					//TODO need to set global replacer
-					$j(object.findById());
+					result = object.findById();
+					if (result == null ) throw new ObjectNotFoundError();
 				} else {
-					//return up to 200 objects
+					//TODO return up to 200 objects
 				}
 			} else if (Methods.PUT == method) {
+				//First instantiate the object
+				result = info.requestObject;
+				var object = $getInstance(objName,info.requestObject);
+				result = object.save();
 				
 			} else if (Methods.POST == method) {
-				
+				//First instantiate the object
+				result = info.requestObject;
+				var object = $getInstance(objName,info.requestObject);
+				object = object.findById().extend(object);
+				result = object.save();
 			} else if (Methods.DELETE == method) {
-			
+				var object = $getInstance(objName,{id:info.objectId});
+				result = object.remove();
 			}
+
 		}
 	}
-	
+	$log().debug("info:{}".tokenize(info));
+	$log().debug("result:{}".tokenize(result));
 	//Show the default
-
-	$("#json").appendText(JSON.stringify(info, null, "   "));
-	
-	
+	if (result == undefined) result = info;
+	if (info.htmlRequest) {
+		$("#json").appendText(JSON.stringify(result, null, "   "));
+	} else {
+		//TODO need to set global replacer
+		$j(result)
+	}
 })();

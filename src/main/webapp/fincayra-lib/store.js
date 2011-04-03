@@ -70,6 +70,54 @@ var Type = {
 };
 
 /*
+	Class: UnableToDeleteObjectError
+	This Exception is thrown when an object can't be deleted
+	
+	Extends: 
+	<Exception>
+	
+	Parameters:
+		e - The wrapped error
+*/ 
+function UnableToDeleteObjectError(e) {
+	this.extend(e || {});
+	this.name = "UnableToDeleteObjectError";
+}
+UnableToDeleteObjectError.prototype = new Error();
+
+/*
+	Class: ObjectNotFoundError
+	This Exception is thrown when an object can't be found
+	
+	Extends: 
+	<Exception>
+	
+	Parameters:
+		e - The wrapped error
+*/ 
+function ObjectNotFoundError(e) {
+	this.extend(e || {});
+	this.name = "ObjectNotFound";
+}
+ObjectNotFoundError.prototype = new Error();
+
+/*
+	Class: ValidationException
+	This Exception is thrown when an object does not pass validation
+	
+	Extends: 
+	<Exception>
+	
+	Parameters:
+		violations - an object representing the validation violations {prop:message,...}
+*/ 
+function ValidationException(violations) {
+	this.violations = violations;
+	this.name = "ValidationException";
+}
+ValidationException.prototype = new Error();
+
+/*
 	Class: SessionUnavailableException
 	This Exception is thrown when a persistence session is not available
 	
@@ -77,7 +125,7 @@ var Type = {
 	<Exception>
 	
 	Parameters:
-		msg - the detail message.
+		e - The wrapped error
 */ 
 function SessionUnavailableException(e) {
 	this.extend(e || {});
@@ -93,7 +141,7 @@ SessionUnavailableException.prototype = new Error();
 	<Exception>
 	
 	Parameters:
-		msg - the detail message.	
+		e - The wrapped error
 */ 
 function NotStorableException(e) {
 	this.extend(e || {});
@@ -108,7 +156,7 @@ NotStorableException.prototype = new Error();
 	<Exception>
 	
 	Parameters:
-		msg - the detail message.	
+		e - The wrapped error	
 */ 
 function UniqueValueConstraintException(e) {
 	this.extend(e||{});
@@ -129,7 +177,7 @@ UniqueValueConstraintException.prototype.field = null;
 	<Exception>
 	
 	Parameters:
-		msg - the detail message.	
+		e - The wrapped error
 */ 
 function CascadingException(e) {
 	this.extend(e || {});
@@ -144,7 +192,7 @@ CascadingException.prototype = new Error();
 	<Exception>
 	
 	Parameters:
-		msg - the detail message.	
+		e - The wrapped error
 */ 
 function CustomClassException(e) {
 	this.extend(e || {});
@@ -159,7 +207,7 @@ CustomClassException.prototype = new Error();
 	<Exception>
 	
 	Parameters:
-		msg - the detail message.	
+		e - The wrapped error
 */ 
 function RequiredPropertyException(e) {
 	this.extend(e || {});
@@ -403,9 +451,15 @@ function ObjectManager() {
 	 */
 	this.save = function(obj, s) {
 		if(!manager.isStorable(obj)) throw new NotStorableException();
-		var path = manager.getPath($type(obj));
+		var type = $type(obj);
+		var path = manager.getPath(type);
 		var session = s || manager.getSession();
 		try {
+			//validate
+			var valResult = obj.validate();
+			if (valResult != undefined) throw new ValidationException(valResult);
+
+			//save
 			var node = manager.saveObject(session, obj, path);
 			obj.id = new String(node.getIdentifier());
 			if ($log().isDebugEnabled()) {
@@ -419,7 +473,6 @@ function ObjectManager() {
 		} catch (e) {
 			if (s == undefined) session.refresh(false);
 			$log().error("CAUGHT EXCEPTION WHILE TRYING TO SAVE OBJECT");
-			e.printStackTrace();
 			//TODO throw a specific exception
 			throw e;
 		} finally {
@@ -601,6 +654,7 @@ function ObjectManager() {
 				if ($log().isDebugEnabled()) {
 					e.printStackTrace();
 				}
+				throw new ObjectNotFoundError();
 			} finally {
 				if (s == undefined) session.logout();
 			}
@@ -849,7 +903,7 @@ function ObjectManager() {
 	};
 	
 	this.remove = function(storable, s) {
-		var success = false;
+
 		if(storable.id) {
 			var session = s || manager.getSession();
 			
@@ -857,16 +911,15 @@ function ObjectManager() {
 				session.getNodeByIdentifier(storable.id).remove();
 				storable.onRemove();
 				if (s == undefined) session.save();
-				success = true;
 			} catch (e) {
 				e.printStackTrace();
-				success = false;
+				throw new UnableToDeleteObjectError();
 			} finally {
 				if (s == undefined) session.logout();
 			}
 		}
 		
-		return success;
+		return storable;
 			
 	};
 	
@@ -998,7 +1051,7 @@ Storable.prototype.define = function(classDef) {
 */
 Storable.prototype.onValidate = function() {
 	//We expect the model objects to overide this
-	return null;
+	return undefined;
 };
 
 /*
@@ -1021,11 +1074,11 @@ Storable.prototype.validate = function() {
 		var propSpec = classDef[prop];
 		
 		if (propSpec.required && this[prop] == undefined) {
-			if (result == null) result = {};
+			if (result == undefined) result = {};
 			result[prop] = "required";
 		} else if (propSpec.hasOwnProperty("pattern") && this[prop] != undefined) {
 			if (!propSpec.pattern.test(this[prop])) {
-				if (result == null) result = {};
+				if (result == undefined) result = {};
 				result[prop] = propSpec.error;
 			}
 		}		
