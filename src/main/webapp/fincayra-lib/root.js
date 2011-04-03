@@ -404,6 +404,13 @@ Request.prototype.$e = Request.prototype.$execute = function(page, c) {
 
 	var jsPage = this.scope.context.mergeEngine.pageDir + this.$getPagePath(page);
 
+	this.$executePage(jsPage);
+	
+	if (c) this.scope.context = mainContext;
+
+};
+
+Request.prototype.$executePage = function(jsPage) {
 	var pageHtml = jsPage.replace(/\.js$/g, ".html");
 
 	$log().debug("jsPage = {}", jsPage);
@@ -434,10 +441,7 @@ Request.prototype.$e = Request.prototype.$execute = function(page, c) {
 		e.printStackTrace();
 		throw e;
 	}
-	
-	this.scope.context = mainContext;
-
-};
+}
 
 /*
 	Function: $forward

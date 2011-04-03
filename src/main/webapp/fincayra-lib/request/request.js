@@ -27,7 +27,10 @@ try {
 	//Here we execute the requested page
 	$log().debug("Loading requested page: {}", $getCurrentPage());
 	var currentPage = $getCurrentPage();
-	if (currentPage != null) {
+	$log().debug("RequestURI:{}",$getRequestURI());
+	if ($getRequestURI().match(/^\/api/)) {
+		$executePage($app().mergeEngine.jsDir + "/pages/api.js");
+	} else if (currentPage != null) {
 		$e(currentPage);
 	} else {
 		$redirect($getErrorPage());

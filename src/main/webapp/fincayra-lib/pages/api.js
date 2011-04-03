@@ -34,11 +34,11 @@
 			if (Methods.GET == method) {
 				//Get the object requested
 				if (info.objectId != undefined) {
-					var object = $getInstance(objName);
-					object.id = info.objectId;
+					var object = $getInstance(objName,{id:info.objectId});
 					result = object.findById();
 					if (result == null ) throw new ObjectNotFoundError();
 				} else {
+					result = $om().getAll($getInstance(objName),0,200);
 					//TODO return up to 200 objects
 				}
 			} else if (Methods.PUT == method) {
