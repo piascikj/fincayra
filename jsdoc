@@ -22,5 +22,9 @@ cp -r $docs docs
 
 git commit docs/js -m "jsdocs generated"
 
+git push origin gh-docs
+
 git checkout master
+
+rm -rf docs
 
