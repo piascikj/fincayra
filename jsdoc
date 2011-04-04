@@ -22,7 +22,7 @@ cp -r $docs docs
 
 git add .
 
-git commit docs/js -a -m "jsdocs generated"
+git commit -a -m "jsdocs generated"
 
 git push origin gh-pages
 
