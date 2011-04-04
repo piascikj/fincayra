@@ -16,11 +16,13 @@ mkdir -p $dict
 
 git checkout gh-pages
 
-rm -rf docs/js/*
+rm -rf docs/*
 
 cp -r $docs docs
 
-git commit docs/js -m "jsdocs generated"
+git add .
+
+git commit docs/js -a -m "jsdocs generated"
 
 git push origin gh-pages
 
