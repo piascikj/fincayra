@@ -1,10 +1,6 @@
 (function() {
 		
 	var config = {
-		preInit: function() {
-			$setLogLevel({level:$log.Level.INFO});
-			FileCache.enable(false);
-		},
 		name:"Fincayra2"
 	};
 
@@ -12,8 +8,12 @@
 		config.url="http://fincayra.elasticbeanstalk.com/";
 		config.secureUrl="http://fincayra.elasticbeanstalk.com/";	
 	}
-
-	$config(config);
+	
+	if ((new java.io.File($getProperty("user.home") + "/.fincayra/app-config.js")).exists()) {
+		$l($getProperty("user.home") + "/.fincayra/app-config.js");
+	} else {
+		$config(config);
+	}
 })();
 
 

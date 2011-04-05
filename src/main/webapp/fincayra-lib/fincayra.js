@@ -2,6 +2,8 @@
 this.fincayra = {};
 load("includes.js");
 
+$log().debug("User home:{}",$getProperty("user.home"));
+
 //Hide the config folder
 $hide(["config"]);
 
