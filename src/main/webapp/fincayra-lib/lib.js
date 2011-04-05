@@ -39,7 +39,7 @@ function $app() { return org.innobuilt.fincayra.FincayraApplication.get(); };
 	get the root scope
 */
 function $rootScope() {
-	return rootScope; 
+	return $app().mergeEngine.topScope; 
 }
 
 /*
@@ -308,20 +308,6 @@ var $href = function(parms) {
 	url += parms.page;
 	if(!parms.text) text = url;
 	return "<a href='" + url + "'>" + text + "</a>";
-};
-
-/*
-	Function: $sendMail
-
-		Execute a mail template and ultimately send it
-
-	Parameters:
-		
-		path - The path to the mail template js file relative to mailManager.templateDir
-		data - Am object to be accessible in the template as context.messageData
-*/
-var $sendMail = function(path, data) {
-	$app().getMailManager().processTemplate(path, data);
 };
 
 /*

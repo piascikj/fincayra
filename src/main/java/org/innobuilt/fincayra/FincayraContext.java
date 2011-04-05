@@ -132,5 +132,13 @@ public class FincayraContext {
 	public String getCurrentPage() {
 		return currentPage;
 	}
+
+	public void setMessageHelper(MimeMessageHelper messageHelper) {
+		this.messageHelper = messageHelper;
+	}
+
+	public void setMergeEngine(MergeEngine mergeEngine) {
+		this.mergeEngine = mergeEngine;
+	}
 	
 }

@@ -60,8 +60,10 @@
 						//Save the new user
 						user = user.save();
 						//Send them an email
+						$log().debug("sending reg email to {}",user.email);
 						$sendMail("/user/regConfirm.js",{user:user});
 					} catch(e) {
+						e.printStackTrace();
 						if(e.javaException) {
 							error = "CAUGHT JAVA EXCEPTION" + e.javaException.message;
 						} else if (e.field) {

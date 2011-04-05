@@ -12,11 +12,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-rootScope = this;
 
-if(rootScope.includes == undefined) {
-	load("includes.js");
-}
+if ($config().dev) $setLogLevel({level:$log.Level.DEBUG});
 
 load("store.js");
 
@@ -238,6 +235,14 @@ Request.prototype.$getCurrentDir = function() {
 */
 Request.prototype.$getCurrentPage = function() {
 	return new String(this.scope.context.getCurrentPage());
+};
+
+/*
+	Func: $setCurrentPage
+	set the current page
+*/
+Request.prototype.$setCurrentPage = function(page) {
+	return new String(this.scope.context.setCurrentPage(page));
 };
 
 /*
@@ -704,8 +709,35 @@ Request.prototype.$getAuthSession = function() {
 	return this.sessionMgr.getAuthSession();
 };
 
+/*
+	Function: $sendMail
 
+		Execute a mail template and ultimately send it
 
+	Parameters:
+		
+		path - The path to the mail template js file relative to mailManager.templateDir
+		data - Am object to be accessible in the template as context.messageData
+*/
+Request.prototype.$sendMail = function(path, data) {
+	var el = this.scope.context.getElement();
+	
+	var msg = $app().getMailManager().createMessage(true);
+	var helper = msg.getMimeMessageHelper();
+	helper.setFrom($config().mailSender.fromEmail);
+
+	this.scope.context.messageHelper = helper;
+	this.scope.context.messageData = data;
+	
+	var template = this.$getPageDir() + $config().mailSender.templateDir + path;
+	$log().debug("mailTemplate:{}", template);
+	this.$executePage(template);
+	
+	$app().getMailManager().send(msg);
+	
+	this.$d(el);
+	
+};
 
 function FincayraSession(){};
 

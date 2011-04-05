@@ -43,8 +43,6 @@ public class MailManager {
 	private Logger LOGGER = LoggerFactory.getLogger(MailManager.class); 
 	private Queue<MimeMailMessage> q = new LinkedList<MimeMailMessage>();
 	private JavaMailSender mailSender;
-	private String fromEmail = "";
-	private String templateDir = "";
 	private MergeEngine mergeEngine = null;
 	
 	/**
@@ -76,11 +74,13 @@ public class MailManager {
 			LOGGER.error("Unable to get Quartz Scheduler", e);
 		}
 		
+		/*
 		mergeEngine = new MergeEngine();
 		mergeEngine.setPageDir(FincayraApplication.get().getRootDir() + "/" + FincayraApplication.get().getPageDir() + "/" + templateDir + "/");
 		mergeEngine.setJsDir(FincayraApplication.get().getMergeEngine().getJsDir());
 		mergeEngine.init(false);
 		mergeEngine.setTopScope(FincayraApplication.get().getMergeEngine().getTopScope());
+		*/
 	}
 	
 	public void send(MimeMailMessage msg) {
@@ -108,6 +108,7 @@ public class MailManager {
 	}
 
 	
+/*
 	public void processTemplate(String pageJs, ScriptableObject msgData) throws MailTemplateException, IOException {
 		FincayraApplication app = FincayraApplication.get();
 		LOGGER.debug("templateDir = {}",mergeEngine.getPageDir());
@@ -132,7 +133,7 @@ public class MailManager {
 			throw new MailTemplateException();
 		}
 	}
-	
+*/
 	
 	public MimeMailMessage createMessage(boolean multiPart) throws MessagingException {
 		MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -146,22 +147,6 @@ public class MailManager {
 
 	public JavaMailSender getMailSender() {
 		return mailSender;
-	}
-
-	public void setFromEmail(String fromEmail) {
-		this.fromEmail = fromEmail;
-	}
-
-	public String getFromEmail() {
-		return fromEmail;
-	}
-
-	public void setTemplateDir(String templateDir) {
-		this.templateDir = templateDir;
-	}
-
-	public String getTemplateDir() {
-		return templateDir;
 	}
 
 	public MergeEngine getMergeEngine() {

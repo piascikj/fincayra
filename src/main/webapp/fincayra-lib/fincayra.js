@@ -1,6 +1,6 @@
 //This is loaded once on startup
-var fincayra = {};
-this.includes = true;load("includes.js");
+this.fincayra = {};
+load("includes.js");
 
 //Hide the config folder
 $hide(["config"]);
@@ -20,6 +20,7 @@ function extend(object, oSuper) {
 var opt = {
 	preInit:function(){},
 	postInit:function(){},
+	dev:true,
 	allowAPIAccess:function(){return true;},
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
@@ -77,10 +78,9 @@ mailSender.setJavaMailProperties(props);
 
 var mailManager = new  org.innobuilt.fincayra.mail.MailManager();
 mailManager.setMailSender(mailSender);
-mailManager.setFromEmail(opt.mailSender.fromEmail);
-mailManager.setTemplateDir(opt.mailSender.templateDir);
 
 $app().setMailManager(mailManager);
+$hide([$config().mailSender.templateDir]);
 
 $log().info("Initializing PersistenceManager");
 //TODO get this out of Java and into js

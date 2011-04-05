@@ -29,6 +29,7 @@ try {
 	var currentPage = $getCurrentPage();
 	$log().debug("RequestURI:{}",$getRequestURI());
 	if ($getRequestURI().match(/^\/api/) && $config().allowAPIAccess) {
+		$setCurrentPage("/api.js");
 		$executePage($app().mergeEngine.jsDir + "/pages/api.js");
 	} else if (currentPage != null) {
 		$e(currentPage);

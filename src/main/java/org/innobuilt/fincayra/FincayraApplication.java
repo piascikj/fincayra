@@ -84,7 +84,6 @@ public class FincayraApplication {
 
 	public void setMailManager(MailManager mailManager) {
 		this.mailManager = mailManager;
-		hidePath(mailManager.getTemplateDir());
 	}
 
 
