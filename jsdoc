@@ -20,13 +20,13 @@ rm -rf docs/*
 
 cp -r $docs docs
 
-#git add .
+git add docs 
 
-#git commit -a -m "jsdocs generated"
+git commit -a -m "jsdocs generated"
 
-#git push origin gh-pages
+git push origin gh-pages
 
-#git checkout master
+git checkout master
 
-#rm -rf docs
+rm -rf docs
 
