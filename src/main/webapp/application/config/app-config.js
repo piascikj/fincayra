@@ -1,5 +1,11 @@
 (function() {
 		
+	var userConfig = $getProperty("user.home") + "/.fincayra/app-config.js";
+	if ((new java.io.File(userConfig)).exists()) {
+		$l(userConfig);
+		return;
+	}
+	
 	var config = {
 		name:"Fincayra2"
 	};
@@ -9,13 +15,5 @@
 		config.secureUrl="http://fincayra.elasticbeanstalk.com/";	
 	}
 	
-	if ((new java.io.File($getProperty("user.home") + "/.fincayra/app-config.js")).exists()) {
-		$l($getProperty("user.home") + "/.fincayra/app-config.js");
-	} else {
-		$config(config);
-	}
+	$config(config);
 })();
-
-
-//To load a file outside the scope of the application, do this
-//load("/home/jpiasci/fincayra-config.js");
