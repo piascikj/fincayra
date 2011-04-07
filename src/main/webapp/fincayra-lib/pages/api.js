@@ -38,8 +38,12 @@
 					result = object.findById();
 					if (result == null ) throw new ObjectNotFoundError();
 				} else {
-					result = $om().getAll($getInstance(objName),0,200);
-					//TODO return up to 200 objects
+					var params = $getPageParams();
+					var offset = params.offset || 0;
+					var limit = params.limit || 200;
+					if (limit > 200) limit = 200;
+					
+					result = $om().getAll($getInstance(objName),offset,limit);
 				}
 			} else if (Methods.PUT == method) {
 				//First instantiate the object
