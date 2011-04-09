@@ -121,4 +121,23 @@ function User(clone) {
 }; 
 new User();
 
+function Post(clone) {
+	
+	this.extend(new Storable(clone));
+	
+	this.define({
+		text:{
+			pattern:/^.{1,10000}$/,
+			required: true,
+			error:"text can be up to 10,000 characters."
+		},
+		
+		user:{
+			rel: Relationship.hasA,
+			required: true,
+			type: User
+		}
+	});
+}; new Post(); 
+		
 //We should now create an admin

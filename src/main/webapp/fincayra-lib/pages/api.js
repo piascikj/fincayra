@@ -2,6 +2,7 @@
 	$requestScope().isAPI = true;
 	$log().debug("IN api.js");
 	var htmlRegex = /\.[hH][tT][mM][lL]$/;
+	var params = $getPageParams(true);
 	var info = {
 		requestURI:$getRequestURI(),
 		extraPath:$getExtraPath(),
@@ -9,7 +10,7 @@
 		classDefs:$om().classDefs,
 		constructors:$om().constructors,
 		htmlRequest:(new String($getRequestURI())).match(htmlRegex) != null,
-		requestObject:$getPageParams(true)
+		requestObject:params
 	};
 
 	if (info.htmlRequest) info.extraPath = info.extraPath.replace(htmlRegex, "");
@@ -32,18 +33,24 @@
 			var method = $getMethod();
 			//Now check for method
 			if (Methods.GET == method) {
+				var object = $getInstance(objName);
 				//Get the object requested
 				if (info.objectId != undefined) {
-					var object = $getInstance(objName,{id:info.objectId});
+					object.id = info.objectId;
 					result = object.findById();
 					if (result == null ) throw new ObjectNotFoundError();
+				} else if (params.qry != undefined) {
+					var offset = params.offset || 0;
+					var limit = params.limit || 200;
+					if (limit > 200) limit = 200;					
+					
+					result = $om().findBySQL2(object, params.qry, offset, limit)
 				} else {
-					var params = $getPageParams();
 					var offset = params.offset || 0;
 					var limit = params.limit || 200;
 					if (limit > 200) limit = 200;
 					
-					result = $om().getAll($getInstance(objName),offset,limit);
+					result = $om().getAll(object,offset,limit);
 				}
 			} else if (Methods.PUT == method) {
 				//First instantiate the object
@@ -75,3 +82,7 @@
 		$j(result)
 	}
 })();
+/*
+SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra.Post] AS post JOIN [fincayra.User] AS u ON post.user=u.[jcr:uuid] WHERE u.email='test1@test.com'
+SELECT * FROM [fincayra.Post] AS post JOIN [fincayra.User] AS u ON [u].[jcr:uuid]=[post].[user]
+*/

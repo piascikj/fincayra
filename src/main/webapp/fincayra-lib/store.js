@@ -46,7 +46,8 @@ var PropType = {
 		Double:javax.jcr.PropertyType.DOUBLE,
 		Decimal:javax.jcr.PropertyType.DECIMAL,
 		Date:javax.jcr.PropertyType.DATE,
-		Boolean:javax.jcr.PropertyType.BOOLEAN
+		Boolean:javax.jcr.PropertyType.BOOLEAN,
+		Reference:javax.jcr.PropertyType.REFERENCE
 };
 
 /*
@@ -223,6 +224,7 @@ function ObjectManager() {
 	var jcrPackages = new JavaImporter(Packages.javax.jcr);
 	var pm = $app().persistenceManager;
 	var objectsNodeName = "Objects";
+	var namespace = "fincayra";
 	var manager = this;
 	
 	/*
@@ -281,7 +283,7 @@ function ObjectManager() {
 		see <$type>
 	*/
 	this.getNodeType = function(type) {
-		return "fincayra." + type;
+		return namespace + ":" + type;
 	};
 
 	/*
@@ -300,6 +302,8 @@ function ObjectManager() {
 		var type = $type(storable);
 		var nodeTypeName = this.getNodeType(type);
 		manager.classDefs[type] = classDef;
+		
+		
 		//$log().debug("classDef:{}", JSON.stringify(classDef, null, "   "));
 		manager.constructors += storable.constructor.toString();
 		
@@ -329,22 +333,53 @@ function ObjectManager() {
 		var session = this.getSession();
 		var workspace = session.getWorkspace();
 		var typeManager = workspace.getNodeTypeManager();
-		
-		if (typeManager.hasNodeType(nodeTypeName)) {
-			$log().info("NodeType [{}] is already registered.", nodeTypeName);
-		} else {
-			try {
+		var nodeType;
+
+		try {
+			var template;
+
+			if (typeManager.hasNodeType(nodeTypeName)) {
+				$log().info("NodeType [{}] is already registered.", nodeTypeName);
+				nodeType = typeManager.getNodeType(nodeTypeName);
+				template = typeManager.createNodeTypeTemplate(nodeType);
+			} else {
 				$log().info("Registering NodeType [{}] in workspace [{}].", [nodeTypeName, workspace.getName()]);
-				var nodeType = typeManager.createNodeTypeTemplate();
-				nodeType.setDeclaredSuperTypeNames(["nt:unstructured"]);
-				nodeType.setName(nodeTypeName);
+				var template = typeManager.createNodeTypeTemplate();
+				template.setDeclaredSuperTypeNames(["nt:unstructured","mix:referenceable"]);
+				template.setName(nodeTypeName);
 				//nodeType.setAbstract(true);
-				typeManager.registerNodeType(nodeType,true);
-				session.save();
-			} finally {
-				session.logout();
+				//nodeType = typeManager.registerNodeType(template,true);
 			}
+			
+			
+			for (var prop in classDef) { 
+				if (classDef.hasOwnProperty(prop)) {
+					var propSpec = classDef[prop];
+					var rel = propSpec.rel;
+					var type = propSpec.type;
+					var jcrType = PropType[type] || PropType.Reference;
+					
+					//http://docs.jboss.org/modeshape/latest/manuals/reference/html/jcr.html#d0e8395
+					//Check if the type is in the list
+					var property = typeManager.createPropertyDefinitionTemplate();
+					property.setName(prop);
+					property.setRequiredType(jcrType);
+					if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
+						property.setMultiple(true);
+					}
+					$log().info("Registering Property [{}] in nodeType [{}].", [prop, nodeTypeName]);
+					template.getPropertyDefinitionTemplates().add(property);
+				}
+			}
+			
+
+			// Register the custom node type
+			typeManager.registerNodeType(template, true);
+			session.save();
+		} finally {
+			session.logout();
 		}
+
 	};
 	
 	/*
@@ -616,6 +651,11 @@ function ObjectManager() {
 		var finder = new Finder();
 		return finder.search(storable, qry, offset, limit);	
 	};
+	
+	this.findBySQL2 = function(storable, qry, offset, limit) {
+		var finder = new Finder();
+		return finder.findBySQL2(storable, qry, offset, limit);	
+	}
 	
 	this.search = function(storable, qry, offset, limit, session) {
 		var finder = new Finder();
@@ -935,7 +975,23 @@ function ObjectManager() {
 	
 	//--------------------------------------------------------
 	//Make sure we have the Objects node
-	manager.ensureNodeExists(objectsNodeName);
+	this.ensureNodeExists(objectsNodeName);
+	
+	//Now make sure we have a namespace
+	var session = this.getSession();
+	var workspace = session.getWorkspace();
+	var nsReg = workspace.getNamespaceRegistry();
+	
+	try {
+		var uri = nsReg.getURI(namespace);
+		$log().debug("Found {} namespace at {}", [namespace, uri]);
+	} catch(e) {
+		nsReg.registerNamespace(namespace, "http://www.fincayra.org/");
+		session.save();
+	} finally {
+		session.logout();
+	}
+	
 }
 
 ObjectManager.instance = new ObjectManager();
