@@ -330,56 +330,67 @@ function ObjectManager() {
 		
 		$log().debug("Adding storable NodeType[{}] sql2Prefix {} xpathPrefix {} xpathSufix {}",[nodeTypeName,manager.sql2Prefix[type],manager.xpathPrefix[type],manager.xpathSufix[type]] );
 		
-		var session = this.getSession();
+		
+		var session = $om().getSession();
 		var workspace = session.getWorkspace();
 		var typeManager = workspace.getNodeTypeManager();
 		var nodeType;
 
+		if ($log().isDebugEnabled()) {
+			//Get all nodeTypes and debug
+			var it = typeManager.getAllNodeTypes();
+			while (it.hasNext()) {
+				var nt = it.nextNodeType();
+				$log().debug("Found node type: {}", nt.getName());
+			}
+		}
+		
 		try {
 			var template;
-
+			
 			if (typeManager.hasNodeType(nodeTypeName)) {
 				$log().info("NodeType [{}] is already registered.", nodeTypeName);
-				nodeType = typeManager.getNodeType(nodeTypeName);
-				template = typeManager.createNodeTypeTemplate(nodeType);
-			} else {
+				//typeManager.unregisterNodeType(nodeTypeName);
+			} else {	
+
 				$log().info("Registering NodeType [{}] in workspace [{}].", [nodeTypeName, workspace.getName()]);
-				var template = typeManager.createNodeTypeTemplate();
+				template = typeManager.createNodeTypeTemplate();
 				template.setDeclaredSuperTypeNames(["nt:unstructured","mix:referenceable"]);
 				template.setName(nodeTypeName);
 				//nodeType.setAbstract(true);
-				//nodeType = typeManager.registerNodeType(template,true);
-			}
-			
-			
-			for (var prop in classDef) { 
-				if (classDef.hasOwnProperty(prop)) {
-					var propSpec = classDef[prop];
-					var rel = propSpec.rel;
-					var type = propSpec.type;
-					var jcrType = PropType[type] || PropType.Reference;
-					
-					//http://docs.jboss.org/modeshape/latest/manuals/reference/html/jcr.html#d0e8395
-					//Check if the type is in the list
-					var property = typeManager.createPropertyDefinitionTemplate();
-					property.setName(prop);
-					property.setRequiredType(jcrType);
-					if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-						property.setMultiple(true);
+				//template = typeManager.registerNodeType(template,true);
+				
+				for (var prop in classDef) { 
+					if (classDef.hasOwnProperty(prop)) {
+						var propSpec = classDef[prop];
+						var rel = propSpec.rel;
+						var type = propSpec.type;
+						var jcrType = PropType[type] || PropType.Reference;
+						
+						//http://docs.jboss.org/modeshape/latest/manuals/reference/html/jcr.html#d0e8395
+						//Check if the type is in the list
+						var property = typeManager.createPropertyDefinitionTemplate();
+						property.setName(prop);
+						property.setRequiredType(jcrType);
+						if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
+							property.setMultiple(true);
+						}
+						$log().info("Registering Property [{}] in nodeType [{}].", [prop, nodeTypeName]);
+						template.getPropertyDefinitionTemplates().add(property);
 					}
-					$log().info("Registering Property [{}] in nodeType [{}].", [prop, nodeTypeName]);
-					template.getPropertyDefinitionTemplates().add(property);
 				}
-			}
-			
+				
 
-			// Register the custom node type
-			typeManager.registerNodeType(template, true);
+				// Register the custom node type
+				typeManager.registerNodeType(template, false);
+			}
 			session.save();
+		} catch (e) {
+			e.printStackTrace();
 		} finally {
 			session.logout();
 		}
-
+		
 	};
 	
 	/*

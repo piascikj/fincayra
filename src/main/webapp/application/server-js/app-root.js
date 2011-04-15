@@ -53,38 +53,6 @@ function User(clone) {
 	
 	this.extend(new Storable(clone));
 	
-	this.define({
-		name:{
-			pattern:/^([a-zA-Z .'-_]){1,40}$/,
-			error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
-		},
-		
-		email:{
-			required: true,
-			pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
-			error:"Email address is not valid",
-			unique:true//this will ensure another object with the same value is not created, unique:false is default
-		}, 
-		
-		nickname:{
-			unique:true,
-			pattern:/^([a-zA-Z0-9_.-])+$/,
-			error:"Must be letters, numbers and _ . -"},
-		
-		role:{},
-		
-		resetTimeStamp:{type:Type.Long},
-		
-		resetString:{unique:true},
-		
-		password:{
-			pattern:/^.*(?=.{6,}).*$/,
-			error:"Password must be at least 6 characters long."
-		},
-		
-		active:{type:Type.Boolean}
-	});
-	
 	this.active = true;
 	
 	//This runs prior to Sortable.save
@@ -119,7 +87,39 @@ function User(clone) {
 		return (encryptor.checkPassword(this.email, resetString) && (now.getTime() < limit));
 	};		
 }; 
-new User();
+
+new User().define({
+		name:{
+			pattern:/^([a-zA-Z .'-_]){1,40}$/,
+			error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
+		},
+		
+		email:{
+			required: true,
+			pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
+			error:"Email address is not valid",
+			unique:true//this will ensure another object with the same value is not created, unique:false is default
+		}, 
+		
+		nickname:{
+			unique:true,
+			pattern:/^([a-zA-Z0-9_.-])+$/,
+			error:"Must be letters, numbers and _ . -"},
+		
+		role:{},
+		
+		resetTimeStamp:{type:Type.Long},
+		
+		resetString:{unique:true},
+		
+		password:{
+			pattern:/^.*(?=.{6,}).*$/,
+			error:"Password must be at least 6 characters long."
+		},
+		
+		active:{type:Type.Boolean}
+	});
+
 
 function Post(clone) {
 	

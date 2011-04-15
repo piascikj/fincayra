@@ -1,35 +1,4 @@
 <configuration xmlns:mode="http://www.modeshape.org/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
-	<!--
-
-		Define the sources for the content. These sources are directly
-		accessible using the ModeShape-specific Graph API. In fact, this is
-		how the ModeShape JCR implementation works. You can think of these as
-		being similar to JDBC DataSource objects, except that they expose
-
-		graph content via the Graph API instead of records via SQL or JDBC.
-	-->
-
-	<mode:sources jcr:primaryType="nt:unstructured">
-		<!--
-
-			The 'Infinispan' repository is a Infinispan repository with a
-			single default workspace (though others could be created, too).
-		-->
-
-		<mode:source jcr:name="Infinispan"
-
-			mode:classname="org.modeshape.connector.infinispan.InfinispanSource"
-
-			mode:description="The repository for our content"
-
-			mode:defaultworkspaceName="objects">
-
-			<mode:predefinedWorkspaceNames>objects</mode:predefinedWorkspaceNames>
-			<mode:predefinedWorkspaceNames>system</mode:predefinedWorkspaceNames>
-			<mode:cacheConfigurationName>/grid.xml</mode:cacheConfigurationName>
-		</mode:source>
-		
-	</mode:sources>
 	<!-- 
 
       Define the JCR repositories 
@@ -38,37 +7,54 @@
 
 	<mode:repositories>
 
-		<!--
-
-			Define a JCR repository that accesses the 'Infinispan' source directly.
-		-->
-
-		<mode:repository jcr:name="fincayra-repository"	mode:source="Infinispan">
+		<mode:repository jcr:name="fincayra-repository"	mode:source="FincayraSource">
 
 			
 			<mode:options jcr:primaryType="mode:options">
-				<systemSourceName jcr:primaryType="mode:option" mode:value="system@Infinispan"/>
-			<!-- 
-				<jaasLoginConfigName jcr:primaryType="mode:option"
-					mode:value="modeshape-jcr" />
-
-					As a convenience, ModeShape defaults to granting guest users full
-					access. In a production system, you would want to limit this access
-					by uncommenting one of the options below: for no access:
-
-					<anonymousUserRoles jcr:PrimaryType="mode:option" mode:value="" />
-
-
-
-					for read-only acces: <anonymousUserRoles
-					jcr:PrimaryType="mode:option" mode:value="readonly" />
- 			-->
+				<systemSourceName jcr:primaryType="mode:option" mode:value="system@FincayraSource"/>
 			</mode:options>
  			
 		</mode:repository>
 
 	</mode:repositories>
 
+	<mode:sources jcr:primaryType="nt:unstructured">
+
+		
+		<mode:source jcr:name="FincayraSource"
+
+			mode:classname="org.modeshape.connector.infinispan.InfinispanSource"
+
+			mode:description="The fincayra repository source"
+
+			mode:defaultworkspaceName="objects"
+			
+			mode:predefinedWorkspaceNames="system, objects"
+			
+			mode:cacheConfigurationName="/grid.xml"
+			
+			mode:updatesAllowed="true"
+			/>
+		<!--
+		<mode:source jcr:name="FincayraSource" mode:classname="org.modeshape.connector.store.jpa.JpaSource"
+			mode:model="Simple"
+			mode:username="sa"
+			mode:password=""
+			mode:maximumConnectionsInPool="30"
+			mode:driverClassName="org.hsqldb.jdbc.JDBCDriver"
+			mode:url="jdbc:hsqldb:file:jcrdatabase;shutdown=true"
+			mode:dialect="org.hibernate.dialect.HSQLDialect"
+			mode:referentialIntegrityEnforced="true"
+			mode:largeValueSizeInBytes="1000"
+			mode:retryLimit="3"
+			mode:compressData="false"
+			mode:predefinedWorkspaceNames="system, objects"
+			mode:defaultWorkspaceName="objects"
+			mode:showSql="false"
+			mode:autoGenerateSchema="update"
+			mode:creatingWorkspacesAllowed="true"/>
+	-->
+	</mode:sources>
 	<mode:clustering clusterName="fincayra-repository-cluster">
 		<mode:configuration><![CDATA[
 			<config>

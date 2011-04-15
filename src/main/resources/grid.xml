@@ -23,8 +23,15 @@
 		<clustering mode="d">
 			<stateRetrieval timeout="20000" />
 			<sync replTimeout="200000" />
-			<!--<l1 enabled="true" lifespan="60000"/>-->
 			<hash numOwners="2" rehashRpcTimeout="60000"/>
 		</clustering>
+		<!--
+		<clustering mode="d">
+			<stateRetrieval timeout="20000" />
+			<sync replTimeout="200000" />
+			<l1 enabled="true" lifespan="60000"/>
+			<hash numOwners="2" rehashRpcTimeout="60000"/>
+		</clustering>
+		-->
 	</default>
 </infinispan>

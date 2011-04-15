@@ -82,7 +82,14 @@
 		$j(result)
 	}
 })();
+
 /*
+{"name":"test1","email":"test1@test.com"}
+{"text":"post1","user":{"id":"myId"}}
+
+SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra:Post]
+
+SELECT post.[jcr:uuid], post.text, post.user, u.name FROM [fincayra:Post] AS post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.name='test2'
 SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra.Post] AS post JOIN [fincayra.User] AS u ON post.user=u.[jcr:uuid] WHERE u.email='test1@test.com'
 SELECT * FROM [fincayra.Post] AS post JOIN [fincayra.User] AS u ON [u].[jcr:uuid]=[post].[user]
 */

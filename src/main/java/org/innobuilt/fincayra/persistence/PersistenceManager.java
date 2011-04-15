@@ -72,6 +72,7 @@ public class PersistenceManager {
 		} finally {
 			s.logout();
 		}
+
 	}
 	
 	public QueryResult find(Session session, String qryString) throws RepositoryException {
