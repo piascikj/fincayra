@@ -308,13 +308,7 @@ function ObjectManager() {
 		manager.constructors += storable.constructor.toString();
 		
 		//Create the sql2 prefix
-		manager.sql2Prefix[type] = "SELECT ";
-
-		for (var prop in classDef) {
-			manager.sql2Prefix[type] += "[" + prop + "],";
-		};
-		manager.sql2Prefix[type] = manager.sql2Prefix[type].slice(0, -1);
-		manager.sql2Prefix[type] += " FROM [" + nodeTypeName + "] "; 
+		manager.sql2Prefix[type] = " SELECT * FROM [{}] AS {}".tokenize(nodeTypeName, type); 
 		
 		//Create the xpathPrefix
 		manager.xpathPrefix[type] = "//element(*," + nodeTypeName + ")";
@@ -658,11 +652,6 @@ function ObjectManager() {
 		return finder.findByProperty(storable, prop);
 	};
 	
-	this.findByXPath = function(storable, qry, offset, limit) {
-		var finder = new Finder();
-		return finder.search(storable, qry, offset, limit);	
-	};
-	
 	this.findBySQL2 = function(storable, qry, offset, limit) {
 		var finder = new Finder();
 		return finder.findBySQL2(storable, qry, offset, limit);	
@@ -691,8 +680,9 @@ function ObjectManager() {
 		this.index = {};
 		
 		this.findById = function(storable, id, s) {
+			$log().debug(JSON.stringify(storable, null, "   "));
 			if(!manager.isStorable(storable)) throw new NotStorableException();
-			var obj = null;
+			var obj;
 			var type = $type(storable);
 	
 			try {
@@ -705,7 +695,7 @@ function ObjectManager() {
 				if ($log().isDebugEnabled()) {
 					e.printStackTrace();
 				}
-				throw new ObjectNotFoundError();
+				//throw new ObjectNotFoundError();
 			} finally {
 				if (s == undefined) session.logout();
 			}
@@ -723,7 +713,8 @@ function ObjectManager() {
 			//If propType is simple use xpath, otherwise use reference
 			if(Type[propType]) {
 				$log().debug("FIND TYPE: " + type + " BY: " + prop);
-				return finder.search(storable,"[@" + prop + "='" + storable[prop] + "']");
+				//return finder.search(storable,"[@" + prop + "='" + storable[prop] + "']");
+				return finder.findBySQL2(storable,"{} WHERE {}.{}='{}'".tokenize(manager.sql2Prefix[type], type, prop, storable[prop]));
 			} else {
 				//First get the node of the prop we are searching by
 				var objects = [];
@@ -752,7 +743,8 @@ function ObjectManager() {
 				return objects;
 			}
 		};
-		
+
+/*		
 		this.search = function(storable, qry, offset, limit, s) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
@@ -763,6 +755,16 @@ function ObjectManager() {
 			return finder.findByXPath(storable,query, offset, limit, s);
 			//return finder.findByXPath(storable,"//" + path + qry, offset, limit, s);
 		};
+*/
+
+		this.search = function(storable, qry, offset, limit, s) {
+			if(!manager.isStorable(storable)) throw new NotStorableException();
+			var type = $type(storable);
+			var prefix = manager.sql2Prefix[type];
+			$log().debug("FIND TYPE: " + type + " WHERE: " + qry);
+			return finder.findBySQL2(storable,"{} WHERE {}".tokenize(manager.sql2Prefix[type], qry, offset, limit, s));
+		};
+		
 
 		this.findBySQL2 = function(storable, qry, offset, limit, s) {
 			var objects = [];
@@ -842,7 +844,7 @@ function ObjectManager() {
 		
 		this.getAll = function(storable, offset, limit) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
-			return finder.search(storable,"", offset, limit);
+			return finder.findBySQL2(storable,manager.sql2Prefix[$type(storable)], offset, limit);
 		};
 		
 		this.getObject = function(type, node) {
