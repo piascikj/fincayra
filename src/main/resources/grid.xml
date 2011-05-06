@@ -3,9 +3,10 @@
 	<global>
 		<transport clusterName="fincayra-grid-cluster" transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
 			<properties>
-			  <property name="configurationFile" value="/infinispan-cluster-udp.xml"/>
+			  <property name="configurationFile" value="infinispan-cluster-udp.xml"/>
 			</properties>
 		</transport>
+		<!--<shutdown hookBehavior="REGISTER"/>-->
 	</global>
 	<default>
 		 <loaders passivation="false" shared="false" preload="true">

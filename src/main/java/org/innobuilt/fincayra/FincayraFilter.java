@@ -23,8 +23,7 @@ public class FincayraFilter implements Filter {
 	public FilterConfig config = null;
 	private static Logger LOGGER = LoggerFactory.getLogger(FincayraFilter.class);
 	private FincayraApplication app;
-	private String jsDir = "fincayra-lib";
-	private String pageDir = "application";
+
 	
 	/*
 	 * This is where the entire application is initialized.
@@ -32,23 +31,6 @@ public class FincayraFilter implements Filter {
 	public void init(FilterConfig config) throws ServletException {
 		this.config = config;
 		this.app = FincayraApplication.get();
-		app.setJsDir(jsDir);
-		app.setPageDir(pageDir);
-		
-		app.setRootDir(config.getServletContext().getRealPath("."));
-		app.getMergeEngine().setPageDir(config.getServletContext().getRealPath(app.getPageDir()));
-		app.getMergeEngine().setJsDir(config.getServletContext().getRealPath(app.getJsDir()));
-		
-		try {
-			LOGGER.info("Initializing MergeEngine");
-			app.getMergeEngine().init(true);
-		} catch (Exception e) {
-			throw new ServletException(e);
-		}
-	}
-
-	public void destroy() {
-		app.getPersistenceManager().destroy();
 	}
 
 	public void doFilter(ServletRequest req, ServletResponse res,
@@ -192,6 +174,12 @@ public class FincayraFilter implements Filter {
 			LOGGER.debug("************************--************************");
 			LOGGER.debug("************************--************************");
 		}
+	}
+
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

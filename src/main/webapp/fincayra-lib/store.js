@@ -50,6 +50,22 @@ var PropType = {
 		Reference:javax.jcr.PropertyType.REFERENCE
 };
 
+var JCRPropTyes = {};
+JCRPropTyes[javax.jcr.PropertyType.STRING.toString()]="STRING";
+JCRPropTyes[javax.jcr.PropertyType.DATE.toString()]="DATE";
+JCRPropTyes[javax.jcr.PropertyType.BINARY.toString()]="BINARY";
+JCRPropTyes[javax.jcr.PropertyType.DOUBLE.toString()]="DOUBLE";
+JCRPropTyes[javax.jcr.PropertyType.DECIMAL.toString()]="DECIMAL";
+JCRPropTyes[javax.jcr.PropertyType.LONG.toString()]="LONG";
+JCRPropTyes[javax.jcr.PropertyType.BOOLEAN.toString()]="BOOLEAN";
+JCRPropTyes[javax.jcr.PropertyType.NAME.toString()]="NAME";
+JCRPropTyes[javax.jcr.PropertyType.PATH.toString()]="PATH";
+JCRPropTyes[javax.jcr.PropertyType.URI.toString()]="URI";
+JCRPropTyes[javax.jcr.PropertyType.REFERENCE.toString()]="REFERENCE";
+JCRPropTyes[javax.jcr.PropertyType.WEAKREFERENCE.toString()]="WEAKREFERENCE";
+JCRPropTyes[javax.jcr.PropertyType.UNDEFINED.toString()]="UNDEFINED";
+
+
 /*
 	Enum: Type
 	The jcr mapping for javascript native types
@@ -227,6 +243,11 @@ function ObjectManager() {
 	var namespace = "fincayra";
 	var manager = this;
 	
+	this.pm = pm;
+	this.objectsNodeName = objectsNodeName;
+	this.namespace = namespace;
+	
+	
 	/*
 		Prop: classDefs
 		The Storable objects class definitions
@@ -265,8 +286,8 @@ function ObjectManager() {
 		
 		see <$type>
 	*/
-	this.getPath = function(type) {
-		return objectsNodeName + "/" + type;
+	this.getPath = function() {
+		return objectsNodeName;
 	};
 	
 	this.getQueryPath = function(type) {
@@ -324,67 +345,114 @@ function ObjectManager() {
 		
 		$log().debug("Adding storable NodeType[{}] sql2Prefix {} xpathPrefix {} xpathSufix {}",[nodeTypeName,manager.sql2Prefix[type],manager.xpathPrefix[type],manager.xpathSufix[type]] );
 		
-		
+		/*
 		var session = $om().getSession();
 		var workspace = session.getWorkspace();
+
+		var nsReg = workspace.getNamespaceRegistry();
+		
+		try {
+			var uri = nsReg.getURI(namespace);
+			$log().debug("Found {} namespace at {}", [namespace, uri]);
+		} catch(e) {
+			e.printStackTrace();
+			$log().info("REGISTERING {} namespace.", namespace); 
+			nsReg.registerNamespace(namespace, "http://www.fincayra.org/");
+		}
+		
 		var typeManager = workspace.getNodeTypeManager();
-		var nodeType;
 
 		if ($log().isDebugEnabled()) {
 			//Get all nodeTypes and debug
 			var it = typeManager.getAllNodeTypes();
 			while (it.hasNext()) {
 				var nt = it.nextNodeType();
-				$log().debug("Found node type: {}", nt.getName());
+				//$log().debug("Found node type: {}", nt.getName());
 			}
 		}
 		
+		
 		try {
-			var template;
+
+			$log().info("Registering NodeType [{}] in workspace [{}].", [nodeTypeName, workspace.getName()]);
+			var template = typeManager.createNodeTypeTemplate();
+			var superTypes = java.lang.reflect.Array.newInstance(java.lang.String, 2);
+			superTypes[0] = "nt:unstructured";
+			superTypes[1] = "mix:referenceable";
+			template.setDeclaredSuperTypeNames(superTypes);
+			template.setName(nodeTypeName);
 			
-			if (typeManager.hasNodeType(nodeTypeName)) {
-				$log().info("NodeType [{}] is already registered.", nodeTypeName);
-				//typeManager.unregisterNodeType(nodeTypeName);
-			} else {	
-
-				$log().info("Registering NodeType [{}] in workspace [{}].", [nodeTypeName, workspace.getName()]);
-				template = typeManager.createNodeTypeTemplate();
-				template.setDeclaredSuperTypeNames(["nt:unstructured","mix:referenceable"]);
-				template.setName(nodeTypeName);
-				//nodeType.setAbstract(true);
-				//template = typeManager.registerNodeType(template,true);
-				
-				for (var prop in classDef) { 
-					if (classDef.hasOwnProperty(prop)) {
-						var propSpec = classDef[prop];
-						var rel = propSpec.rel;
-						var type = propSpec.type;
-						var jcrType = PropType[type] || PropType.Reference;
-						
-						//http://docs.jboss.org/modeshape/latest/manuals/reference/html/jcr.html#d0e8395
-						//Check if the type is in the list
-						var property = typeManager.createPropertyDefinitionTemplate();
-						property.setName(prop);
-						property.setRequiredType(jcrType);
-						if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-							property.setMultiple(true);
-						}
-						$log().info("Registering Property [{}] in nodeType [{}].", [prop, nodeTypeName]);
-						template.getPropertyDefinitionTemplates().add(property);
+			for (var prop in classDef) { 
+				if (classDef.hasOwnProperty(prop)) {
+					var propSpec = classDef[prop];
+					var rel = propSpec.rel;
+					var type = propSpec.type;
+					var jcrType = PropType[type] || PropType.Reference;
+					
+					//http://docs.jboss.org/modeshape/latest/manuals/reference/html/jcr.html#d0e8395
+					//Check if the type is in the list
+					var property = typeManager.createPropertyDefinitionTemplate();
+					property.setName(prop);
+					property.setRequiredType(jcrType);
+					if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
+						property.setMultiple(true);
+					} else {
+						property.setMultiple(false);
 					}
+					$log().info("Registering Property [{}] in nodeType [{}].", [prop, nodeTypeName]);
+					template.getPropertyDefinitionTemplates().add(property);
 				}
-				
-
-				// Register the custom node type
-				typeManager.registerNodeType(template, false);
 			}
+			
+
+			// Register the custom node type
+			typeManager.registerNodeType(template, true);
+
 			session.save();
 		} catch (e) {
 			e.printStackTrace();
 		} finally {
+			$log().debug("Logging out of session for node type creation.");
 			session.logout();
 		}
+		*/
 		
+	};
+	
+	this.initDb = function() {
+		//First create the Type objects and add them
+		with (new JavaImporter(Packages.org.innobuilt.fincayra.persistence)) {
+			for (clazz in this.classDefs) {
+				if (this.classDefs.hasOwnProperty(clazz)) {
+					var type = new Type(clazz);
+					$log().debug("Creating persistent type:{}", type.name);
+					var classDef = this.classDefs[clazz];
+					for(propName in classDef) {
+						if (classDef.hasOwnProperty(propName)) {
+							var propRel = classDef[propName].rel;
+							var propType = classDef[propName].type;
+
+							type.addProperty(new Property(propName, propRel, new Type(propType)));
+						}
+					}
+					
+					pm.addType(type);
+					
+					if ($log().isDebugEnabled()) {
+						var props = type.getProperties().iterator();
+						while(props.hasNext()) {
+							var prop = props.next();
+							$log().debug("type-name:{}, prop-name:{}, prop-rel:{}, prop-type:{}", [type.name, prop.name, prop.relationship, prop.type.name]);
+						}
+					}
+				}
+			}
+		
+		}
+		
+		//Now initialize the db
+		$log().debug("namespace:" + pm.namespace);	
+		pm.init();
 	};
 	
 	/*
@@ -427,48 +495,6 @@ function ObjectManager() {
 		session.getWorkspace().getLockManager().unlock(node.getPath());
 	};
 	
-	this.getSystemSession = function() {
-		var session = null;
-		with (jcrPackages) {
-			try {
-				session = pm.getRepository().login("system");
-			} catch (e) {
-				$log().error("EXCEPTION GETTING JCR SESSION : " + e);
-				throw new SessionUnavailableException(e);
-			} 
-		}
-		
-		return session;
-	
-	};
-	
-	this.ensureNodeExists = function(path) {
-		with(jcrPackages) {
-			var session = null;
-			var root = null;
-			try {
-				session = manager.getSession();
-				if (session != null) {
-					root = session.getRootNode();
-					$log().debug("rootNodeUuid:{}", root.getIdentifier());
-					var id = root.getNode(path).getIdentifier();
-					$log().debug("NODE ID FOR [" + path + "] :" + id);
-				}
-	        } catch (e) {
-	            if (e.javaException instanceof javax.jcr.PathNotFoundException) {
-	            	root = session.getRootNode();
-	            	var node = root.addNode(path);
-	            	session.save();
-	            } else {
-	            	$log().error("EXCEPTION THROWN WHILE CHECKING FOR NODE.");
-	            	throw e;
-	            }
-			} finally {
-	            if (session != null) session.logout();
-	        }
-		}
-	};
-	
 	this.isStorable = function(obj) {
 		return manager.classDefs[$type(obj)];
 	};
@@ -492,7 +518,7 @@ function ObjectManager() {
 	this.save = function(obj, s) {
 		if(!manager.isStorable(obj)) throw new NotStorableException();
 		var type = $type(obj);
-		var path = manager.getPath(type);
+		var path = manager.getPath();
 		var session = s || manager.getSession();
 		try {
 			//validate
@@ -575,6 +601,7 @@ function ObjectManager() {
 				if (node == null) {
 					//Create the node
 					root = session.getRootNode();
+					$log().debug("Adding node type:{} at path:{}", [nodeType, path]);
 					node = root.addNode(path, nodeType);
 					node.addMixin("mix:referenceable");
 					node.addMixin("mix:lockable");
@@ -621,7 +648,7 @@ function ObjectManager() {
 						} else if (rel == Relationship.hasA) {
 							//Add a node at the top path and store the reference here as a property
 							$log().debug("SETTING hasA PROPERTY " + prop + "|" + propType);
-							var propNode = manager.saveObject(session, obj[prop], manager.getPath(propType), true);
+							var propNode = manager.saveObject(session, obj[prop], manager.getPath(), true);
 							node.setProperty(prop, propNode);
 							
 						} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
@@ -629,7 +656,7 @@ function ObjectManager() {
 							var values = java.lang.reflect.Array.newInstance(javax.jcr.Value, obj[prop].length);;
 							obj[prop].each(function(val, i) {
 								$log().debug("SETTING hasMany PROPERTY " + prop + "|" + propType);
-								var propNode = manager.saveObject(session, val, manager.getPath(propType), true);
+								var propNode = manager.saveObject(session, val, manager.getPath(), true);
 								values[i] = session.getValueFactory().createValue(propNode);
 							});
 							node.setProperty(prop, values);
@@ -706,7 +733,7 @@ function ObjectManager() {
 		this.findByProperty = function(storable, prop) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
-			var path = manager.getPath(type);
+			var path = manager.getPath();
 			var propType = manager.classDefs[type][prop].type;
 			$log().debug("PROPTYPE: " + propType);
 			
@@ -761,8 +788,8 @@ function ObjectManager() {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
 			var prefix = manager.sql2Prefix[type];
-			$log().debug("FIND TYPE: " + type + " WHERE: " + qry);
-			return finder.findBySQL2(storable,"{} WHERE {}".tokenize(manager.sql2Prefix[type], qry, offset, limit, s));
+			$log().debug("FIND TYPE: " + type + " WHERE " + qry);
+			return finder.findBySQL2(storable,"{} WHERE {}".tokenize(manager.sql2Prefix[type], qry), offset, limit, s);
 		};
 		
 
@@ -770,34 +797,35 @@ function ObjectManager() {
 			var objects = [];
 			var type = $type(storable);
 			var session = s || manager.getSession();
-			$log().debug(">>>>>>>>>>>>>>>>>>>QUERY WITH SQL2:{} OFFSET:{} LIMIT:{}",[qry, offset + "", limit + ""]);
 			try {
 				var result;
 				var q = session.getWorkspace().getQueryManager().createQuery(qry, javax.jcr.query.Query.JCR_SQL2);
 				if (offset) q.setOffset(offset);
 				if (limit) q.setLimit(limit);
+				$log().debug(">>>>>>>>>>>>>>>>>>>QUERY WITH SQL2:{} OFFSET:{} LIMIT:{}",[q.getStatement(), offset + "", limit + ""]);
 				result = q.execute();
-			
-				var it = result.getNodes();
-				$log().debug("Ran Query!");
-				if (it.hasNext()) {
-					$log().debug("Found Results!");
-					while(it.hasNext()) {
-						var node = it.nextNode();
-						//Coerce the object into the type
-						if ($log().isDebugEnabled()) {
-							$log().debug("FOUND NODE:{} PATH:{}", [node.getIdentifier(), node.getPath()]);
-							$log().debug("DUMPING NODE");
-							pm.dump(node);
+				
+				if (result != null) {
+					var it = result.getNodes();
+					$log().debug("Ran Query!");
+					if (it.hasNext()) {
+						$log().debug("Found Results!");
+						while(it.hasNext()) {
+							var node = it.nextNode();
+							//Coerce the object into the type
+							if ($log().isDebugEnabled()) {
+								$log().debug("FOUND NODE:{} PATH:{}", [node.getIdentifier(), node.getPath()]);
+								$log().debug("DUMPING NODE");
+								pm.dump(node);
+							}
+							objects.push(finder.getObject(type, node));
 						}
-						objects.push(finder.getObject(type, node));
 					}
+					$log().debug("Processed Results!");
 				}
-				$log().debug("Processed Results!");
 			} catch (e) {
 				throw e;
 			} finally {
-				if (s == undefined) session.refresh(false);
 				if (s == undefined) session.logout();
 			}
 			return objects;
@@ -835,7 +863,6 @@ function ObjectManager() {
 			} catch (e) {
 				throw e;
 			} finally {
-				if (s == undefined) session.refresh(false);
 				if (s == undefined) session.logout();
 			}
 			return objects;
@@ -983,28 +1010,6 @@ function ObjectManager() {
 	this.removeAll = function(storable) {
 		
 	};
-	
-	
-	
-	//--------------------------------------------------------
-	//Make sure we have the Objects node
-	this.ensureNodeExists(objectsNodeName);
-	
-	//Now make sure we have a namespace
-	var session = this.getSession();
-	var workspace = session.getWorkspace();
-	var nsReg = workspace.getNamespaceRegistry();
-	
-	try {
-		var uri = nsReg.getURI(namespace);
-		$log().debug("Found {} namespace at {}", [namespace, uri]);
-	} catch(e) {
-		nsReg.registerNamespace(namespace, "http://www.fincayra.org/");
-		session.save();
-	} finally {
-		session.logout();
-	}
-	
 }
 
 ObjectManager.instance = new ObjectManager();

@@ -43,7 +43,6 @@ public class MailManager {
 	private Logger LOGGER = LoggerFactory.getLogger(MailManager.class); 
 	private Queue<MimeMailMessage> q = new LinkedList<MimeMailMessage>();
 	private JavaMailSender mailSender;
-	private MergeEngine mergeEngine = null;
 	
 	/**
 	 * <p>Initialize the MailManager with it's own MergeEngine instance.
@@ -74,13 +73,6 @@ public class MailManager {
 			LOGGER.error("Unable to get Quartz Scheduler", e);
 		}
 		
-		/*
-		mergeEngine = new MergeEngine();
-		mergeEngine.setPageDir(FincayraApplication.get().getRootDir() + "/" + FincayraApplication.get().getPageDir() + "/" + templateDir + "/");
-		mergeEngine.setJsDir(FincayraApplication.get().getMergeEngine().getJsDir());
-		mergeEngine.init(false);
-		mergeEngine.setTopScope(FincayraApplication.get().getMergeEngine().getTopScope());
-		*/
 	}
 	
 	public void send(MimeMailMessage msg) {
@@ -107,34 +99,6 @@ public class MailManager {
 		}
 	}
 
-	
-/*
-	public void processTemplate(String pageJs, ScriptableObject msgData) throws MailTemplateException, IOException {
-		FincayraApplication app = FincayraApplication.get();
-		LOGGER.debug("templateDir = {}",mergeEngine.getPageDir());
-		LOGGER.debug("Merging to mail template: " + pageJs);
-		if (mergeEngine.exists(pageJs)) {
-			MimeMailMessage msg = null;
-			try {
-				msg = this.createMessage(true);
-				MimeMessageHelper helper = msg.getMimeMessageHelper();
-				helper.setFrom(getFromEmail());
-				FincayraContext context = new FincayraContext(mergeEngine, helper, msgData);
-				context.merge(pageJs);
-				send(msg);			
-			} catch (MessagingException e) {
-				LOGGER.error("Problem creating MimeMailMessage.", e);
-				return;
-				// TODO Auto-generated catch block
-			}
-			
-			LOGGER.debug("Running merge for mail..................................");
-		} else {
-			throw new MailTemplateException();
-		}
-	}
-*/
-	
 	public MimeMailMessage createMessage(boolean multiPart) throws MessagingException {
 		MimeMessage mimeMessage = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, multiPart, "UTF-8");
@@ -148,11 +112,5 @@ public class MailManager {
 	public JavaMailSender getMailSender() {
 		return mailSender;
 	}
-
-	public MergeEngine getMergeEngine() {
-		return mergeEngine;
-	}
-	
-	
 	
 }

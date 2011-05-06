@@ -71,14 +71,9 @@ public class FincayraApplication {
 	}
 
 	//Spring stuff
-	private static FincayraApplication application = null;
-
+	private static final FincayraApplication application = new FincayraApplication();
 	
 	public static final FincayraApplication get() {
-		if (application == null) {
-			application = new FincayraApplication(); 
-		}
-		
 		return application;
 	}
 

@@ -84,15 +84,6 @@ mailManager.setMailSender(mailSender);
 $app().setMailManager(mailManager);
 $hide([$config().mailSender.templateDir]);
 
-$log().info("Initializing PersistenceManager");
-//TODO get this out of Java and into js
-try {
-	if (!$app().getPersistenceManager().isUp()) $app().getPersistenceManager().init();
-} catch (e) {
-	e.printStackTrace();
-}
-
-
 $log().info("Initializing MailManager");
 $app().getMailManager().init();
 $log().info("Done Initializing MailManager");

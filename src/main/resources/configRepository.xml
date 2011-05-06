@@ -6,43 +6,31 @@
       -->
 
 	<mode:repositories>
-
 		<mode:repository jcr:name="fincayra-repository"	mode:source="FincayraSource">
-
-			
 			<mode:options jcr:primaryType="mode:options">
 				<systemSourceName jcr:primaryType="mode:option" mode:value="system@FincayraSource"/>
+				<queryIndexDirectory jcr:primaryType="mode:option" mode:value="fincayra-store/indexes"/>
+				<queryIndexesUpdatedSynchronously jcr:primaryType="mode:option" mode:value="true"/>
 			</mode:options>
- 			
 		</mode:repository>
-
 	</mode:repositories>
 
 	<mode:sources jcr:primaryType="nt:unstructured">
-
-		
 		<mode:source jcr:name="FincayraSource"
-
 			mode:classname="org.modeshape.connector.infinispan.InfinispanSource"
-
 			mode:description="The fincayra repository source"
-
 			mode:defaultworkspaceName="objects"
-			
 			mode:predefinedWorkspaceNames="system, objects"
-			
 			mode:cacheConfigurationName="/grid.xml"
-			
 			mode:updatesAllowed="true"
 			/>
-		<!--
-		<mode:source jcr:name="FincayraSource" mode:classname="org.modeshape.connector.store.jpa.JpaSource"
+		<!-- <mode:source jcr:name="FincayraSource" mode:classname="org.modeshape.connector.store.jpa.JpaSource"
 			mode:model="Simple"
 			mode:username="sa"
 			mode:password=""
 			mode:maximumConnectionsInPool="30"
 			mode:driverClassName="org.hsqldb.jdbc.JDBCDriver"
-			mode:url="jdbc:hsqldb:file:jcrdatabase;shutdown=true"
+			mode:url="jdbc:hsqldb:file:fincayra-db/jcrdatabase;shutdown=true"
 			mode:dialect="org.hibernate.dialect.HSQLDialect"
 			mode:referentialIntegrityEnforced="true"
 			mode:largeValueSizeInBytes="1000"
@@ -52,9 +40,9 @@
 			mode:defaultWorkspaceName="objects"
 			mode:showSql="false"
 			mode:autoGenerateSchema="update"
-			mode:creatingWorkspacesAllowed="true"/>
-	-->
+			mode:creatingWorkspacesAllowed="true"/> -->
 	</mode:sources>
+	
 	<mode:clustering clusterName="fincayra-repository-cluster">
 		<mode:configuration><![CDATA[
 			<config>
@@ -114,5 +102,4 @@
 		]]>
 		</mode:configuration>
 	</mode:clustering>
-
 </configuration>

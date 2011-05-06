@@ -44,7 +44,7 @@
 					var limit = params.limit || 200;
 					if (limit > 200) limit = 200;					
 					
-					result = $om().findBySQL2(object, params.qry, offset, limit)
+					result = $om().findBySQL2(object, params.qry, offset, limit);
 				} else {
 					var offset = params.offset || 0;
 					var limit = params.limit || 200;
@@ -87,9 +87,10 @@
 {"name":"test1","email":"test1@test.com"}
 {"text":"post1","user":{"id":"myId"}}
 
+SELECT * from [fincayra:User] as user where user.active=cast('true' as boolean)
 SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra:Post]
-
-SELECT post.[jcr:uuid], post.text, post.user, u.name FROM [fincayra:Post] AS post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.name='test2'
-SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra.Post] AS post JOIN [fincayra.User] AS u ON post.user=u.[jcr:uuid] WHERE u.email='test1@test.com'
+select * from [fincayra:Post] as post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.name='test1'
+SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra:Post] AS post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.name='test1'
+SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra:Post] AS post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.email='test1@test.com'
 SELECT * FROM [fincayra.Post] AS post JOIN [fincayra.User] AS u ON [u].[jcr:uuid]=[post].[user]
 */

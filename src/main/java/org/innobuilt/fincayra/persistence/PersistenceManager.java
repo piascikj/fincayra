@@ -1,79 +1,121 @@
 package org.innobuilt.fincayra.persistence;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+import javax.jcr.LoginException;
+import javax.jcr.NamespaceRegistry;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
-import javax.jcr.Repository;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
+import javax.jcr.Workspace;
+import javax.jcr.nodetype.NodeTypeManager;
+import javax.jcr.nodetype.NodeTypeTemplate;
+import javax.jcr.nodetype.PropertyDefinitionTemplate;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
+import javax.servlet.http.HttpServletRequest;
 
-import org.modeshape.common.collection.Problem;
-import org.modeshape.jcr.JcrConfiguration;
-import org.modeshape.jcr.JcrEngine;
+import org.innobuilt.fincayra.FincayraRepositoryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 public class PersistenceManager {
-	private Repository repository;
-	private JcrEngine engine;
 	private static Logger LOGGER = LoggerFactory.getLogger(PersistenceManager.class);
+	private List<Type> types = new ArrayList<Type>();
+	private String namespace = "fincayra";
+	private String uri = "http://www.fincayra.org/";
+	public static final String REPOSITORY_NAME = "fincayra-repository";
+	public static final String WORKSPACE_NAME = "objects";
+
+	public PersistenceManager addType(Type type) {
+		types.add(type);
+		return this;
+	}
 	
 	public void init() {
-        if (engine != null) this.destroy(); // already started
-
-        // Load the configuration from a file, as provided by the user interface ...
-        JcrConfiguration configuration = new JcrConfiguration();
-        try {
-			configuration.loadFrom(this.getClass().getClassLoader().getResourceAsStream("configRepository.xml"));
-		} catch (MalformedURLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (SAXException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-        // Now create the JCR engine ...
-        engine = configuration.build();
-        engine.start();
-        
-        if (engine.getProblems().hasProblems()) {
-            for (Problem problem : engine.getProblems()) {
-                System.err.println(problem.getMessageString());
-            }
-            throw new RuntimeException("Could not start due to problems");
-        }
-		
-        try {
-			repository = engine.getRepository("fincayra-repository");
-		} catch (RepositoryException e1) {
-			LOGGER.error("Unable to start fincayra-repository");
-			e1.printStackTrace();
-		}
-		
-		//Create a session so we get this repository up and running
-		Session s = null;
+		Session session = null;
 		try {
-			s = getSession();
+			session = getSession();
+			LOGGER.debug("Session is:{}",session);
+			Workspace workspace = session.getWorkspace();
+			
+			NamespaceRegistry nsReg = workspace.getNamespaceRegistry();
+			
+			try {
+				String uri = nsReg.getURI(getNamespace());
+				LOGGER.debug("Found namespace at " + uri);
+			} catch(Exception e) {
+				nsReg.registerNamespace(getNamespace(), getUri());
+			}
+
+			// Obtain the ModeShape-specific node type manager ...
+			NodeTypeManager nodeTypeManager = workspace.getNodeTypeManager();
+
+			Iterator<Type> it = types.iterator();
+			
+			while (it.hasNext()) {
+				Type type = it.next();
+				//TODO throw exception if type is native
+				NodeTypeTemplate nodeType = nodeTypeManager.createNodeTypeTemplate();
+				//nodeType.setDeclaredSuperTypeNames(new String[] {"nt:unstructured","mix:referenceable"});
+				nodeType.setDeclaredSuperTypeNames(new String[] {"mix:referenceable"});
+				nodeType.setName(getNamespace() + ":" + type.getName());
+				
+				Iterator<org.innobuilt.fincayra.persistence.Property> properties = type.getProperties().iterator();
+				
+				while(properties.hasNext()) {
+					org.innobuilt.fincayra.persistence.Property property = properties.next();
+					String name = property.getName();
+					String rel = property.getRelationship();
+					Boolean multiple = rel.equals("hasMany") || rel.equals("ownsMany")?true:false;
+					Type propType = property.getType();
+					Integer jcrType = (Type.NATIVE_TYPES.get(propType.getName()) == null)?PropertyType.REFERENCE:Type.NATIVE_TYPES.get(propType.getName());
+					
+					LOGGER.debug("Registering property:" + name + ", type:" + propType.getName() + ", jcrType:" + jcrType + ", multiple:" + multiple);
+					nodeType.getPropertyDefinitionTemplates().add(getProperty(nodeTypeManager, name, jcrType, multiple));
+				}
+
+				// Register the custom node type
+				nodeTypeManager.registerNodeType(nodeType,true);
+			}
+			session.save();
+		} catch (LoginException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (RepositoryException e) {
-			LOGGER.error("PROBLEM CONNECTING TO JCR-REPOSITORY", e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
-			s.logout();
+			session.logout();
+		}
+		
+	}
+	
+	PropertyDefinitionTemplate getProperty(NodeTypeManager nodeTypeManager, String name, int type, boolean multiple) {
+		PropertyDefinitionTemplate property = null;
+		try {
+			property = nodeTypeManager.createPropertyDefinitionTemplate();
+			property.setName(name);
+			property.setMultiple(false);
+			property.setRequiredType(type);
+		} catch (UnsupportedRepositoryOperationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RepositoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
-	}
+		return property;
+	}	
 	
 	public QueryResult find(Session session, String qryString) throws RepositoryException {
 		LOGGER.debug("EXECUTING XPATH QUERY : {}", qryString);
@@ -88,30 +130,19 @@ public class PersistenceManager {
 		return qry.execute();
 	}
 	
-
 	public Session getSession() throws RepositoryException {
-		//return repository.login(new SimpleCredentials("username", "password".toCharArray()));
-		return repository.login();
+		LOGGER.debug("GETTING SESSION.....");
+		return FincayraRepositoryFactory.getSession(null, REPOSITORY_NAME, WORKSPACE_NAME);
 	}
 
-	public Repository getRepository() {
-		return repository;
+	public String getNamespace() {
+		return namespace;
 	}
 
-	public void destroy() {
-        if (engine == null) return;
-        try {
-            // Tell the engine to shut down, and then wait up to 5 seconds for it to complete...
-            engine.shutdown();
-            engine.awaitTermination(20, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-            engine = null;
-        }
+	public String getUri() {
+		return uri;
 	}
-	
+
     /** Recursively outputs the contents of the given node. */
     public void dump(Node node) throws RepositoryException {
         // First output the node path
@@ -144,10 +175,6 @@ public class PersistenceManager {
         while (nodes.hasNext()) {
             dump(nodes.nextNode());
         }
-    }
-    
-    public boolean isUp() {
-    	return engine != null;
     }
 	
 }

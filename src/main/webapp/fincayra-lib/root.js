@@ -22,6 +22,10 @@ load("store.js");
 
 $l("app-root.js");
 
+//Now we register the storables in the persistenceManager
+$om().initDb();
+$log().debug(JSON.stringify($om().classDefs, null, "   "));
+
 /*
 	class: Request
 	

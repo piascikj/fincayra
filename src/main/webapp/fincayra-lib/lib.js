@@ -554,6 +554,7 @@ String.prototype.tokenize = function() {
 	
 	if (args.length > 0) {
 		for(var i=0; i<args.length; i++) {
+			if (args[i] == undefined) args[i] = "undefined";
 			result = result.replace(/\{\}/, args[i]);
 		} 	
 	}

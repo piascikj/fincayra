@@ -5,7 +5,32 @@
 <web-app>
   <!-- TODO We should change this at startup with the name of the app -->
   <display-name>Fincayra</display-name>
-	<filter>
+
+  <!--
+    This parameter provides the fully-qualified name of a class that implements
+    the o.m.web.jcr.spi.RepositoryProvider interface.  It is required
+    by the ModeShapeJcrDeployer that controls the lifecycle for the ModeShape REST server.
+  -->
+  <context-param>
+    <param-name>org.modeshape.web.jcr.REPOSITORY_PROVIDER</param-name>
+    <param-value>org.innobuilt.fincayra.persistence.FincayraRepositoryProvider</param-value>
+  </context-param>
+  <!--
+    This parameter, specific to the ModeShapeJcrRepositoryProvider implementation, specifies
+    the name of the configuration file to initialize the repository or repositories.
+    This configuration file must be on the classpath and is given as a classpath-relative
+    directory.
+  -->
+	<context-param>
+		<param-name>org.modeshape.web.jcr.JCR_URL</param-name>
+		<param-value>file:/configRepository.xml</param-value>
+	</context-param>
+  <!-- Required parameter for ModeShape REST - should not be modified -->
+
+  <listener>
+    <listener-class>org.innobuilt.fincayra.ApplicationDeployer</listener-class>
+  </listener>
+  <filter>
 		<filter-name>FincayraFilter</filter-name>
 		<filter-class>org.innobuilt.fincayra.FincayraFilter</filter-class>
 	</filter>
