@@ -28,6 +28,7 @@ var opt = {
 	secureUrl:"https://localhost:4443/",
 	name:"Fincayra",
 	errorPage:"/error",
+	store:"db/orientDB-store.js",
 	mailSender: {
 		host:"smtp.gmail.com",
 		port:587,

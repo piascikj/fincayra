@@ -61,6 +61,16 @@ public class MergeEngine {
 		LOGGER.info("Loading root javascript into topScope:{}", rootJs);
 		FincayraScriptable.loadFile(cx, topScope, rootJs);
 		//starting = false;
+		Context.exit();
+	}
+	
+	public void destroy() throws RhinoException, IOException {
+		Context cx = Context.enter();
+		Scriptable scope  = cx.newObject(topScope);
+		scope.setPrototype(topScope);
+		scope.setParentScope(null);
+		FincayraScriptable.loadFile(cx, topScope, jsDir + "/destroy.js");
+		Context.exit();		
 	}
 
 	/**

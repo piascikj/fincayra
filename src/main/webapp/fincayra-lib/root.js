@@ -15,7 +15,7 @@
 
 if ($config().dev) $setLogLevel({level:$log.Level.DEBUG});
 
-load("store.js");
+load("db/store.js");
 
 //Set the $load function to load from the server-js dir for application convenience
 (function() { var _l = $l; $l = $load = function(file) { _l("../application/server-js/" + file);};})();
@@ -315,12 +315,15 @@ Request.prototype.$getPagePath = function(jsPage) {
 
 /*
 	Func: $getRealPath
-	Get the full file system path to the current page
+	Get the full file system path to the current page or path param
 	
 	Returns:
-	The full file system path to the current page
+	The full file system path to the current page or path param
 */
-Request.prototype.$getRealPath = function() {
+Request.prototype.$getRealPath = function(path) {
+	if (path != undefined) {
+		return this.scope.context.request.getServletContext().getRealPath(path)
+	}
 	return $app().mergeEngine.pageDir + this.$getCurrentPage();
 };
 

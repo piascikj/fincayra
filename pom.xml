@@ -16,12 +16,38 @@
 			<id>jboss</id>
 			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
 		</repository>
+		<repository>
+			<id>orientechnologies-repository</id>
+			<name>Orient Technologies Maven2 Repository</name>
+			<url>http://www.orientechnologies.com/listing/m2</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository> 		
 	</repositories>
 	<properties>
 		<!--<modeshape-version>2.4.0.Final</modeshape-version>-->
 		<modeshape-version>2.5.0.Beta2</modeshape-version>
+		<orientDB-version>1.0rc1</orientDB-version>
 	</properties>
 	<dependencies>
+		<!-- Document DB -->
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orient-commons</artifactId>
+			<version>${orientDB-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-core</artifactId>
+			<version>${orientDB-version}</version>
+		</dependency> 
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-server</artifactId>
+			<version>${orientDB-version}</version>
+		</dependency>		
 		  <!-- Java Content Repository API -->
 		<dependency>
 		  <groupId>javax.jcr</groupId>

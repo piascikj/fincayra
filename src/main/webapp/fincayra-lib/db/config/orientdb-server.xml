@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<orient-server>
+    <network>
+        <protocols>
+            <protocol name="binary" implementation="com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary"/>
+            <protocol name="http" implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb"/>
+        </protocols>
+        <listeners>
+            <listener ip-address="127.0.0.1" port-range="2424-2430" protocol="binary"/>
+            <listener ip-address="127.0.0.1" port-range="2480-2490" protocol="http"/>
+        </listeners>
+    </network>
+    <storages>
+        <storage name="fincayra-store" path="local:fincayra-store" userName="admin" userPassword="admin" loaded-at-startup="true"/>
+    </storages>
+    <users>
+        <user name="root" password="2E0E6DC5ADDA7D7D0AF778F874112295D7C10A948D6217C89A25DAC00D1A4C43" resources="*"/>
+    </users>
+    <properties>
+        <entry name="cache.static" value="false"/>
+        <entry name="log.level" value="fine"/>
+    </properties>
+</orient-server>

@@ -1,9 +1,12 @@
 package org.innobuilt.fincayra;
 
+import java.io.IOException;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.innobuilt.fincayra.persistence.FincayraRepositoryProvider;
+import org.mozilla.javascript.RhinoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +39,15 @@ public class ApplicationDeployer implements ServletContextListener {
     @Override
     public void contextDestroyed( ServletContextEvent event ) {
         FincayraRepositoryFactory.shutdown();
+        try {
+			app.getMergeEngine().destroy();
+		} catch (RhinoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /**
