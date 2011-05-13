@@ -195,9 +195,25 @@ function RequiredPropertyException(e) {
 }
 RequiredPropertyException.prototype = new Error();
 
+function ObjectManager() {}
+
+ObjectManager.prototype.txn = function(transact) {
+	//transact will be a function that is executed in a transaction
+	//The txn implementation should pass the txnContext to the transact function as a parameter like: trasact(txnContext)
+	//The txnContext can be any object and must be passed to Storable.save
+}
+
+ObjectManager.prototype.addStorable = function(storable, classDef) {
+	//Add a storable stpe to the object manager
+}
+
+ObjectManager.prototype.initDb = function() {
+	//Initializae the db
+}
 
 //Load the objectManager impl file
 load($config().store);
+
 
 /*
 	class: ObjectManager
@@ -376,8 +392,8 @@ Storable.prototype.equals = function(s) {
 	Returns:
 	The saved object
 */
-Storable.prototype.save = function(session) {
-	return $om().save(this, session);
+Storable.prototype.save = function(txnContext) {
+	return $om().save(this, txnContext);
 };
 
 /*
@@ -395,8 +411,8 @@ Storable.prototype.onSave = function() {
 	Returns:
 	boolean - true if successful
 */
-Storable.prototype.remove = function(session) {
-	return $om().remove(this, session);
+Storable.prototype.remove = function(txnContext) {
+	return $om().remove(this, txnContext);
 };
 
 /*
@@ -414,8 +430,8 @@ Storable.prototype.onRemove = function() {
 	Returns:
 	An array of matching objects
 */
-Storable.prototype.findByProperty = function(prop) {
-	return $om().findByProperty(this,prop);
+Storable.prototype.findByProperty = function(prop,txnContext) {
+	return $om().findByProperty(this,prop,txnContext);
 };
 
 
@@ -427,8 +443,8 @@ Storable.prototype.findByProperty = function(prop) {
 	Returns:
 	An array of matching objects
 */
-Storable.prototype.search = function(qry, offset, limit, session) {
-	return $om().search(this, qry, offset, limit, session);
+Storable.prototype.search = function(qry, offset, limit, txnContext) {
+	return $om().search(this, qry, offset, limit, txnContext);
 };
 
 /*

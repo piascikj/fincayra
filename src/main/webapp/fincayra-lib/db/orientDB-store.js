@@ -18,8 +18,27 @@
 	Responsible for managing object persistence
 	
 */
+var orientDB = {};
+orientDB.packages = new JavaImporter(
+	com.orientechnologies.orient.server,
+	com.orientechnologies.orient.core.record.impl, 
+	com.orientechnologies.orient.core.sql.query,
+	com.orientechnologies.orient.core.db.document,
+	com.orientechnologies.orient.core.metadata.schema,
+	com.orientechnologies.orient.core.id,
+	org.innobuilt.fincayra.persistence.orientDB);
+
+orientDB.Type = {};
+with(orientDB.packages) {
+	orientDB.Type.String = OType.STRING;
+	orientDB.Type.Boolean=OType.BOOLEAN;
+	orientDB.Type.Date=OType.DATE;
+	orientDB.Type.Decimal=OType.FLOAT;
+	orientDB.Type.Double=OType.DOUBLE;
+	orientDB.Type.Long=OType.LONG;
+}
+
 function ObjectManager() {
-	var jcrPackages = new JavaImporter(Packages.javax.jcr);
 	var manager = this;
 	
 	this.server;
@@ -64,40 +83,47 @@ function ObjectManager() {
 		var path = $app().getRootDir() + "/fincayra-lib/db/config/orientdb-server.xml";
 		var conf = new java.io.File(path);
 		//First create the Type objects and add them
-		with (new JavaImporter(Packages.com.orientechnologies.orient.server)) {
+		with (orientDB.packages) {
 			this.server = OServerMain.create();
 			this.server.startup(conf);
 			
 			db = this.openDB();
 			
-			/*
 			for (clazz in this.classDefs) {
 				if (this.classDefs.hasOwnProperty(clazz)) {
-					var type = new Type(clazz);
-					$log().debug("Creating persistent type:{}", type.name);
+					var schema = db.getMetadata().getSchema();
+					//Check if the class exists if not create it!
+					var oClass;
+					if(schema.existsClass(clazz)) {
+						$log().info("Found persistent type:{}", clazz);
+						oClass = schema.getClass(clazz);
+					} else {
+						$log().info("Creating persistent type:{}", clazz);
+						oClass = schema.createClass(clazz);
+					}
+					
 					var classDef = this.classDefs[clazz];
 					for(propName in classDef) {
 						if (classDef.hasOwnProperty(propName)) {
-							var propRel = classDef[propName].rel;
-							var propType = classDef[propName].type;
+							var property = classDef[propName];
+							//we're only worried about the unique constraint here
+							//TODO allow for other indexes through index attribute on classdef
+							if (property.unique) {
+								if (oClass.existsProperty(propName)) {
+									//TODO create a config switch to allow overide of existing properties
+								} else {
+									oClass.createProperty(propName, orientDB.Type[property.type]).createIndex(OProperty.INDEX_TYPE.UNIQUE);
+								}
+							}
 
-							type.addProperty(new Property(propName, propRel, new Type(propType)));
 						}
 					}
 					
-					pm.addType(type);
-					
-					if ($log().isDebugEnabled()) {
-						var props = type.getProperties().iterator();
-						while(props.hasNext()) {
-							var prop = props.next();
-							$log().debug("type-name:{}, prop-name:{}, prop-rel:{}, prop-type:{}", [type.name, prop.name, prop.relationship, prop.type.name]);
-						}
-					}
+					schema.save();
 				}
 			}
-			*/
-		
+			
+			db.close();
 		}
 		
 	};
@@ -132,149 +158,82 @@ function ObjectManager() {
 	this.getClassDef = function(type) {
 		return manager.classDefs[type];
 	};
-	
-	this.getSession = function() {
-		var session = null;
-		with (jcrPackages) {
-			try {
-				session = pm.session;
-			} catch (e) {
-				$log().error("EXCEPTION GETTING JCR SESSION : " + e);
-				throw new SessionUnavailableException(e);
-			} 
-		}
-		
-		return session;
-	};
-	
-	this.lock = function(id, session, timeout) {
-		var to = timeout || new Number(90);
-		var node = session.getNodeByIdentifier(id);
-		return session.getWorkspace().getLockManager().lock(node.getPath(), true, true, to, null);
-	};
-	
-	this.unlock = function(id, session) {
-		var node = session.getNodeByIdentifier(id);
-		session.getWorkspace().getLockManager().unlock(node.getPath());
-	};
-	
+
 	this.isStorable = function(obj) {
 		return manager.classDefs[$type(obj)];
 	};
 	
+	this.txn = function(transact) {
+		var db = this.openDB();
+		try{
+			db.begin();
+			transact(db);
+			db.commit();
+		}catch(e){
+			db.rollback();
+			throw e;
+		} finally{
+			db.close();
+		}
+	}
+	
 	/*
-	 * Save to the repository in the following structure
-	 * 
-	 * For all simple types
-	 * /Objects/[type]:[propertyName]=Value  could be a node if not a simple type
-	 * /Objects/[type]:[propertyName]=Value[]  could be nodes if not simple types
-	 * 
-	 * For user defined types
-	 * ownsA		/Objects/[type]/[propertyName]=new Node
-	 * 
-	 * ownsMany		/Objects/[type]:[propertyName]=Node[]
-	 * 
-	 * hasA			/Objects/[type]:[propertyName]=Node
-	 * 
-	 * hasMany		/Objects/[type]:[propertyName]=Node[]
+	 * Save to orientdb
 	 */
-	this.save = function(obj, s) {
+	this.save = function(obj, deebee) {
 		if(!manager.isStorable(obj)) throw new NotStorableException();
 		var type = $type(obj);
-		var path = manager.getPath();
-		var session = s || manager.getSession();
+		var db = deebee || this.openDB();
 		try {
 			//validate
 			var valResult = obj.validate();
 			if (valResult != undefined) throw new ValidationException(valResult);
 
 			//save
-			var node = manager.saveObject(session, obj, path);
-			obj.id = new String(node.getIdentifier());
-			if ($log().isDebugEnabled()) {
-				$log().debug("DUMPING NODE");
-				pm.dump(node);
-			}
-			if (s == undefined) {
-				session.save();
-				$log().debug("Session saved for node:{}", obj.id);
-			}
+			var doc = this.saveObject(db,obj,false);
+			doc.save();
+			obj.id = doc.getIdentity().toString();
 		} catch (e) {
-			if (s == undefined) session.refresh(false);
 			$log().error("CAUGHT EXCEPTION WHILE TRYING TO SAVE OBJECT");
 			//TODO throw a specific exception
 			throw e;
 		} finally {
-			if (s == undefined) session.logout();
+			if (deebee == undefined) db.close();
 		}
 
-		if (obj.id) {
-			obj = manager.findById(obj, obj.id, s); //TODO have to check if id is valid first
-		}
-		return obj;
+		return obj.findById();
 
 	};
 	
-	this.saveObject = function(session, obj, path, isProp) {
-		var node = null;
+	this.saveObject = function(db, obj, isProp) {
 		obj.visited = true;
-		var exc = null;
-		with(jcrPackages) {
+		var doc = null;
+		with(orientDB.packages) {
 			
 			var type = $type(obj);
-			var nodeType = manager.getNodeType(type);
-			var qPath = manager.getQueryPath(type);
-			var root = null;
 			var classDef = manager.getClassDef(type);
+
 			//First check if this node already exists in repository
-			//Every node has a uuid property
-			if (obj.hasOwnProperty("id") && obj.id != null) {
-				node = session.getNodeByIdentifier(obj.id);
-				$log().debug("FOUND EXISTING NODE:" + node.getIdentifier());
+			//Every doc has a @rid property
+			if (obj.hasOwnProperty("id") && obj.id != null && obj.id != undefined) {
+				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(obj.id));
+				if (results.size() > 0) doc = results.get(0);
+				$log().debug("FOUND EXISTING DOC:" + doc.getIdentity());
 			}
 			
-			if (node != null && isProp) {
-				$log().debug("{} Node {} already exists.", [type, obj.id]);
-				return node;//We don't have to store, it's an existing node, and cascading is not supported
+			if (doc != null && isProp) {
+				$log().debug("{} doc {} already exists.", [type, obj.id]);
+				return doc;//We don't have to store, it's an existing node, and cascading is not supported
 			}
 			
 			obj.onSave();
 
-			//Looks like we'll have to create a node
-			if (node == null) {
-				//First make sure no nodes exist with the unique values
-				for (var prop in classDef) {
-					var propSpec = classDef[prop];
-					if (propSpec.unique) {
-						$log().debug("SEARCHING FOR EXISTING NODE WITH " + prop + " = " + obj[prop]);
-						var result = pm.find(session, "//" + qPath + "[@" + prop + "='" + obj[prop] + "']");
-						//var result = pm.find(session, "//*[@" + prop + "='" + obj[prop] + "']");
-						var it = result.getNodes();
-						//Get out of here...  We have a constraint violation
-						if (it.hasNext()) {
-							node = it.nextNode();
-							$log().debug("FOUND EXISTING NODE WITH " + prop + " = " + obj[prop] + " : " + node.getIdentifier());
-							var e = new UniqueValueConstraintException();
-							e.field = prop;
-							throw e;
-						}
-					}
-				}
-				
-				if (node == null) {
-					//Create the node
-					root = session.getRootNode();
-					$log().debug("Adding node type:{} at path:{}", [nodeType, path]);
-					node = root.addNode(path, nodeType);
-					node.addMixin("mix:referenceable");
-					node.addMixin("mix:lockable");
-				}
+			//Looks like we'll have to create a doc
+			if (doc == null) {
+				doc = new ODocument(db, type);
 			}
 			
-			$log().debug("SETTING PROPERTIES OF NODE AT:" + node.getPath() + " WITH uuid:" + node.getIdentifier());
-			if (node != null) {
-				//obj.node = node;
-				obj.id = node.getIdentifier();
+			if (doc != null) {
 				//Set the nodes properties
 				$log().debug(JSON.stringify(classDef));
 				//we only save the properties defined in the classDef
@@ -283,46 +242,24 @@ function ObjectManager() {
 					var rel = propSpec.rel;
 					var propType = propSpec.type;
 					
+					//Throw an exception if the property is undefined but required
 					if (propSpec.required && obj[prop] == undefined) throw new RequiredPropertyException(type + "." + prop + " required");
 					if (obj[prop] != undefined) {
 						$log().debug("SAVING PROPERTY: " + prop + " TYPE: " + $type(obj[prop]) + " REL:" + rel + " PROPTYPE:" + propType + " VALUE: " + obj[prop]);
 					
 						if (Type[propType]) {
-							//Doesn't matter if the rel is ownsA or hasA, ownsMany or HasMany.  We still use a node property for simple types;
-							if (obj[prop] instanceof Array) {
-								//Create an array of values
-								var values = java.lang.reflect.Array.newInstance(javax.jcr.Value, obj[prop].length);;
-								obj[prop].each(function(val, i) {
-									$log().debug("SETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + val + "|" + PropType[propType]);
-									values[i] = session.getValueFactory().createValue(val);
-								});
-								node.setProperty(prop, values, PropType[propType]);
-							} else {
-								$log().debug("SETTING SIMPLE ownsA or hasA PROPERTY " + prop + "|" + obj[prop] + "|" + PropType[propType]);
-								node.setProperty(prop, obj[prop], PropType[propType]);
-							}
-							
-						} else if (rel == Relationship.ownsA) {
-							//Add a node at this path/prop
-							if (!obj[prop].visited) {
-								$log().debug("SETTING ownsA PROPERTY " + prop + "|" + propType);
-								manager.saveObject(session, obj[prop], path + "/" + prop, true);
-							}
-						} else if (rel == Relationship.hasA) {
-							//Add a node at the top path and store the reference here as a property
-							$log().debug("SETTING hasA PROPERTY " + prop + "|" + propType);
-							var propNode = manager.saveObject(session, obj[prop], manager.getPath(), true);
-							node.setProperty(prop, propNode);
-							
+							doc.field(prop, obj[prop]);
+						} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
+							$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
+							doc.field(prop, manager.saveObject(db, obj[prop], true));
 						} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-							//Add a nodes at the top path and store the reference here as a property
-							var values = java.lang.reflect.Array.newInstance(javax.jcr.Value, obj[prop].length);;
+							var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);;
 							obj[prop].each(function(val, i) {
-								$log().debug("SETTING hasMany PROPERTY " + prop + "|" + propType);
-								var propNode = manager.saveObject(session, val, manager.getPath(), true);
-								values[i] = session.getValueFactory().createValue(propNode);
+								$log().debug("SETTING hasMany or ownsMany PROPERTY " + prop + "|" + propType);
+								var propDoc = manager.saveObject(db, val, true);
+								values[i] = propDoc;
 							});
-							node.setProperty(prop, values);
+							doc.field(prop, values);
 							
 						} else {
 							throw new Error("Relationship not defined");
@@ -332,8 +269,7 @@ function ObjectManager() {
 			}}
 			
 		}
-		obj.visited = false;
-		return node;
+		return doc;
 		
 	};
 	
@@ -347,14 +283,14 @@ function ObjectManager() {
 		return finder.findBySQL2(storable, qry, offset, limit);	
 	}
 	
-	this.search = function(storable, qry, offset, limit, session) {
+	this.search = function(storable, qry, offset, limit, txnContext) {
 		var finder = new Finder();
-		return finder.search(storable, qry, offset, limit, session);	
+		return finder.search(storable, qry, offset, limit, txnContext);	
 	};
 
-	this.findById = function(storable, id, s) {
+	this.findById = function(storable, id, txnContext) {
 		var finder = new Finder();
-		return finder.findById(storable, id, s);
+		return finder.findById(storable, id, txnContext);
 	};
 	
 	this.getAll = function(storable, offset, limit) {
@@ -369,167 +305,85 @@ function ObjectManager() {
 		//Keeps us from getting in a recursive call
 		this.index = {};
 		
-		this.findById = function(storable, id, s) {
+		this.findById = function(storable, id, deebee) {
 			$log().debug(JSON.stringify(storable, null, "   "));
 			if(!manager.isStorable(storable)) throw new NotStorableException();
-			var obj;
+			var obj,doc,db;
 			var type = $type(storable);
-	
-			try {
-				var session = s || manager.getSession();
-				var node = session.getNodeByIdentifier(id);
-				obj = finder.getObject(type, node);
-				return obj;
-			} catch(e) {
-				$log().debug("Swallowing Exception from findById:");
-				if ($log().isDebugEnabled()) {
-					e.printStackTrace();
+			with(orientDB.packages) {
+				try {
+					db = deebee || manager.openDB();
+					var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(id));
+					if (results.size() > 0) doc = results.get(0);
+					obj = finder.getObject(type, doc);
+					return obj;
+				} catch(e) {
+					$log().debug("Swallowing Exception from findById:");
+					if ($log().isDebugEnabled()) {
+						e.printStackTrace();
+					}
+					//throw new ObjectNotFoundError();
+				} finally {
+					if (deebee == undefined) db.close();
 				}
-				//throw new ObjectNotFoundError();
-			} finally {
-				if (s == undefined) session.logout();
 			}
 			
 			return obj;
 		};
 		
-		this.findByProperty = function(storable, prop) {
+		this.findByProperty = function(storable, prop, deebee) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
-			var path = manager.getPath();
 			var propType = manager.classDefs[type][prop].type;
-			$log().debug("PROPTYPE: " + propType);
+			var db, results;
+			var objects = [];
 			
-			//If propType is simple use xpath, otherwise use reference
-			if(Type[propType]) {
-				$log().debug("FIND TYPE: " + type + " BY: " + prop);
-				//return finder.search(storable,"[@" + prop + "='" + storable[prop] + "']");
-				return finder.findBySQL2(storable,"{} WHERE {}.{}='{}'".tokenize(manager.sql2Prefix[type], type, prop, storable[prop]));
-			} else {
-				//First get the node of the prop we are searching by
-				var objects = [];
-				try {
-					var session = manager.getSession();
-					//TODO throw an exception if property does not have an id
-					var node = session.getNodeByIdentifier(storable[prop].id);
-					//get the references to this node by property name
-					var refs = node.getReferences(prop);
-					//now check that they are of the correct type by checking that their paths match
-					path = "/" + path;
-					$log().debug("Searching for nodes w/path:{} found {} nodes.",path, refs.size);
-					while(refs.hasNext()) {
-						var node = refs.nextProperty().parent;
-						$log().debug("FOUND NODE w/path:{}",node.path);
-						if (node.path.replace(path,"").match(/^(\[\d\])?$/)) {
-							objects.push(finder.getObject(type, node));
-						}
-					}
-				} catch (e) {
-					throw e;
-				} finally {
-					session.logout();
-				}
+			try {
+				db = deebee || this.openDB();
+				$log().debug("PROPTYPE: " + propType);
 				
-				return objects;
+				with(orientDB.packages) {
+					//If propType is simple use sql, otherwise use reference
+					if(Type[propType]) {
+						$log().debug("FIND TYPE: " + type + " BY: " + prop);
+						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + " = " + storable[prop]));
+					} else {
+						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + ".@rid = ?"), new ORecordId(storable[prop].id));
+					}
+				}
+				//loop the results and get the objects
+				for (doc in results.toArray()) {
+					objects.push(finder.getObject(type, doc));
+				}
+			} finally {
+				if (deebee == undefined) db.close();
 			}
+			
+			return objects;
 		};
 
-/*		
-		this.search = function(storable, qry, offset, limit, s) {
+		this.search = function(storable, qry, offset, limit, deebee) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
-			var prefix = manager.xpathPrefix[type];
-			var sufix = manager.xpathSufix[type];
-			$log().debug("FIND TYPE: " + type + " WITH: " + qry);
-			var query = (qry.indexOf("]") > -1)?prefix + qry.replace("]","]"+sufix):prefix + qry + sufix;
-			return finder.findByXPath(storable,query, offset, limit, s);
-			//return finder.findByXPath(storable,"//" + path + qry, offset, limit, s);
-		};
-*/
-
-		this.search = function(storable, qry, offset, limit, s) {
-			if(!manager.isStorable(storable)) throw new NotStorableException();
-			var type = $type(storable);
-			var prefix = manager.sql2Prefix[type];
-			$log().debug("FIND TYPE: " + type + " WHERE " + qry);
-			return finder.findBySQL2(storable,"{} WHERE {}".tokenize(manager.sql2Prefix[type], qry), offset, limit, s);
-		};
-		
-
-		this.findBySQL2 = function(storable, qry, offset, limit, s) {
+			var db, results;
 			var objects = [];
-			var type = $type(storable);
-			var session = s || manager.getSession();
 			try {
-				var result;
-				var q = session.getWorkspace().getQueryManager().createQuery(qry, javax.jcr.query.Query.JCR_SQL2);
-				if (offset) q.setOffset(offset);
-				if (limit) q.setLimit(limit);
-				$log().debug(">>>>>>>>>>>>>>>>>>>QUERY WITH SQL2:{} OFFSET:{} LIMIT:{}",[q.getStatement(), offset + "", limit + ""]);
-				result = q.execute();
+				db = deebee || this.openDB();
+				with(orientDB.packages) {
+					$log().debug("FIND TYPE: " + type + " WHERE " + qry);
+					var query = OrientDBHelper.createQuery("select from " + type + " where " + qry);
+					if (limit) query.setLimit(limit);
+					results = db.query();
+				}
 				
-				if (result != null) {
-					var it = result.getNodes();
-					$log().debug("Ran Query!");
-					if (it.hasNext()) {
-						$log().debug("Found Results!");
-						while(it.hasNext()) {
-							var node = it.nextNode();
-							//Coerce the object into the type
-							if ($log().isDebugEnabled()) {
-								$log().debug("FOUND NODE:{} PATH:{}", [node.getIdentifier(), node.getPath()]);
-								$log().debug("DUMPING NODE");
-								pm.dump(node);
-							}
-							objects.push(finder.getObject(type, node));
-						}
-					}
-					$log().debug("Processed Results!");
+				//loop the results and get the objects
+				for (doc in results.toArray()) {
+					objects.push(finder.getObject(type, doc));
 				}
-			} catch (e) {
-				throw e;
 			} finally {
-				if (s == undefined) session.logout();
+				if (deebee == undefined) db.close();
 			}
 			return objects;
-		
-		};
-		
-		this.findByXPath = function(storable, qry, offset, limit, s) {
-			var objects = [];
-			var type = $type(storable);
-			var session = s || manager.getSession();
-			$log().debug(">>>>>>>>>>>>>>>>>>>QUERY WITH XPATH:{} OFFSET:{} LIMIT:{}",[qry, offset + "", limit + ""]);
-			try {
-				var result;
-				if (offset != undefined && limit != undefined) {
-					result = pm.find(session, qry, offset, limit);
-				} else {
-					result = pm.find(session, qry);
-				}
-				var it = result.getNodes();
-				$log().debug("Ran Query!");
-				if (it.hasNext()) {
-					$log().debug("Found Results!");
-					while(it.hasNext()) {
-						var node = it.nextNode();
-						//Coerce the object into the type
-						if ($log().isDebugEnabled()) {
-							$log().debug("FOUND NODE:{} PATH:{}", [node.getIdentifier(), node.getPath()]);
-							$log().debug("DUMPING NODE");
-							pm.dump(node);
-						}
-						objects.push(finder.getObject(type, node));
-					}
-				}
-				$log().debug("Processed Results!");
-			} catch (e) {
-				throw e;
-			} finally {
-				if (s == undefined) session.logout();
-			}
-			return objects;
-		
 		};
 		
 		this.getAll = function(storable, offset, limit) {
@@ -537,12 +391,12 @@ function ObjectManager() {
 			return finder.findBySQL2(storable,manager.sql2Prefix[$type(storable)], offset, limit);
 		};
 		
-		this.getObject = function(type, node) {
+		this.getObject = function(type, doc) {
 			var classDef = manager.getClassDef(type);
 			var js = manager.constructors + "\nnew " + type + "();";
 			//$log().debug("EVALUATING JS:{}",js);
 			var obj = eval(js);
-			obj.id = new String(node.getIdentifier().toString());
+			obj.id = new String(doc.getIdentity().toString());
 			//put the object and the id in the index
 			finder.index[obj.id] = obj;
 			
@@ -552,13 +406,13 @@ function ObjectManager() {
 				var rel = propSpec.rel;
 				var propType = propSpec.type;
 				$log().debug("LOOKING FOR PROPERTY:" + prop);
-				if (node.hasProperty(prop)) {
+				if (doc.containsField(prop)) {
 					$log().debug("FOUND PROPERTY:" + prop);
 					if (Type[propType]) {
 						//Doesn't matter if the rel is ownsA or hasA, ownsMany or HasMany.  We still use a node property for simple types;
 						if (rel == Relationship.ownsMany || rel == Relationship.hasMany) {
 							$log().debug("GETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + Type[propType]);
-							var values = node.getProperty(prop).getValues();
+							var values = doc.field(prop).toArray();
 							var propValues = [];
 							values.each(function(val) {
 								propValues.push(finder.getValue(val, propType));
@@ -566,44 +420,20 @@ function ObjectManager() {
 							obj[prop] = propValues;
 						} else { 
 							$log().debug("GETTING SIMPLE ownsA or hasA PROPERTY " + prop + "|" + Type[propType]);
-							obj[prop] = finder.getValue(node.getProperty(prop), propType);
+							obj[prop] = finder.getValue(doc.field(prop), propType);
 						}
-					} else if (rel == Relationship.ownsA) {
-						//Get a node at this path/prop
-						$log().debug("GETTING ownsA PROPERTY " + prop + "|" + Type[propType]);
-						var propNode = node.getNode(prop);
-						if(!finder.nodeVisited(propNode)) {
-							obj[prop] = finder.getObject(propType,propNode);
-						} else {
-							obj[prop] = finder.index[propNode.getIdentifier()];
-						}
-					} else if (rel == Relationship.hasA) {
-						//get the node referenced by the property
-						$log().debug("GETTING hasA PROPERTY " + prop + "|" + Type[propType]);
-						var propNode = node.getProperty(prop).getNode();
-						if (!finder.nodeVisited(propNode)) {
-							obj[prop] = finder.getObject(propType, propNode);
-						} else {
-							obj[prop] = finder.index[propNode.getIdentifier()];
-						}
-						
+					} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
+						$log().debug("GETTING ownsA PROPERTY " + prop + "|" + propType);
+						var propDoc = doc.field(prop);
+						obj[prop] = finder.getObject(propType,propDoc);
 					} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-						//get the nodes referenced by the property
-						var property = node.getProperty(prop);
-						obj[prop] = [];
-						$log().debug("GETTING hasMany PROPERTY " + prop + "|" + propType);
-						var values = property.getValues();
-						values.each(function(value) {
-							$log().debug("FOUND hasMany PROPERTY " + prop + "|" + propType);
-							var propNode = $om().getSession().getNodeByUUID(value.getString()); 
-							if(!finder.nodeVisited(propNode)) {
-								$log().debug("Getting objects for property {}", prop);
-								obj[prop].push(finder.getObject(propType, propNode));
-							} else {
-								obj[prop].push(finder.index[propNode.getIdentifier()]);
-							}
+						$log().debug("GETTING ownsMany or hasMany PROPERTY " + prop + "|" + propType);
+						var values = doc.field(prop).toArray();
+						var propValues = [];
+						values.each(function(propDoc) {
+							propValues.push(finder.getObject(propType,propDoc));
 						});
-						
+						obj[prop] = propValues;
 					}
 				}				
 				
@@ -612,28 +442,28 @@ function ObjectManager() {
 		};
 		
 		//Works for Property and Value
-		this.getValue = function(property, type) {
+		this.getValue = function(val, type) {
 			switch (type) {
 				case Type.String:
-					return new String(property.getString());
+					return new String(val);
 					break;
 				case Type.Long:
-					return new Number(property.getLong());
+					return new Number(val);
 					break;
 				case Type.Double:
-					return new Number(property.getDouble());
+					return new Number(val);
 					break;
 				case Type.Decimal:
-					return new Number(property.getDecimal());
+					return new Number(val);
 					break;
 				case Type.Date:
-					return new Date(property.getDate());
+					return new Date(val);
 					break;
 				case Type.Boolean:
-					return new Boolean(property.getBoolean());
+					return new Boolean(val);
 					break;
 				default:
-				  return new String(property.getString());
+				  return new String(val);
 			}
 		
 		};
