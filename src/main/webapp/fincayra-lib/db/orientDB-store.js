@@ -112,16 +112,36 @@ function ObjectManager() {
 					
 					var classDef = this.classDefs[clazz];
 					for(propName in classDef) {
-						if (classDef.hasOwnProperty(propName)) {
+						if (classDef[propName] != undefined && classDef.hasOwnProperty(propName)) {
 							var property = classDef[propName];
-							//we're only worried about the unique constraint here
+							var oProperty;
+							if (oClass.existsProperty(propName)) {
+								$log().info("Getting {} property: {}",[clazz, propName]);
+								oProperty = oClass.getProperty(propName);
+							} else {
+								$log().info("Creating {} property: {}",[clazz, propName]);
+								var oPropType = orientDB.Type[property.type];
+								if (oPropType == undefined) {
+									if (property.rel == Relationship.hasA) {
+										oPropType = OType.LINK;
+									} else if (property.rel == Relationship.hasMany) {
+										oPropType = OType.LINKLIST;
+									} else if (property.rel == Relationship.ownsA) {
+										oPropType = OType.EMBEDDED;
+									} else if (property.rel == Relationship.ownsMany) {
+										oPropType = OType.EMBEDDEDLIST;
+									}
+								}
+								oProperty = oClass.createProperty(propName, oPropType);
+							}
+							
 							//TODO allow for other indexes through index attribute on classdef
 							if (property.unique) {
-								if (oClass.existsProperty(propName)) {
-									//TODO create a config switch to allow overide of existing properties
-								} else {
-									oClass.createProperty(propName, orientDB.Type[property.type]).createIndex(OProperty.INDEX_TYPE.UNIQUE);
-								}
+								oProperty.createIndex(OProperty.INDEX_TYPE.UNIQUE);
+							}
+							
+							if (property.required) {
+								oProperty.setMandatory(true).setNotNull(true);
 							}
 
 						}
@@ -453,13 +473,13 @@ function ObjectManager() {
 					} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
 						$log().debug("GETTING ownsA PROPERTY " + prop + "|" + propType);
 						var propDoc = doc.field(prop);
-						obj[prop] = finder.getObject(propType,propDoc);
+						if (propDoc != null) obj[prop] = finder.getObject(propType,propDoc);
 					} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
 						$log().debug("GETTING ownsMany or hasMany PROPERTY " + prop + "|" + propType);
 						var values = doc.field(prop).toArray();
 						var propValues = [];
 						values.each(function(propDoc) {
-							propValues.push(finder.getObject(propType,propDoc));
+							if (propDoc != null) propValues.push(finder.getObject(propType,propDoc));
 						});
 						obj[prop] = propValues;
 					}
@@ -495,28 +515,27 @@ function ObjectManager() {
 			}
 		
 		};
-		
-		this.nodeVisited = function(propNode) {
-			var visited = !(this.index[propNode.getIdentifier()] == undefined);
-			$log().debug("Node: {}, Visited: {}", [propNode.getIdentifier(), visited]);
-			return visited;
-		};
+
 	};
 	
-	this.remove = function(storable, s) {
-
-		if(storable.id) {
-			var session = s || manager.getSession();
-			
+	this.remove = function(storable, deebee) {
+		if(!manager.isStorable(storable)) throw new NotStorableException();
+		var obj,doc,db;
+		var type = $type(storable);
+		with(orientDB.packages) {
 			try {
-				session.getNodeByIdentifier(storable.id).remove();
-				storable.onRemove();
-				if (s == undefined) session.save();
-			} catch (e) {
-				e.printStackTrace();
-				throw new UnableToDeleteObjectError();
+				db = deebee || manager.openDB();
+				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(storable.id));
+				if (results.size() > 0) doc = results.get(0);
+				doc["delete"]();
+			} catch(e) {
+				$log().debug("Swallowing Exception from findById:");
+				if ($log().isDebugEnabled()) {
+					e.printStackTrace();
+				}
+				//throw new ObjectNotFoundError();
 			} finally {
-				if (s == undefined) session.logout();
+				if (deebee == undefined) db.close();
 			}
 		}
 		
