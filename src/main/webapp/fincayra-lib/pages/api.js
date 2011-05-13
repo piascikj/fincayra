@@ -44,7 +44,7 @@
 					var limit = params.limit || 200;
 					if (limit > 200) limit = 200;					
 					
-					result = $om().findBySQL2(object, params.qry, offset, limit);
+					result = $om().search(object, params.qry, offset, limit);
 				} else {
 					var offset = params.offset || 0;
 					var limit = params.limit || 200;

@@ -79,6 +79,14 @@ function ObjectManager() {
 		//manager.sql2Prefix[type] = " SELECT * FROM [{}] AS {}".tokenize(nodeTypeName, type); 
 	};
 	
+	this.cast = function(obj, type) {
+		var js = manager.constructors + "\nnew " + type + "();";
+		//$log().debug("EVALUATING JS:{}",js);
+		obj = eval(js).extend(obj);
+		
+		return obj;
+	}
+	
 	this.initDb = function() {
 		var path = $app().getRootDir() + "/fincayra-lib/db/config/orientdb-server.xml";
 		var conf = new java.io.File(path);
@@ -248,15 +256,15 @@ function ObjectManager() {
 						$log().debug("SAVING PROPERTY: " + prop + " TYPE: " + $type(obj[prop]) + " REL:" + rel + " PROPTYPE:" + propType + " VALUE: " + obj[prop]);
 					
 						if (Type[propType]) {
-							doc.field(prop, obj[prop]);
+							doc.field(prop, manager.toJava(obj[prop], type));
 						} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
 							$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
-							doc.field(prop, manager.saveObject(db, obj[prop], true));
+							doc.field(prop, manager.saveObject(db, manager.cast(obj[prop],propType), true));
 						} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
 							var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);;
 							obj[prop].each(function(val, i) {
 								$log().debug("SETTING hasMany or ownsMany PROPERTY " + prop + "|" + propType);
-								var propDoc = manager.saveObject(db, val, true);
+								var propDoc = manager.saveObject(db, manager.cast(val,propType), true);
 								values[i] = propDoc;
 							});
 							doc.field(prop, values);
@@ -277,11 +285,6 @@ function ObjectManager() {
 		var finder = new Finder();
 		return finder.findByProperty(storable, prop);
 	};
-	
-	this.findBySQL2 = function(storable, qry, offset, limit) {
-		var finder = new Finder();
-		return finder.findBySQL2(storable, qry, offset, limit);	
-	}
 	
 	this.search = function(storable, qry, offset, limit, txnContext) {
 		var finder = new Finder();
@@ -335,26 +338,28 @@ function ObjectManager() {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
 			var propType = manager.classDefs[type][prop].type;
-			var db, results;
+			var db;
+			var results;
 			var objects = [];
 			
 			try {
-				db = deebee || this.openDB();
+				db = deebee || manager.openDB();
 				$log().debug("PROPTYPE: " + propType);
 				
 				with(orientDB.packages) {
 					//If propType is simple use sql, otherwise use reference
 					if(Type[propType]) {
 						$log().debug("FIND TYPE: " + type + " BY: " + prop);
-						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + " = " + storable[prop]));
+						var val = storable[prop];
+						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + " = ?"),manager.toJava(val,propType));
 					} else {
 						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + ".@rid = ?"), new ORecordId(storable[prop].id));
 					}
 				}
 				//loop the results and get the objects
-				for (doc in results.toArray()) {
+				results.toArray().each(function(doc) {
 					objects.push(finder.getObject(type, doc));
-				}
+				});
 			} finally {
 				if (deebee == undefined) db.close();
 			}
@@ -365,30 +370,53 @@ function ObjectManager() {
 		this.search = function(storable, qry, offset, limit, deebee) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
-			var db, results;
+			var db;
+			var results;
 			var objects = [];
 			try {
-				db = deebee || this.openDB();
+				db = deebee || manager.openDB();
 				with(orientDB.packages) {
 					$log().debug("FIND TYPE: " + type + " WHERE " + qry);
 					var query = OrientDBHelper.createQuery("select from " + type + " where " + qry);
 					if (limit) query.setLimit(limit);
-					results = db.query();
+					if (offset) query.setBeginRange(new ORecordId(offset));
+					results = db.query(query);
 				}
 				
 				//loop the results and get the objects
-				for (doc in results.toArray()) {
+				results.toArray().each(function(doc) {
 					objects.push(finder.getObject(type, doc));
-				}
+				});
 			} finally {
 				if (deebee == undefined) db.close();
 			}
 			return objects;
 		};
 		
-		this.getAll = function(storable, offset, limit) {
+		this.getAll = function(storable, offset, limit, deebee) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
-			return finder.findBySQL2(storable,manager.sql2Prefix[$type(storable)], offset, limit);
+			var type = $type(storable);
+			var db;
+			var results;
+			var objects = [];
+			try {
+				db = deebee || manager.openDB();
+				with(orientDB.packages) {
+					$log().debug("FIND TYPE: " + type);
+					var query = OrientDBHelper.createQuery("select from " + type);
+					if (limit) query.setLimit(limit);
+					if (offset) query.setBeginRange(new ORecordId(offset));
+					results = db.query(query);
+				}
+				
+				//loop the results and get the objects
+				results.toArray().each(function(doc) {
+					objects.push(finder.getObject(type, doc));
+				});
+			} finally {
+				if (deebee == undefined) db.close();
+			}
+			return objects;
 		};
 		
 		this.getObject = function(type, doc) {
@@ -396,7 +424,7 @@ function ObjectManager() {
 			var js = manager.constructors + "\nnew " + type + "();";
 			//$log().debug("EVALUATING JS:{}",js);
 			var obj = eval(js);
-			obj.id = new String(doc.getIdentity().toString());
+			obj.id = new String(doc.getIdentity().toString()).replace(/^\#/,"");
 			//put the object and the id in the index
 			finder.index[obj.id] = obj;
 			
@@ -500,6 +528,32 @@ function ObjectManager() {
 		return new Finder();
 	};
 	
+	this.toJava = function(val, type) {
+		switch (type) {
+			case Type.String:
+				return val.toString();
+				break;
+			case Type.Long:
+				return new java.lang.Long(val);
+				break;
+			case Type.Double:
+				return new java.lang.Double(val);
+				break;
+			case Type.Decimal:
+				return new java.lang.Float(val);
+				break;
+			case Type.Date:
+				return new Date(val);
+				break;
+			case Type.Boolean:
+				return new Boolean(val);
+				break;
+			default:
+			  return val.toString();
+		}
+	
+	}
+		
 	this.removeAll = function(storable) {
 		
 	};

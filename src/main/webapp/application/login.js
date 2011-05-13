@@ -32,7 +32,9 @@
 				var users = [];
 				try {
 					users = user.findByProperty("email");
+					$log().debug("Found " + users.length + " users");
 				} catch (e){
+					e.printStackTrace();
 					//TODO need to work on messaging
 					$("#form_box").prepend("<h3>" + e.name + "</h3>");
 				}
