@@ -418,7 +418,7 @@ function ObjectManager() {
 					objectsTmp.push(finder.getObject(type, doc));
 				});
 				
-				if (offset != undefined && limit != undefined) {
+				if (offset != undefined && limit != undefined && objectsTmp.length > 0) {
 					objects = {
 						results: objectsTmp,
 						nextOffset: manager.nextOffset(objectsTmp[objectsTmp.length - 1].id),
