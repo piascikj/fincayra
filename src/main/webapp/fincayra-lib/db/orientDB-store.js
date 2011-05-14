@@ -311,9 +311,9 @@ function ObjectManager() {
 		
 	};
 	
-	this.findByProperty = function(storable, prop) {
+	this.findByProperty = function(storable, prop, clause, offset, limit, txnContext) {
 		var finder = new Finder();
-		return finder.findByProperty(storable, prop);
+		return finder.findByProperty(storable, prop, clause, offset, limit, txnContext);
 	};
 	
 	this.search = function(storable, qry, offset, limit, txnContext) {
@@ -364,12 +364,11 @@ function ObjectManager() {
 			return obj;
 		};
 		
-		this.findByProperty = function(storable, prop, deebee) {
+		this.findByProperty = function(storable, prop, clause, offset, limit, deebee) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
 			var propType = manager.classDefs[type][prop].type;
-			var db;
-			var results;
+			var db, results;
 			var objects = [];
 			
 			try {
@@ -382,10 +381,20 @@ function ObjectManager() {
 						$log().debug("FIND TYPE: " + type + " BY: " + prop);
 						var val = storable[prop];
 						var qryString = "select from " + type + " where " + prop + " = ?";
+						if (clause != undefined) qryString = qryString+ " " + clause;
 						$log().debug("Running query: {}",qryString);
-						results = db.query(OrientDBHelper.createQuery(qryString),manager.toJava(val,propType));
+						var query = OrientDBHelper.createQuery(qryString);
+						if (limit) query.setLimit(limit);
+						if (offset)	query.setBeginRange(new ORecordId(offset));
+						results = db.query(query,manager.toJava(val,propType));
 					} else {
-						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + ".@rid = ?"), new ORecordId(storable[prop].id));
+						var qryString = "select from " + type + " where " + prop + ".@rid = ?";
+						if (clause != undefined) qryString = qryString + " " + clause;
+						$log().debug("Running query: {}",qryString);
+						var query = OrientDBHelper.createQuery(qryString);
+						if (limit) query.setLimit(limit);
+						if (offset)	query.setBeginRange(new ORecordId(offset));
+						results = db.query(query, new ORecordId(storable[prop].id));
 					}
 				}
 				//loop the results and get the objects

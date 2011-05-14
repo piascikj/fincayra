@@ -72,9 +72,7 @@ public class ApplicationDeployer implements ServletContextListener {
 		try {
 			app.getMergeEngine().init(true);
 		} catch (Exception e) {
-			LOGGER.error("Caught excpetion on fincayra application deployment.", e);
-			LOGGER.error("Fincayra is shutting down!");	
-			System.exit(1);
+			throw new RuntimeException("Caught exception while starting fincayra.",e);
 		}
         
     }

@@ -435,11 +435,18 @@ Storable.prototype.onRemove = function() {
 	Func: findByProperty
 	Find an object in permanent storage by the given property name.  Value to search on should be set in the object itself.
 	
+	Parameters:
+		prop - The property name
+		extraClause - Any extra clauses like orderby
+		offset - The position to start from (Dependent upon store implementation. orientDB uses id incremented by i.)
+		limimt - The maximum number of objects to return.
+		txnContext - used in ObjectManager.txn
+		
 	Returns:
 	An array of matching objects
 */
-Storable.prototype.findByProperty = function(prop,txnContext) {
-	return $om().findByProperty(this,prop,txnContext);
+Storable.prototype.findByProperty = function(prop, extraClause, offset, limit, txnContext) {
+	return $om().findByProperty(this, prop, extraClause, txnContext);
 };
 
 
@@ -448,6 +455,12 @@ Storable.prototype.findByProperty = function(prop,txnContext) {
 	Find an object in permanent storage by the given qry appended to the path.
 	For Example: [jcr:contains(@description, 'The')]
 	
+	Parameters:
+		qry - The query
+		offset - The position to start from (Dependent upon store implementation. orientDB uses id incremented by i.)
+		limimt - The maximum number of objects to return.
+		txnContext - used in ObjectManager.txn
+
 	Returns:
 	An array of matching objects
 */

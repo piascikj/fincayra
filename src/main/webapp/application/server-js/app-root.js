@@ -141,3 +141,4 @@ function Post(clone) {
 }; new Post(); 
 		
 //We should now create an admin
+
