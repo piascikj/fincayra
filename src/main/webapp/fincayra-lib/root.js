@@ -26,6 +26,10 @@ $l("app-root.js");
 $om().initDb();
 $log().debug(JSON.stringify($om().classDefs, null, "   "));
 
+//Run the post init callback
+$log().info("Running config.postInit");
+$config().postInit();
+
 /*
 	class: Request
 	

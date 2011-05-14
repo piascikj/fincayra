@@ -89,6 +89,3 @@ $log().info("Initializing MailManager");
 $app().getMailManager().init();
 $log().info("Done Initializing MailManager");
 
-//Run the post init callback
-$log().info("Running config.postInit");
-opt.postInit();

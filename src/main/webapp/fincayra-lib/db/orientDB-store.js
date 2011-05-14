@@ -381,7 +381,9 @@ function ObjectManager() {
 					if(Type[propType]) {
 						$log().debug("FIND TYPE: " + type + " BY: " + prop);
 						var val = storable[prop];
-						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + " = ?"),manager.toJava(val,propType));
+						var qryString = "select from " + type + " where " + prop + " = ?";
+						$log().debug("Running query: {}",qryString);
+						results = db.query(OrientDBHelper.createQuery(qryString),manager.toJava(val,propType));
 					} else {
 						results = db.query(OrientDBHelper.createQuery("select from " + type + " where " + prop + ".@rid = ?"), new ORecordId(storable[prop].id));
 					}
