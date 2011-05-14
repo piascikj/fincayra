@@ -104,7 +104,7 @@ new User().define({
 		nickname:{
 			unique:true,
 			pattern:/^([a-zA-Z0-9_.-])+$/,
-			error:"Must be letters, numbers and _ . -"},
+			error:"Must be letters, numbers or _ . -"},
 		
 		role:{},
 		

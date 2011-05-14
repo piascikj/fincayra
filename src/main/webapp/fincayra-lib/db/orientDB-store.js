@@ -13,11 +13,18 @@
  *   limitations under the License.
  */
 
-/*
-	class: ObjectManager
-	Responsible for managing object persistence
+
+ObjectManager.prototype.nextOffset = function(seed) {
+	$log().debug("seed:{}", seed);
+	var regex = /^(\d+\:)(\d+)$/;
+	if (regex.test(seed)) {
+		var pieces = regex.exec(seed);
+		return pieces[1] + (new Number(pieces[2]) + 1);
+	}
 	
-*/
+	return null;
+}
+
 var orientDB = {};
 orientDB.packages = new JavaImporter(
 	com.orientechnologies.orient.server,
@@ -92,8 +99,11 @@ function ObjectManager() {
 		var conf = new java.io.File(path);
 		//First create the Type objects and add them
 		with (orientDB.packages) {
-			this.server = OServerMain.create();
-			this.server.startup(conf);
+			this.server = OServerMain.server();
+			if (this.server == null) {
+				this.server = OServerMain.create();
+				this.server.startup(conf);
+			}
 			
 			db = this.openDB();
 			
@@ -392,21 +402,32 @@ function ObjectManager() {
 			var type = $type(storable);
 			var db;
 			var results;
-			var objects = [];
+			var objectsTmp = [], objects;
 			try {
 				db = deebee || manager.openDB();
 				with(orientDB.packages) {
 					$log().debug("FIND TYPE: " + type + " WHERE " + qry);
 					var query = OrientDBHelper.createQuery("select from " + type + " where " + qry);
 					if (limit) query.setLimit(limit);
-					if (offset) query.setBeginRange(new ORecordId(offset));
+					if (offset)	query.setBeginRange(new ORecordId(offset));
 					results = db.query(query);
 				}
 				
 				//loop the results and get the objects
 				results.toArray().each(function(doc) {
-					objects.push(finder.getObject(type, doc));
+					objectsTmp.push(finder.getObject(type, doc));
 				});
+				
+				if (offset != undefined && limit != undefined) {
+					objects = {
+						results: objectsTmp,
+						nextOffset: manager.nextOffset(objectsTmp[objectsTmp.length - 1].id),
+						limit: limit
+					};
+				} else {
+					objects = objectsTmp;
+				}
+				
 			} finally {
 				if (deebee == undefined) db.close();
 			}

@@ -203,6 +203,14 @@ ObjectManager.prototype.txn = function(transact) {
 	//The txnContext can be any object and must be passed to Storable.save
 }
 
+/*
+	Func: nextOffset
+	Returns:
+	The value to be used for the next offset.  This function should be overidden for the specific store implementation.
+*/
+ObjectManager.prototype.nextOffset = function() {
+}
+
 ObjectManager.prototype.addStorable = function(storable, classDef) {
 	//Add a storable stpe to the object manager
 }
