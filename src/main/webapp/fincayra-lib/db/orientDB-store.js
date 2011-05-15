@@ -131,6 +131,8 @@ function ObjectManager() {
 							} else {
 								$log().info("Creating {} property: {}",[clazz, propName]);
 								var oPropType = orientDB.Type[property.type];
+								var linkedType = undefined;
+
 								if (oPropType == undefined) {
 									if (property.rel == Relationship.hasA) {
 										oPropType = OType.LINK;
@@ -138,11 +140,19 @@ function ObjectManager() {
 										oPropType = OType.LINKLIST;
 									} else if (property.rel == Relationship.ownsA) {
 										oPropType = OType.EMBEDDED;
-									} else if (property.rel == Relationship.ownsMany) {
-										oPropType = OType.EMBEDDEDLIST;
 									}
 								}
-								oProperty = oClass.createProperty(propName, oPropType);
+								
+								if (property.rel == Relationship.ownsMany) {
+									linkedType = oPropType;
+									oPropType = OType.EMBEDDEDLIST;
+								}
+								
+								if (linkedType != undefined) {
+									oProperty = oClass.createProperty(propName, oPropType, linkedType);
+								} else {	
+									oProperty = oClass.createProperty(propName, oPropType);
+								}
 							}
 							
 							//TODO allow for other indexes through index attribute on classdef
@@ -347,15 +357,10 @@ function ObjectManager() {
 				try {
 					db = deebee || manager.openDB();
 					var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(id));
-					if (results.size() > 0) doc = results.get(0);
-					obj = finder.getObject(type, doc);
-					return obj;
-				} catch(e) {
-					$log().debug("Swallowing Exception from findById:");
-					if ($log().isDebugEnabled()) {
-						e.printStackTrace();
+					if (results.size() > 0) {
+						doc = results.get(0);
+						obj = finder.getObject(type, doc);
 					}
-					//throw new ObjectNotFoundError();
 				} finally {
 					if (deebee == undefined) db.close();
 				}
@@ -461,10 +466,12 @@ function ObjectManager() {
 					results = db.query(query);
 				}
 				
-				//loop the results and get the objects
-				results.toArray().each(function(doc) {
-					objects.push(finder.getObject(type, doc));
-				});
+				if (results.size() > 0) {
+					//loop the results and get the objects
+					results.toArray().each(function(doc) {
+						objects.push(finder.getObject(type, doc));
+					});
+				}
 			} finally {
 				if (deebee == undefined) db.close();
 			}
@@ -492,11 +499,14 @@ function ObjectManager() {
 						//Doesn't matter if the rel is ownsA or hasA, ownsMany or HasMany.  We still use a node property for simple types;
 						if (rel == Relationship.ownsMany || rel == Relationship.hasMany) {
 							$log().debug("GETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + Type[propType]);
-							var values = doc.field(prop).toArray();
+							var field = doc.field(prop);
 							var propValues = [];
-							values.each(function(val) {
-								propValues.push(finder.getValue(val, propType));
-							});
+							if (field != null) {
+								var values = field.toArray();
+								values.each(function(val) {
+									propValues.push(finder.getValue(val, propType));
+								});
+							}
 							obj[prop] = propValues;
 						} else { 
 							$log().debug("GETTING SIMPLE ownsA or hasA PROPERTY " + prop + "|" + Type[propType]);
@@ -508,11 +518,14 @@ function ObjectManager() {
 						if (propDoc != null) obj[prop] = finder.getObject(propType,propDoc);
 					} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
 						$log().debug("GETTING ownsMany or hasMany PROPERTY " + prop + "|" + propType);
-						var values = doc.field(prop).toArray();
 						var propValues = [];
-						values.each(function(propDoc) {
-							if (propDoc != null) propValues.push(finder.getObject(propType,propDoc));
-						});
+						var field = doc.field(prop);
+						if (field != null) {
+							var values = doc.field(prop).toArray();
+							values.each(function(propDoc) {
+								if (propDoc != null) propValues.push(finder.getObject(propType,propDoc));
+							});
+						}
 						obj[prop] = propValues;
 					}
 				}				
@@ -545,7 +558,6 @@ function ObjectManager() {
 				default:
 				  return new String(val);
 			}
-		
 		};
 
 	};
@@ -579,30 +591,58 @@ function ObjectManager() {
 		return new Finder();
 	};
 	
-	this.toJava = function(val, type) {
-		switch (type) {
-			case Type.String:
-				return val.toString();
-				break;
-			case Type.Long:
-				return new java.lang.Long(val);
-				break;
-			case Type.Double:
-				return new java.lang.Double(val);
-				break;
-			case Type.Decimal:
-				return new java.lang.Float(val);
-				break;
-			case Type.Date:
-				return new Date(val);
-				break;
-			case Type.Boolean:
-				return new Boolean(val);
-				break;
-			default:
-			  return val.toString();
+	this.toJavaArray = function(val, javaType, type) {
+		var ary = java.lang.reflect.Array.newInstance(javaType, val.length);
+		for (i=0; i < val.length;i++) {
+			ary[i] = this.toJava(val[i], type);
 		}
+		return ary;
+	}
 	
+	this.toJava = function(val, type) {
+			if (val instanceof Array) {
+				var javaType;
+				switch (type) {
+					case Type.Long:
+						javaType = java.lang.Long;
+						break;
+					case Type.Double:
+						javaType = java.lang.Double;
+						break;
+					case Type.Decimal:
+						javaType = java.lang.Float;
+						break;
+					case Type.Date:
+						javaType = java.util.Date;
+						break;
+					case Type.Boolean:
+						javaType = java.lang.Boolean;
+						break;
+					default:
+					  javaType = java.lang.String;
+				}
+				return this.toJavaArray(val, javaType, type);
+			} else {
+				switch (type) {
+					case Type.Long:
+						return new java.lang.Long(val);
+						break;
+					case Type.Double:
+						return new java.lang.Double(val);
+						break;
+					case Type.Decimal:
+						return new java.lang.Float(val);
+						break;
+					case Type.Date:
+						return new Date(val);
+						break;
+					case Type.Boolean:
+						return new Boolean(val);
+						break;
+					default:
+					  return val.toString();
+				}
+			}
 	}
 		
 	this.removeAll = function(storable) {
