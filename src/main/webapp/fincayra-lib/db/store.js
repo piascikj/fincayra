@@ -368,7 +368,7 @@ Storable.prototype.validate = function() {
 	for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
 		var propSpec = classDef[prop];
 		
-		if (propSpec.required && this[prop] == undefined) {
+		if (propSpec.required && this[prop] == undefined && prop != "uuid") {
 			if (result == undefined) result = {};
 			result[prop] = "required";
 		} else if (propSpec.hasOwnProperty("pattern") && this[prop] != undefined) {
