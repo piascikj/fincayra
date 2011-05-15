@@ -305,6 +305,11 @@ function Storable(clone) {
 */
 Storable.prototype.define = function(classDef) {
 	if (!$om().hasStorable(this)) {
+		classDef.uuid = {
+			required: true,
+			unique: true
+		};
+		
 		for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
 			$log().debug(prop + ":" + classDef[prop]);
 			var propSpecs = classDef[prop];
@@ -401,6 +406,10 @@ Storable.prototype.equals = function(s) {
 	The saved object
 */
 Storable.prototype.save = function(txnContext) {
+	if (this.uuid == undefined) {
+		$log().debug("Generating uuid...");
+		this.uuid = $rootScope().uuid();
+	}
 	return $om().save(this, txnContext);
 };
 
