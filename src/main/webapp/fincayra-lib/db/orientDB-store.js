@@ -213,16 +213,21 @@ function ObjectManager() {
 	
 	this.txn = function(transact) {
 		var db = this.openDB();
+		var failed;
 		try{
+			$log().debug("STARTING TXN...");
 			db.begin();
 			transact(db);
 			db.commit();
-		}catch(e){
+		} catch(e){
+			$log().error("Rolling Back the transaction");
 			db.rollback();
-			throw e;
+			failed = e;
 		} finally{
 			db.close();
 		}
+		
+		if (failed != undefined) throw failed;
 	}
 	
 	/*
@@ -249,7 +254,7 @@ function ObjectManager() {
 			if (deebee == undefined) db.close();
 		}
 
-		return obj.findById();
+		return obj;
 
 	};
 	
@@ -264,14 +269,16 @@ function ObjectManager() {
 			//First check if this node already exists in repository
 			//Every doc has a @rid property
 			if (obj.hasOwnProperty("id") && obj.id != null && obj.id != undefined) {
-				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(obj.id));
-				if (results.size() > 0) doc = results.get(0);
-				$log().debug("FOUND EXISTING DOC:" + doc.getIdentity());
-			}
-			
-			if (doc != null && isProp) {
-				$log().debug("{} doc {} already exists.", [type, obj.id]);
-				return doc;//We don't have to store, it's an existing node, and cascading is not supported
+				var rid = new ORecordId(obj.id);
+				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), rid);
+				if (results.size() > 0) {
+					if (isProp) {
+						return rid;
+					} else {
+						doc = results.get(0);
+					}
+					$log().debug("FOUND EXISTING DOC:" + doc.getIdentity());
+				}
 			}
 			
 			obj.onSave();
@@ -299,7 +306,8 @@ function ObjectManager() {
 							doc.field(prop, manager.toJava(obj[prop], type));
 						} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
 							$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
-							doc.field(prop, manager.saveObject(db, manager.cast(obj[prop],propType), true));
+							var propDoc = manager.saveObject(db, manager.cast(obj[prop],propType), true);
+							doc.field(prop, propDoc);
 						} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
 							var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);;
 							obj[prop].each(function(val, i) {
