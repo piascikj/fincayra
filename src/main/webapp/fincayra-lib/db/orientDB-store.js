@@ -245,7 +245,6 @@ function ObjectManager() {
 			//save
 			var doc = this.saveObject(db,obj,false);
 			doc.save();
-			obj.id = doc.getIdentity().toString();
 		} catch (e) {
 			$log().error("CAUGHT EXCEPTION WHILE TRYING TO SAVE OBJECT");
 			//TODO throw a specific exception
@@ -254,7 +253,7 @@ function ObjectManager() {
 			if (deebee == undefined) db.close();
 		}
 
-		return obj;
+		return this.getFinder().getObject(type,doc);
 
 	};
 	
@@ -399,7 +398,9 @@ function ObjectManager() {
 						var query = OrientDBHelper.createQuery(qryString);
 						if (limit) query.setLimit(limit);
 						if (offset)	query.setBeginRange(new ORecordId(offset));
-						results = db.query(query,manager.toJava(val,propType));
+						var jProp = manager.toJava(val,propType);
+						$log().debug("? = {}",jProp);
+						results = db.query(query,jProp);
 					} else {
 						var qryString = "select from " + type + " where " + prop + ".@rid = ?";
 						if (clause != undefined) qryString = qryString + " " + clause;
@@ -418,6 +419,7 @@ function ObjectManager() {
 				if (deebee == undefined) db.close();
 			}
 			
+			$log().debug("Found objects:" + JSON.stringify(objects, null, "   "));
 			return objects;
 		};
 

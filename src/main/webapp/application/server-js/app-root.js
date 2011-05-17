@@ -89,56 +89,55 @@ function User(clone) {
 }; 
 
 new User().define({
-		name:{
-			pattern:/^([a-zA-Z .'-_]){1,40}$/,
-			error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
-		},
-		
-		email:{
-			required: true,
-			pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
-			error:"Email address is not valid",
-			unique:true//this will ensure another object with the same value is not created, unique:false is default
-		}, 
-		
-		nickname:{
-			unique:true,
-			pattern:/^([a-zA-Z0-9_.-])+$/,
-			error:"Must be letters, numbers or _ . -"},
-		
-		role:{},
-		
-		resetTimeStamp:{type:Type.Long},
-		
-		resetString:{unique:true},
-		
-		password:{
-			pattern:/^.*(?=.{6,}).*$/,
-			error:"Password must be at least 6 characters long."
-		},
-		
-		active:{type:Type.Boolean}
-	});
+	name:{
+		pattern:/^([a-zA-Z .'-_]){1,40}$/,
+		error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
+	},
+	
+	email:{
+		required: true,
+		pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
+		error:"Email address is not valid",
+		unique:true//this will ensure another object with the same value is not created, unique:false is default
+	}, 
+	
+	nickname:{
+		unique:true,
+		pattern:/^([a-zA-Z0-9_.-])+$/,
+		error:"Must be letters, numbers or _ . -"},
+	
+	role:{},
+	
+	resetTimeStamp:{type:Type.Long},
+	
+	resetString:{unique:true},
+	
+	password:{
+		pattern:/^.*(?=.{6,}).*$/,
+		error:"Password must be at least 6 characters long."
+	},
+	
+	active:{type:Type.Boolean}
+});
 
 
 function Post(clone) {
-	
 	this.extend(new Storable(clone));
+}; 
 	
-	this.define({
-		text:{
-			pattern:/^.{1,10000}$/,
-			required: true,
-			error:"text can be up to 10,000 characters."
-		},
-		
-		user:{
-			rel: Relationship.hasA,
-			required: true,
-			type: User
-		}
-	});
-}; new Post(); 
+new Post().define({
+	text:{
+		pattern:/^.{1,10000}$/,
+		required: true,
+		error:"text can be up to 10,000 characters."
+	},
+	
+	user:{
+		rel: Relationship.hasA,
+		required: true,
+		type: User
+	}
+}); 
 		
 //We should now create an admin
 

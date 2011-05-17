@@ -35,7 +35,7 @@ public class MergeEngine {
 		Context cx = Context.enter();
 		topScope = new FincayraScriptable(this);
 		topScope.initStandardObjects(cx,false);
-		cx.setOptimizationLevel(-1);
+		cx.setOptimizationLevel(1);
 		cx.setLanguageVersion(Context.VERSION_1_7);
 
 		// Define some global functions particular to the shell. Note
