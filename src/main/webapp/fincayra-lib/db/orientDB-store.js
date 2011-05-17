@@ -245,6 +245,7 @@ function ObjectManager() {
 			//save
 			var doc = this.saveObject(db,obj,false);
 			doc.save();
+			obj = this.getFinder().getObject(type,doc);
 		} catch (e) {
 			$log().error("CAUGHT EXCEPTION WHILE TRYING TO SAVE OBJECT");
 			//TODO throw a specific exception
@@ -253,7 +254,7 @@ function ObjectManager() {
 			if (deebee == undefined) db.close();
 		}
 
-		return this.getFinder().getObject(type,doc);
+		return obj;
 
 	};
 	
