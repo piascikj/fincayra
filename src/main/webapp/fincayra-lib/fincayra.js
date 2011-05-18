@@ -1,6 +1,11 @@
 //This is loaded once on startup
 this.fincayra = {};
-load("includes.js");
+//Load our libraries
+load("lib.js");
+load("owl-util.js");
+load("date.js");
+load("json2.js");
+load("db/uuid.js");
 
 $log().debug("User home:{}",$getProperty("user.home"));
 
@@ -89,4 +94,24 @@ $hide([$config().mailSender.templateDir]);
 $log().info("Initializing MailManager");
 $app().getMailManager().init();
 $log().info("Done Initializing MailManager");
+
+if ($config().dev) $setLogLevel({level:$log.Level.DEBUG});
+
+load("db/store.js");
+
+//Set the $load function to load from the server-js dir for application convenience
+(function() { var _l = $l; $l = $load = function(file) { _l("../application/server-js/" + file);};})();
+
+//Expose some paths to the client (default is ["css","images","js"])
+$expose($config().expose);
+
+$config().preInitDb();
+
+//Now we register the storables in the persistenceManager
+$om().initDb();
+$log().debug(JSON.stringify($om().classDefs, null, "   "));
+
+//Run the post init callback
+$log().info("Running config.postInit");
+$config().postInit();
 
