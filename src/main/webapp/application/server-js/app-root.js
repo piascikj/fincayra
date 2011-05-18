@@ -29,18 +29,13 @@ if (!$app().reloadRootScope) {
 }
 */
 
-
-//Expose some paths
-$expose(["css","images","js"]);
-
 //Create the encryptor
 var encryptor = new org.jasypt.util.password.StrongPasswordEncryptor();
 
 //Create a couple roles
 var Role = {
 	admin : 'admin',
-	user : 'user',
-	vip : 'vip'
+	user : 'user'
 };
 
 function AuthRequiredException(msg) {
@@ -54,6 +49,8 @@ function User(clone) {
 	this.extend(new Storable(clone));
 	
 	this.active = true;
+	
+	this.createDate = new Date();
 	
 	//This runs prior to Sortable.save
 	this.onSave = function() {
@@ -117,27 +114,116 @@ new User().define({
 		error:"Password must be at least 6 characters long."
 	},
 	
-	active:{type:Type.Boolean}
+	active:{type:Type.Boolean},
+	
+	createDate:{
+		required:true,
+		type:Type.Date
+	}
 });
 
 
-function Post(clone) {
+function NoteBook(clone) {
 	this.extend(new Storable(clone));
+	this.createDate = new Date();
 }; 
 	
-new Post().define({
-	text:{
-		pattern:/^.{1,10000}$/,
-		required: true,
-		error:"text can be up to 10,000 characters."
+new NoteBook().define({
+	name:{
+		unique:true,
+		pattern:/^([a-zA-Z0-9 .'-_])+$/,
+		error:"Must be letters, numbers, spaces and _ . -"
 	},
 	
-	user:{
+	owner:{
 		rel: Relationship.hasA,
 		required: true,
 		type: User
+	},
+	
+	createDate:{
+		required: true,
+		type: Type.Date
 	}
-}); 
-		
+});
+
+function Topic(clone) {
+	this.extend(new Storable(clone));
+	this.createDate = new Date();
+}
+
+new Topic().define({
+	name:{
+		unique:true,
+		pattern:/^([a-zA-Z0-9 .'-_])+$/,
+		error:"Must be letters, numbers, spaces and _ . -"
+	},
+	
+	noteBook:{
+		rel: Relationship.hasA,
+		required: true,
+		type: NoteBook
+	},
+	
+	createDate:{
+		required:true,
+		type:Type.Date
+	}
+});
+
+function Entry(clone) {
+	this.extend(new Storable(clone));
+	this.createDate = new Date();
+}
+
+new Entry().define({
+	text:{},
+	
+	topic:{
+		rel: Relationship.hasA,
+		required: true,
+		type: Topic
+	},
+	
+	createDate:{
+		required:true,
+		type:Type.Date
+	}
+});
+
+function Task(clone) {
+	this.extend(new Storable(clone));
+	this.createDate = new Date();
+}
+
+new Task().define({
+	text:{},
+	
+	entry:{
+		rel: Relationship.hasA,
+		required: true,
+		type: Entry
+	},
+	
+	createDate:{
+		required:true,
+		type:Type.Date
+	},
+	
+	dueDate:{
+		type:Type.Date
+	},
+	
+	createdBy:{
+		rel: Relationship.hasA,
+		type:User,
+		required:true
+	},
+	
+	assignedTo:{
+		rel: Relationship.hasA,
+		type:User,
+	}
+});
 //We should now create an admin
 

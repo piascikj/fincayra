@@ -29,6 +29,7 @@ var opt = {
 	name:"Fincayra",
 	errorPage:"/error",
 	store:"db/orientDB-store.js",
+	expose:["css","images","js"],
 	mailSender: {
 		host:"smtp.gmail.com",
 		port:587,

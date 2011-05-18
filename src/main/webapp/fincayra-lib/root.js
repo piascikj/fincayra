@@ -20,6 +20,10 @@ load("db/store.js");
 //Set the $load function to load from the server-js dir for application convenience
 (function() { var _l = $l; $l = $load = function(file) { _l("../application/server-js/" + file);};})();
 
+//Expose some paths to the client (default is ["css","images","js"])
+$expose($config().expose);
+
+
 $l("app-root.js");
 
 //Now we register the storables in the persistenceManager
