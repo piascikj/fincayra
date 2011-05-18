@@ -227,3 +227,89 @@ new Task().define({
 });
 //We should now create an admin
 
+function DefaultTemplates(req) {
+	this.req = req;
+};
+		
+DefaultTemplates.prototype.basic = function(config) {
+	if(config && $type(config) == "Object") {
+		//Check if ssl is required
+		if(config.requireSSL) {
+			this.req.$requireSSL();
+		}
+		 
+		//Check if auth is required and redirect
+		if (config.requireAuth) {
+			this.req.requireAuth();
+		}
+		
+		//run the before, pre-extend
+		if(config.before) config.before();
+		
+		//If widget is passed, don't use template
+		if(!this.req.$getPageParams().widget) {
+			//Grab the body of the page that is using this template
+			var body = this.req.$("body"); 
+			var head = this.req.$("head");
+			
+			this.req.$e(config.page); //Here we extend the templates html by placing it in the dom
+			
+			//config.title
+			if (config.title) this.req.$("title").html($app().name + " - " + config.title); //We set the title
+			
+			if (body) this.req.$(config.contentSelector).html(body.html()); //set the content of the template to the requested page
+			if (head) this.req.$("head").append(head.html());
+		}
+			
+	}
+};
+
+DefaultTemplates.prototype.simple = function(config) {
+	try {
+		config.page = "/templates/simple.html";
+		config.contentSelector = "#content";
+		this.basic(config);
+	} catch (e) {
+		$debug(e);
+		throw e;
+	} finally {
+		if ($app().reloadRootScope) {
+			//TODO we need to make this a side tab initiated thing
+			//$source();
+			//$debug(context.element.html());
+		}
+	}
+};
+		
+DefaultTemplates.prototype.mail = function(config) {
+	var data = context.messageData;
+	if (data.user) {
+
+		if (config.before) config.before(data);
+		
+		//Grab the body of the page that is using this template
+		var body = this.req.$("body"); 
+		
+		this.req.$e("/templates/simple.html"); //Here we extend the templates html by placing it in the dom
+		
+		if (body) this.req.$("body").append(body.html()); //set the content of the template to the requested page
+		
+		//Now that we've modified the markup, lets set up the message
+		helper = context.getMessageHelper();
+		
+		helper.setTo(data.user.email);
+		
+		if (config.subject) {
+			helper.setSubject(config.subject);
+		} else {
+			helper.setSubject($app().name);
+		}
+		
+		var d = context.element;
+		if (config.text) {
+			helper.setText(config.text, d.html());
+		} else {
+			helper.setText(d.html(), true);
+		}
+	}	
+}

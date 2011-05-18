@@ -24,9 +24,11 @@ function extend(object, oSuper) {
 	return object;
 };
 
-var opt = {
+fincayra.config = {
 	preInit:function(){},
 	postInit:function(){},
+	preInitDb:function(){},
+	onRequest:function(){},
 	dev:true,
 	allowAPIAccess:function(){return true;},
 	url:"http://localhost:8080/",
@@ -49,17 +51,17 @@ var opt = {
 }
 
 function $config(config) {
-	if (config != undefined && fincayra.config == undefined) {
-		fincayra.config = extend(opt,config);
-	} else {
-		return fincayra.config;
+	if (config != undefined) {
+		fincayra.config = extend(fincayra.config,config);
 	}
+	
+	return fincayra.config;
 }
 
 //Include the application config overides
 load("../application/config/app-config.js");
 
-$log().debug("Using Config:{}", JSON.stringify(opt, function(key, val) { return key == "password" ? "*****":val;}, "   "));
+$log().debug("Using Config:{}", JSON.stringify($config(), function(key, val) { return key == "password" ? "*****":val;}, "   "));
 
 
 //Set some system properties that are needed for xml config files
@@ -68,21 +70,21 @@ $log().info("fincayra.home={}", $app().getRootDir());
 
 //Run the pre init callback
 $log().info("Running config.preInit");
-opt.preInit();
+$config().preInit();
 
-$app().setUrl(opt.url);
-$app().setSecureUrl(opt.secureUrl);
-$app().setName(opt.name);
+$app().setUrl($config().url);
+$app().setSecureUrl($config().secureUrl);
+$app().setName($config().name);
 
 var mailSender = new org.springframework.mail.javamail.JavaMailSenderImpl();
-mailSender.setHost(opt.mailSender.host);
-mailSender.setPort(opt.mailSender.port);
-mailSender.setUsername(opt.mailSender.userName);
-mailSender.setPassword(opt.mailSender.password);
+mailSender.setHost($config().mailSender.host);
+mailSender.setPort($config().mailSender.port);
+mailSender.setUsername($config().mailSender.userName);
+mailSender.setPassword($config().mailSender.password);
 var props = new java.util.Properties();
-props.setProperty("mail.smtp.auth", opt.mailSender.auth);
-props.setProperty("mail.smtp.starttls.enable", opt.mailSender.starttls);
-props.setProperty("mail.smtp.timeout", opt.mailSender.timeout);
+props.setProperty("mail.smtp.auth", $config().mailSender.auth);
+props.setProperty("mail.smtp.starttls.enable", $config().mailSender.starttls);
+props.setProperty("mail.smtp.timeout", $config().mailSender.timeout);
 mailSender.setJavaMailProperties(props);
 
 var mailManager = new  org.innobuilt.fincayra.mail.MailManager();

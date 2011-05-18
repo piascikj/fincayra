@@ -21,8 +21,8 @@ try {
 	//Put all request functions in scope
 	for (prop in req) {scope[prop] = req[prop];}
 
-	//load the custom, every request js
-	$l("app-request.js");
+	//Run the onRequest callback
+	$config().onRequest(scope);
 	
 	//Here we execute the requested page
 	$log().debug("Loading requested page: {}", $getCurrentPage());
