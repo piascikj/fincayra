@@ -155,10 +155,16 @@ function ObjectManager() {
 								}
 							}
 							
-							//TODO allow for other indexes through index attribute on classdef
+							//Set the index
 							if (property.unique) {
 								oProperty.createIndex(OProperty.INDEX_TYPE.UNIQUE);
-							}
+							} else if (property.index) {
+								if (property.type == Type.String) {
+									oProperty.createIndex(OProperty.INDEX_TYPE.FULLTEXT);
+								} else {
+									oProperty.createIndex(OProperty.INDEX_TYPE.NOTUNIQUE);
+								}
+							} 
 							
 							if (property.required) {
 								oProperty.setMandatory(true).setNotNull(true);

@@ -130,7 +130,7 @@ function NoteBook(clone) {
 	
 new NoteBook().define({
 	name:{
-		unique:true,
+		index:true,
 		pattern:/^([a-zA-Z0-9 .'-_])+$/,
 		error:"Must be letters, numbers, spaces and _ . -"
 	},
@@ -154,7 +154,7 @@ function Topic(clone) {
 
 new Topic().define({
 	name:{
-		unique:true,
+		index:true,
 		pattern:/^([a-zA-Z0-9 .'-_])+$/,
 		error:"Must be letters, numbers, spaces and _ . -"
 	},
@@ -177,7 +177,9 @@ function Entry(clone) {
 }
 
 new Entry().define({
-	text:{},
+	text:{
+		index: true
+	},
 	
 	topic:{
 		rel: Relationship.hasA,
@@ -197,7 +199,9 @@ function Task(clone) {
 }
 
 new Task().define({
-	text:{},
+	text:{
+		index: true
+	},
 	
 	entry:{
 		rel: Relationship.hasA,
@@ -226,6 +230,17 @@ new Task().define({
 	}
 });
 //We should now create an admin
+
+//This function will redirect to login if user is not authenticated
+//Upon authentication you will be recirected to your detination
+Request.prototype.requireAuth = function() {
+	if(!this.$getSession().user) {
+		//set the destination so we can take them there after login
+		this.$getSession().destination = this.$getRequestURL();
+		var redirectTo = $app().secureUrl + "login";
+		this.$redirect(redirectTo);
+	}
+};
 
 function DefaultTemplates(req) {
 	this.req = req;
@@ -282,7 +297,7 @@ DefaultTemplates.prototype.simple = function(config) {
 };
 		
 DefaultTemplates.prototype.mail = function(config) {
-	var data = context.messageData;
+	var data = this.req.context.messageData;
 	if (data.user) {
 
 		if (config.before) config.before(data);
@@ -295,7 +310,7 @@ DefaultTemplates.prototype.mail = function(config) {
 		if (body) this.req.$("body").append(body.html()); //set the content of the template to the requested page
 		
 		//Now that we've modified the markup, lets set up the message
-		helper = context.getMessageHelper();
+		helper = this.req.context.getMessageHelper();
 		
 		helper.setTo(data.user.email);
 		
@@ -305,7 +320,7 @@ DefaultTemplates.prototype.mail = function(config) {
 			helper.setSubject($app().name);
 		}
 		
-		var d = context.element;
+		var d = this.req.context.element;
 		if (config.text) {
 			helper.setText(config.text, d.html());
 		} else {

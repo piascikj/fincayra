@@ -333,6 +333,10 @@ Storable.prototype.define = function(classDef) {
 			if (!propSpecs.hasOwnProperty("unique")) {
 				propSpecs.unique = false;
 			}
+			
+			if (!propSpecs.hasOwnProperty("index")) {
+				propSpecs.index = false;
+			}
 
 		}}
 		$om().addStorable(this, classDef);
