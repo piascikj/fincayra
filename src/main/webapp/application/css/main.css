@@ -6,6 +6,7 @@ body{
 	margin: 0px;
 	padding: 0px;
 	text-align: center;
+	height: 100%;
 }
 
 p, h1, form, button{border:0; margin:0; padding:0;}
@@ -13,7 +14,6 @@ p, h1, form, button{border:0; margin:0; padding:0;}
 div.container {
 	margin-left: auto;
 	margin-right: auto;
-	width: 950px;
 	text-align: left;
 }
 
@@ -58,9 +58,10 @@ div.error {
 }
 
 #header {
+	padding-left:8px;
+	padding-right:8px;
 	background:#075385;
 	height:50px;
-	width:100%;
 	color:#EBF4FB;
 	font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, Arial, sans-serif;
 	font-size: 12px;
@@ -83,8 +84,13 @@ div.error {
 	padding: 14px 0;
 }
 
+#content {
+	height: 90%;
+	width: 100%;
+}
+
 #page {
-	padding: 20px 0;
+	margin: 8px;
 }
 
 #inner {
@@ -190,4 +196,14 @@ font-weight:bold;
 
 .stylized button:hover {
 	cursor:pointer;
+}
+
+.thin button{
+	margin: 5px 5px 5px 0;
+	height: 24px;
+}
+
+.thin input {
+	margin: 5px 5px 5px 10px;
+	height: 24px;
 }

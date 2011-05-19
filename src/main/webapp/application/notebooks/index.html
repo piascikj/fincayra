@@ -1,0 +1,40 @@
+<html xmlns="http://www.w3.org/2000/xhtml">
+<head>
+<script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
+<script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#notebooks-app').layout({
+			defaults : {
+				applyDefaultStyles: true
+			},
+			
+			west : {
+				slidable: true
+			}
+		});
+		
+		$('#new_notebook').click(function(event) {
+			$('#new_notebook_form').show();
+			return false;
+		});
+    });
+</script>
+</head>
+<body>
+	</script>
+	<div id="notebooks-app" style="height:100%">
+		<div class="ui-layout-center">
+			<div id="new_notebook_form" class="stylized thin" style="display:none;">
+				<form>
+					<input type="text" name="name" id="name" autocomplete="off"/>
+					<button>OK</button><button>Cancel</button>
+				</form>
+			</div>
+		</div>
+		<div class="ui-layout-west">
+			<a href="#" id="new_notebook">Create a new NoteBook...</a>
+		</div>
+	</div>
+</body>
+</html>
