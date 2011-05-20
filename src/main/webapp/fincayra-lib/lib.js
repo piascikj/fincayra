@@ -531,6 +531,24 @@ Object.prototype.extend = function(oSuper) {
 	return this;
 };
 
+Function.prototype.extend = function( parentClassOrObject ){ 
+	if ( parentClassOrObject.constructor == Function ) 
+	{ 
+		//Normal Inheritance 
+		this.prototype = new parentClassOrObject;
+		this.prototype.constructor = this;
+		this.prototype.parent = parentClassOrObject.prototype;
+	} 
+	else 
+	{ 
+		//Pure Virtual Inheritance 
+		this.prototype = parentClassOrObject;
+		this.prototype.constructor = this;
+		this.prototype.parent = parentClassOrObject;
+	} 
+	return this;
+}
+
 /*
 	class: String
 	
@@ -1251,7 +1269,7 @@ Request.prototype.$getHttpSession = function() {
 };
 
 /*
-	func: $getSession
+	Function: $getSession
 	
 	Returns:
 	The fincayra session
@@ -1261,11 +1279,11 @@ Request.prototype.$getSession = function() {
 };
 
 /*
- func:$getAuthSession
- To accomidate session fixation this will invalidate the current session and dole out a new one 
- 
- Returns:
- A new fincayra session
+	Function: $getAuthSession
+	To accomidate session fixation this will invalidate the current session and dole out a new one 
+
+	Returns:
+	A new fincayra session
  */
 Request.prototype.$getAuthSession = function() {
 	return this.sessionMgr.getAuthSession();

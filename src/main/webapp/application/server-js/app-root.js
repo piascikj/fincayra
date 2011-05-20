@@ -42,7 +42,7 @@ function AuthRequiredException(msg) {
 	this.message = "You must sign in to see this page.";
 	this.extend(new Exception(msg));
 }
-		
+
 //Define some model objects
 function User(clone) {
 	
@@ -51,39 +51,40 @@ function User(clone) {
 	this.active = true;
 	
 	this.createDate = new Date();
-	
-	//This runs prior to Sortable.save
-	this.onSave = function() {
-		//If the user has an id, it has previously been saved
-		//If user.reset is true we have modified the password
-		if (!this.id || this.reset) {
-			this.password = encryptor.encryptPassword(this.password);
-		}
-	};
-
-	this.authenticate = function(inputPassword) {
-		return (encryptor.checkPassword(inputPassword, this.password) && this.active);
-	};
-	
-	this.getResetString = function() {
-		//Set the reset string and timestamp
-		this.resetTimeStamp = new Date().getTime();
-		
-		this.resetString = encryptor.encryptPassword(this.email);
-		
-		return this.resetString;
-	};
-	
-	this.resetOK = function(resetString) {
-		var now = new Date();
-		var resetTime = new Date(this.resetTimeStamp);
-		var minutes = 10;
-		var allowedTime = new Number(1000 * 60 * minutes);
-		var limit = new Number(resetTime.getTime() + allowedTime);
-		//does resetStrings match and are we under the allowedTime
-		return (encryptor.checkPassword(this.email, resetString) && (now.getTime() < limit));
-	};		
 }; 
+
+//This runs prior to Sortable.save
+User.prototype.onSave = function() {
+	//If the user has an id, it has previously been saved
+	//If user.reset is true we have modified the password
+	if (!this.id || this.reset) {
+		this.password = encryptor.encryptPassword(this.password);
+	}
+};
+
+User.prototype.getResetString = function() {
+	//Set the reset string and timestamp
+	this.resetTimeStamp = new Date().getTime();
+	
+	this.resetString = encryptor.encryptPassword(this.email);
+	
+	return this.resetString;
+};
+
+User.prototype.resetOK = function(resetString) {
+	var now = new Date();
+	var resetTime = new Date(this.resetTimeStamp);
+	var minutes = 10;
+	var allowedTime = new Number(1000 * 60 * minutes);
+	var limit = new Number(resetTime.getTime() + allowedTime);
+	//does resetStrings match and are we under the allowedTime
+	return (encryptor.checkPassword(this.email, resetString) && (now.getTime() < limit));
+};		
+
+User.prototype.authenticate = function(inputPassword) {
+	return (encryptor.checkPassword(inputPassword, this.password) && this.active);
+};
+
 
 new User().define({
 	name:{
@@ -127,7 +128,7 @@ function NoteBook(clone) {
 	this.extend(new Storable(clone));
 	this.createDate = new Date();
 }; 
-	
+
 new NoteBook().define({
 	name:{
 		index:true,

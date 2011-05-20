@@ -63,7 +63,7 @@ function UnableToDeleteObjectError(e) {
 	this.extend(e || {});
 	this.name = "UnableToDeleteObjectError";
 }
-UnableToDeleteObjectError.prototype = new Error();
+UnableToDeleteObjectError.extend(Error);
 
 /*
 	Class: ObjectNotFoundError
@@ -79,7 +79,7 @@ function ObjectNotFoundError(e) {
 	this.extend(e || {});
 	this.name = "ObjectNotFound";
 }
-ObjectNotFoundError.prototype = new Error();
+ObjectNotFoundError.extend(Error);
 
 /*
 	Class: ValidationException
@@ -95,7 +95,7 @@ function ValidationException(violations) {
 	this.violations = violations;
 	this.name = "ValidationException";
 }
-ValidationException.prototype = new Error();
+ValidationException.extend(Error);
 
 /*
 	Class: SessionUnavailableException
@@ -111,7 +111,7 @@ function SessionUnavailableException(e) {
 	this.extend(e || {});
 	this.name = "SessionUnavailableException";
 }
-SessionUnavailableException.prototype = new Error();
+SessionUnavailableException.extend(Error);
 
 /*
 	Class: NotStorableException
@@ -127,7 +127,7 @@ function NotStorableException(e) {
 	this.extend(e || {});
 	this.name="NotStorableException";
 }
-NotStorableException.prototype = new Error();
+NotStorableException.extend(Error);
 /*
 	Class: UniqueValueConstraintException
 	This Exception is thrown when the PersistenceManager encounters a unique value constraint violation
@@ -142,7 +142,7 @@ function UniqueValueConstraintException(e) {
 	this.extend(e||{});
 	this.name="UniqueValueConstraintException";
 }
-UniqueValueConstraintException.prototype = new Error();
+UniqueValueConstraintException.extend(Error);
 /*
 	Property: field
 	The Storable field for which the Exception was thrown
@@ -163,7 +163,7 @@ function CascadingException(e) {
 	this.extend(e || {});
 	this.name="CascadingException";
 }
-CascadingException.prototype = new Error();
+CascadingException.extend(Error);
 /*
 	Class: CustomClassException
 	This Exception is thrown when the PersistenceManager is expecting a simple type, but encounters a custom class.
@@ -178,7 +178,7 @@ function CustomClassException(e) {
 	this.extend(e || {});
 	this.name="CustomClassException";
 }
-CustomClassException.prototype = new Error();
+CustomClassException.extend(Error);
 /*
 	Class: RequiredPropertyException
 	This Exception is thrown when a required property is not set.
@@ -193,7 +193,7 @@ function RequiredPropertyException(e) {
 	this.extend(e || {});
 	this.name="RequiredPropertyException";
 }
-RequiredPropertyException.prototype = new Error();
+RequiredPropertyException.extend(Error);
 
 function ObjectManager() {}
 
@@ -219,16 +219,67 @@ ObjectManager.prototype.initDb = function() {
 	//Initializae the db
 }
 
-//Load the objectManager impl file
-load($config().store);
-
+/*
+	Prop: classDefs
+	The Storable objects class definitions
+*/
+ObjectManager.prototype.classDefs = {};
 
 /*
-	class: ObjectManager
-	Responsible for managing object persistence
-	
+	Prop: constructors
+	The Storable constructors.  Used to provide the types to this scope.
 */
-ObjectManager.instance = new ObjectManager();
+ObjectManager.prototype.constructors = "";
+
+/*
+	Func: addStorable
+	Add a Storable object and it's definition to the list of persistent objects.  
+	This should not be called directly.  It happens automatically when storable 
+	is extended, and defined.
+
+	Parameters:
+		storable - The storable object to add
+		classDef - The storable classDef
+	
+	See <Storable>
+*/
+ObjectManager.prototype.addStorable = function(storable, classDef) {
+	var type = $type(storable);
+	this.classDefs[type] = classDef;
+};
+
+ObjectManager.prototype.cast = function(obj, type) {
+	var js = "new " + type + "();";
+	obj = eval(js).extend(obj);
+	
+	return obj;
+}
+/*
+	Func: hasStorable
+	Check if a storable is defined in this ObjectManager.
+	
+	Parameters:
+		storable - The storable to check
+*/
+ObjectManager.prototype.hasStorable = function(storable) {
+	return this.classDefs.hasOwnProperty($type(storable));
+};
+
+ObjectManager.prototype.getClassDef = function(type) {
+	return this.classDefs[type];
+};
+
+ObjectManager.prototype.isStorable = function(obj) {
+	return this.classDefs[$type(obj)];
+};
+
+//TODO prototype the rest of the ObjectManager methods
+
+//Load the objectManager impl file
+//load($config().store);
+
+
+ObjectManager.instance;
 
 /*
 	Function: $om
@@ -236,42 +287,83 @@ ObjectManager.instance = new ObjectManager();
 */
 function $om() {return ObjectManager.instance;}
 
+
+/*
+	Class: APIAccessException
+	This Exception is thrown when the user is not allowed access to the api.
+	
+	Extends: 
+	<Exception>
+	
+	Parameters:
+		e - The wrapped error
+*/ 
+function APIAccessException(e) {
+	this.extend(e || {});
+	this.name="CustomClassException";
+}
+APIAccessException.extend(Error);
+
+/*
+	Class: APIAccessHandler
+	Extend this class and overide it's methods for allowing or dissallowing access to api functions
+*/
+function APIAccessHandler() {}
+
+APIAccessHandler.prototype.onPut = function(storables, session) {}
+APIAccessHandler.prototype.onPost = function(storables, session) {}
+APIAccessHandler.prototype.onGet = function(storables, session) {}
+APIAccessHandler.prototype.onDelete = function(storables, session) {}
+
+ 
 /*
 	Class: Storable
 	The super class of all persistent objects.  You create a storable by extending the Storable object like this.
-	>	function User(clone) {
-	>		this.extend(new Storable(clone));
-	>		this.define({
-	>			name:{
-	>				pattern:/^([a-zA-Z .'-_]){1,40}$/,
-	>				error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
-	>			},
-	>			
-	>			email:{
-	>				unique:true,
-	>				pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
-	>				error:"Email address is not valid"
-	>			}, 
-	>			
-	>			nickname:{
-	>				unique:true,
-	>				pattern:/^([a-zA-Z0-9_.-])+$/,
-	>				error:"Must be letters, numbers and _ . -"},
-	>			
-	>			role:{},
-	>			
-	>			resetTimeStamp:{type:Type.Long},
-	>			
-	>			resetString:{unique:true},
-	>			
-	>			password:{
-	>				pattern:/^.*(?=.{6,}).*$/,
-	>				error:"Password must be at least 6 characters long."
-	>			},
-	>			
-	>			active:{type:Type.Boolean}
-	>		});
-	>	} new User();
+	
+	(start code)
+
+	function User(clone) {
+		this.extend(new Storable(clone));
+	} 
+	new User().define({
+		_api:{
+			accessHandler : new APIAccessHandler() //Put your own access handler class here to allow/disallow access on each api call
+		},
+		
+		_model:{
+			name:{
+				pattern:/^([a-zA-Z .'-_]){1,40}$/,
+				error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
+			},
+			
+			email:{
+				unique:true,
+				pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
+				error:"Email address is not valid"
+			}, 
+			
+			nickname:{
+				unique:true,
+				pattern:/^([a-zA-Z0-9_.-])+$/,
+				error:"Must be letters, numbers and _ . -"},
+			
+			role:{},
+			
+			resetTimeStamp:{type:Type.Long},
+			
+			resetString:{unique:true},
+			
+			password:{
+				pattern:/^.*(?=.{6,}).*$/,
+				error:"Password must be at least 6 characters long."
+			},
+			
+			active:{type:Type.Boolean}
+		}
+	});
+		
+	(end)
+
 	
 		*IMPORTANT* Calling the constructor is a must!!!
 	
@@ -283,7 +375,7 @@ function $om() {return ObjectManager.instance;}
 function Storable(clone) {
 	//make a copy
 	if (clone) this.extend(clone);
-};
+}
 
 /*
 	Func: define
@@ -294,17 +386,26 @@ function Storable(clone) {
 		classDef - The classDef object has one property for each of the classes properties.
 			Each property contains the following attributes.
 			
-			* rel - The type of relationship.  See <Relationship>.  This is for properties of custom types only.  If the type is in <Type>, we do not need to specify this.
+			* rel - The type of relationship.  See <Relationship>.  This is for properties that are complex types only.  If the type is in <Type>, we do not need to specify this.
 			* type - The Type of the property value.  Default is String, or you can use a custom type, but see <Type> for other valid values.
 				If a custom type is used, just specify the function name.  For example if specifying the type in the previous example use...
 				>{type:MyObject}
 			* unique - (Optional) true if property is unique for all records of this type. Default is false.  If this is set to true, this property can be used as a lookup key in <findByProperty>
+			* index - (Optional) should this field be indexed for faster retrieval and search
 			* required - (Optional) true if the property is required.  Default is false.
 			* pattern - (Optional) A regualr expression to validate against when <validate> is called
 			* error - (Optional) An error message for failed validation
 */
 Storable.prototype.define = function(classDef) {
 	if (!$om().hasStorable(this)) {
+		
+		var apiOpt;
+		//for backward compatability we will check for the _model attribute, but use the parm if it's not there
+		if (classDef.hasOwnProperty("_model")) {
+			if (classDef.hasOwnProperty("_api")) apiOpt = classDef._api; 
+			classDef = classDef._model;
+		}
+		
 		classDef.uuid = {
 			required: true,
 			unique: true

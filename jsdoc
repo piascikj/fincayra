@@ -14,19 +14,21 @@ mkdir -p $dict
 
 ~/NaturalDocs/NaturalDocs -r -i src/main/webapp/fincayra-lib -o FramedHTML $docs -p $dict
 
-git checkout gh-pages
+if [ $0 = push ]
+then
+	git checkout gh-pages
 
-rm -rf docs/*
+	rm -rf docs/*
 
-cp -r $docs docs
+	cp -r $docs docs
 
-git add docs 
+	git add docs 
 
-git commit -a -m "jsdocs generated"
+	git commit -a -m "jsdocs generated"
 
-git push origin gh-pages
+	git push origin gh-pages
 
-git checkout master
+	git checkout master
 
-rm -rf docs
-
+	rm -rf docs
+fi

@@ -67,10 +67,25 @@
 					result = $om().getAll(object,offset,limit);
 				}
 			} else if (Methods.PUT == method) {
-				//First instantiate the object
-				result = info.requestObject;
-				var object = $getInstance(objName,info.requestObject);
-				result = object.save();
+				ro = info.requestObject;
+				if (ro instanceof Array) {
+					result = [];
+					var tmp = "uuid = '{}'";
+					var qry = "";
+					$om().txn(function(db) {
+						ro.each(function(o,i) {
+							var object = $getInstance(objName,o);
+							object = object.save(db);
+							qry += tmp.tokenize(object.uuid);
+							if (i < ro.length-1) qry += " or ";
+						});
+					});
+					result = $getInstance(objName).search(qry + " order by @rid");
+				} else {
+					//First instantiate the object
+					var object = $getInstance(objName,ro);
+					result = object.save();
+				}
 				
 			} else if (Methods.POST == method) {
 				//First instantiate the object

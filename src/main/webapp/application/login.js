@@ -44,7 +44,7 @@
 				}
 				
 				if (auth) {
-					$getSession().user = user;
+					$getAuthSession().user = user;
 					//Keep session alive for 1hr
 					$setMaxInactiveInterval(3600);
 				} else {

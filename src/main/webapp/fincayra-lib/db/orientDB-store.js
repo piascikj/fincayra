@@ -13,18 +13,6 @@
  *   limitations under the License.
  */
 
-
-ObjectManager.prototype.nextOffset = function(seed) {
-	$log().debug("seed:{}", seed);
-	var regex = /^(\d+\:)(\d+)$/;
-	if (regex.test(seed)) {
-		var pieces = regex.exec(seed);
-		return pieces[1] + (new Number(pieces[2]) + 1);
-	}
-	
-	return null;
-}
-
 var orientDB = {};
 orientDB.packages = new JavaImporter(
 	com.orientechnologies.orient.server,
@@ -45,54 +33,11 @@ with(orientDB.packages) {
 	orientDB.Type.Long=OType.LONG;
 }
 
-function ObjectManager() {
+function OrientDBObjectManager() {
 	var manager = this;
 	
 	this.server;
 	
-	/*
-		Prop: classDefs
-		The Storable objects class definitions
-	*/
-	this.classDefs = {};
-	
-	/*
-		Prop: constructors
-		The Storable constructors.  Used to provide the types to this scope.
-	*/
-	this.constructors = "";
-	
-	/*
-		Func: addStorable
-		Add a Storable object and it's definition to the list of persistent objects.  
-		This should not be called directly.  It happens automatically when storable 
-		is extended, and defined.
-	
-		Parameters:
-			storable - The storable object to add
-			classDef - The storable classDef
-		
-		See <Storable>
-	*/
-	this.addStorable = function(storable, classDef) {
-		var type = $type(storable);
-		manager.classDefs[type] = classDef;
-		
-		
-		//$log().debug("classDef:{}", JSON.stringify(classDef, null, "   "));
-		manager.constructors += storable.constructor.toString();
-		
-		//Create the sql2 prefix
-		//manager.sql2Prefix[type] = " SELECT * FROM [{}] AS {}".tokenize(nodeTypeName, type); 
-	};
-	
-	this.cast = function(obj, type) {
-		var js = manager.constructors + "\nnew " + type + "();";
-		//$log().debug("EVALUATING JS:{}",js);
-		obj = eval(js).extend(obj);
-		
-		return obj;
-	}
 	
 	this.initDb = function() {
 		var path = $app().getRootDir() + "/fincayra-lib/db/config/orientdb-server.xml";
@@ -198,25 +143,6 @@ function ObjectManager() {
 		return db;
 	};
 	
-	/*
-		Func: hasStorable
-		Check if a storable is defined in this ObjectManager.
-		
-		Parameters:
-			storable - The storable to check
-	*/
-	this.hasStorable = function(storable) {
-		return manager.classDefs.hasOwnProperty($type(storable));
-	};
-	
-	this.getClassDef = function(type) {
-		return manager.classDefs[type];
-	};
-
-	this.isStorable = function(obj) {
-		return manager.classDefs[$type(obj)];
-	};
-	
 	this.txn = function(transact) {
 		var db = this.openDB();
 		var failed;
@@ -243,6 +169,7 @@ function ObjectManager() {
 		if(!manager.isStorable(obj)) throw new NotStorableException();
 		var type = $type(obj);
 		var db = deebee || this.openDB();
+		var saved;
 		try {
 			//validate
 			var valResult = obj.validate();
@@ -251,7 +178,7 @@ function ObjectManager() {
 			//save
 			var doc = this.saveObject(db,obj,false);
 			doc.save();
-			obj = this.getFinder().getObject(type,doc);
+			saved = this.getFinder().getObject(type,doc);
 		} catch (e) {
 			$log().error("CAUGHT EXCEPTION WHILE TRYING TO SAVE OBJECT");
 			//TODO throw a specific exception
@@ -260,7 +187,7 @@ function ObjectManager() {
 			if (deebee == undefined) db.close();
 		}
 
-		return obj;
+		return saved;
 
 	};
 	
@@ -497,9 +424,7 @@ function ObjectManager() {
 		
 		this.getObject = function(type, doc) {
 			var classDef = manager.getClassDef(type);
-			var js = manager.constructors + "\nnew " + type + "();";
-			//$log().debug("EVALUATING JS:{}",js);
-			var obj = eval(js);
+			var obj = manager.cast({}, type);
 			obj.id = new String(doc.getIdentity().toString()).replace(/^\#/,"");
 			//put the object and the id in the index
 			finder.index[obj.id] = obj;
@@ -666,3 +591,18 @@ function ObjectManager() {
 		
 	};
 }
+
+
+OrientDBObjectManager.prototype.nextOffset = function(seed) {
+	$log().debug("seed:{}", seed);
+	var regex = /^(\d+\:)(\d+)$/;
+	if (regex.test(seed)) {
+		var pieces = regex.exec(seed);
+		return pieces[1] + (new Number(pieces[2]) + 1);
+	}
+	
+	return null;
+}
+
+OrientDBObjectManager.extend(ObjectManager);
+ObjectManager.instance = new OrientDBObjectManager();

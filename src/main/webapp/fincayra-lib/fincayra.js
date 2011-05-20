@@ -107,6 +107,8 @@ load("db/store.js");
 //Expose some paths to the client (default is ["css","images","js"])
 $expose($config().expose);
 
+load($config().store);
+
 $config().preInitDb();
 
 //Now we register the storables in the persistenceManager
