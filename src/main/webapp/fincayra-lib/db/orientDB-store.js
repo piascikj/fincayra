@@ -38,7 +38,6 @@ function OrientDBObjectManager() {
 	
 	this.server;
 	
-	
 	this.initDb = function() {
 		var path = $app().getRootDir() + "/fincayra-lib/db/config/orientdb-server.xml";
 		var conf = new java.io.File(path);
@@ -177,8 +176,15 @@ function OrientDBObjectManager() {
 
 			//save
 			var doc = this.saveObject(db,obj,false);
-			doc.save();
-			saved = this.getFinder().getObject(type,doc);
+			db.save(doc);
+			$log().debug("******************* DONE SAVING DOC*********************");
+			$log().debug(doc.toJSON("rid,version,class,indent:6"));
+			//saved = this.getFinder().getObject(type,doc);
+			saved = obj;
+			$log().debug("******************* DONE GETTING OBJECT FROM DOC*********************");
+			$log().debug(doc.toJSON("rid,version,class,indent:6"));
+			
+			
 		} catch (e) {
 			$log().error("CAUGHT EXCEPTION WHILE TRYING TO SAVE OBJECT");
 			//TODO throw a specific exception
@@ -198,6 +204,7 @@ function OrientDBObjectManager() {
 			
 			var type = $type(obj);
 			var classDef = manager.getClassDef(type);
+			var existing = false;
 
 			//First check if this node already exists in repository
 			//Every doc has a @rid property
@@ -209,6 +216,7 @@ function OrientDBObjectManager() {
 						return rid;
 					} else {
 						doc = results.get(0);
+						if (doc.containsField("uuid")) existing = true;
 					}
 					$log().debug("FOUND EXISTING DOC:" + doc.getIdentity());
 				}
@@ -225,37 +233,40 @@ function OrientDBObjectManager() {
 				//Set the nodes properties
 				$log().debug(JSON.stringify(classDef));
 				//we only save the properties defined in the classDef
-				for (var prop in classDef) { if (classDef.hasOwnProperty(prop)) {
-					var propSpec = classDef[prop];
-					var rel = propSpec.rel;
-					var propType = propSpec.type;
-					
-					//Throw an exception if the property is undefined but required
-					if (propSpec.required && obj[prop] == undefined) throw new RequiredPropertyException(type + "." + prop + " required");
-					if (obj[prop] != undefined) {
-						$log().debug("SAVING PROPERTY: " + prop + " TYPE: " + $type(obj[prop]) + " REL:" + rel + " PROPTYPE:" + propType + " VALUE: " + obj[prop]);
-					
-						if (Type[propType]) {
-							doc.field(prop, manager.toJava(obj[prop], type));
-						} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
-							$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
-							var propDoc = manager.saveObject(db, manager.cast(obj[prop],propType), true);
-							doc.field(prop, propDoc);
-						} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-							var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);;
-							obj[prop].each(function(val, i) {
-								$log().debug("SETTING hasMany or ownsMany PROPERTY " + prop + "|" + propType);
-								var propDoc = manager.saveObject(db, manager.cast(val,propType), true);
-								values[i] = propDoc;
-							});
-							doc.field(prop, values);
-							
-						} else {
-							throw new Error("Relationship not defined");
+				for (var prop in classDef) {
+					if (prop == "uuid" && existing) continue;
+					if (classDef.hasOwnProperty(prop)) {
+						var propSpec = classDef[prop];
+						var rel = propSpec.rel;
+						var propType = propSpec.type;
+						
+						//Throw an exception if the property is undefined but required
+						if (propSpec.required && obj[prop] == undefined) throw new RequiredPropertyException(type + "." + prop + " required");
+						if (obj[prop] != undefined) {
+							$log().debug("SAVING PROPERTY: " + prop + " TYPE: " + $type(obj[prop]) + " REL:" + rel + " PROPTYPE:" + propType + " VALUE: " + obj[prop]);
+						
+							if (Type[propType]) {
+								doc.field(prop, manager.toJava(obj[prop], type));
+							} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
+								$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
+								var propDoc = manager.saveObject(db, manager.cast(obj[prop],propType), true);
+								doc.field(prop, propDoc);
+							} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
+								var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);;
+								obj[prop].each(function(val, i) {
+									$log().debug("SETTING hasMany or ownsMany PROPERTY " + prop + "|" + propType);
+									var propDoc = manager.saveObject(db, manager.cast(val,propType), true);
+									values[i] = propDoc;
+								});
+								doc.field(prop, values);
+								
+							} else {
+								throw new Error("Relationship not defined");
+							}
 						}
 					}
 				}
-			}}
+			}
 			
 		}
 		return doc;

@@ -88,12 +88,29 @@
 				}
 				
 			} else if (Methods.POST == method) {
-				//First instantiate the object
-				result = info.requestObject;
-				var object = $getInstance(objName,info.requestObject);
-				object = object.findById().extend(object);
-				result = object.save();
+				ro = info.requestObject;
+				if (ro instanceof Array) {
+					result = [];
+					var tmp = "uuid = '{}'";
+					var qry = "";
+					$om().txn(function(db) {
+						ro.each(function(o,i) {
+							var object = $getInstance(objName,o);
+							object = object.findById(db).extend(object);
+							object = object.save(db);
+							qry += tmp.tokenize(object.uuid);
+							if (i < ro.length-1) qry += " or ";
+						});
+					});
+					result = $getInstance(objName).search(qry + " order by @rid");
+				} else {
+					//First instantiate the object
+					var object = $getInstance(objName,ro);
+					object = object.findById().extend(object);
+					result = object.save();
+				}
 			} else if (Methods.DELETE == method) {
+				//TODO if objectId contains commas delete a series of objects
 				var object = $getInstance(objName,{id:info.objectId});
 				result = object.remove();
 			}
@@ -101,7 +118,7 @@
 		}
 	}
 	$log().debug("info:{}".tokenize(info));
-	$log().debug("result:{}".tokenize(result));
+	$log().debug("result:\n{}".tokenize(JSON.stringify(result, null, "   ")));
 	//Show the default
 	if (result == undefined) result = info;
 	if (info.htmlRequest) {

@@ -19,5 +19,6 @@
     <properties>
         <entry name="cache.static" value="false"/>
         <entry name="log.level" value="fine"/>
+        <entry name="mvrbtree.lazyUpdates" value="0"/>
     </properties>
 </orient-server>

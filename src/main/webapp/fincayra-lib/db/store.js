@@ -195,6 +195,7 @@ function RequiredPropertyException(e) {
 }
 RequiredPropertyException.extend(Error);
 
+//TODO Document
 function ObjectManager() {}
 
 ObjectManager.prototype.txn = function(transact) {
@@ -211,10 +212,6 @@ ObjectManager.prototype.txn = function(transact) {
 ObjectManager.prototype.nextOffset = function() {
 }
 
-ObjectManager.prototype.addStorable = function(storable, classDef) {
-	//Add a storable stpe to the object manager
-}
-
 ObjectManager.prototype.initDb = function() {
 	//Initializae the db
 }
@@ -225,11 +222,6 @@ ObjectManager.prototype.initDb = function() {
 */
 ObjectManager.prototype.classDefs = {};
 
-/*
-	Prop: constructors
-	The Storable constructors.  Used to provide the types to this scope.
-*/
-ObjectManager.prototype.constructors = "";
 
 /*
 	Func: addStorable
