@@ -24,7 +24,8 @@
 		classDefs:$om().classDefs,
 		constructors:$om().constructors,
 		htmlRequest:(new String($getRequestURI())).match(htmlRegex) != null,
-		requestObject:params
+		requestObject:params,
+		method:$getMethod()
 	};
 
 	if (info.htmlRequest) info.extraPath = info.extraPath.replace(htmlRegex, "");
@@ -36,6 +37,8 @@
 		var objName = pathAry[0];
 		info.objName = objName;
 		
+		$config().allowAPIAccess(info);
+		
 		if (info.classDefs[objName] == undefined) {
 			info.validObject = false;
 		} else {
@@ -44,7 +47,7 @@
 			var id = (pathAry.length > 1)?pathAry[1]:undefined;
 			info.objectId = id; 
 			
-			var method = $getMethod();
+			var method = info.method;
 			//Now check for method
 			if (Methods.GET == method) {
 				var object = $getInstance(objName);

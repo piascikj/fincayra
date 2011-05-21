@@ -85,6 +85,14 @@ User.prototype.authenticate = function(inputPassword) {
 	return (encryptor.checkPassword(inputPassword, this.password) && this.active);
 };
 
+User.prototype.toJSON = function(key) {
+	if (key == "owner" || key == "user") {
+		return this.extend({password:undefined,email:undefined,role:undefined});
+	} 
+	
+	return this;
+};
+
 
 new User().define({
 	name:{

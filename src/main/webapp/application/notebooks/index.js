@@ -21,11 +21,9 @@
 
 	//Extend the Simple template - it only needs a title
 	Templates.simple({
-		requireSSL : true,
 		requireAuth : true,
 		title : "NoteBooks",
 		
 		before : function() {}
 	});
-	 
 })();

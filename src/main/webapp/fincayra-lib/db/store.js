@@ -585,12 +585,7 @@ Storable.prototype.findById = function(s) {
 	return $om().findById(this, this.id,s);
 };
 
-Storable.prototype.lock = function(s, timeout) {
-	return $om().lock(this.id, s, timeout);
+Storable.prototype.json = function(replacer, space) {
+	return JSON.stringify(this, rep, space);
 };
-
-Storable.prototype.unlock = function(s) {
-	return $om().lock(this.id, s);
-};
-
 //-------------------------------------------------------------------------------------------------

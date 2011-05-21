@@ -22,10 +22,20 @@ function Simple () {
 		signNav.append($href({page:"register", text:"Register", ssl:true}));
 		signNav.append($href({page:"login", text:"Sign In", ssl:true}));
 	} else {
+		var user = $getSession().user;
 		$setMaxInactiveInterval(60 * 45);
-		signNav.append("<span style='padding-right:10px'>" + $getSession().user.email + "</span>");
+		
+		var pageVars = {
+			user : user,
+			getNoteBooks : "/api/NoteBook?qry=" + encodeURIComponent("owner.uuid = '{}'".tokenize(user.uuid))
+		};
+		
+		$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
+
+		signNav.append("<span style='padding-right:10px'>" + user.email + "</span>");
 		signNav.append($href({page:"account",text:"Account"}));
 		signNav.append($href({page:"logout",text:"Logout"}));
+
 	}
 
 	//this should go away when in prod

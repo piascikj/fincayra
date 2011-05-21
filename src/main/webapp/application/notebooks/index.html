@@ -18,6 +18,20 @@
 			$('#new_notebook_form').show();
 			return false;
 		});
+		
+		$.getJSON(fincayra.getNoteBooks,function(data) {
+		  var items = [];
+
+		  $.each(data.results, function(key, val) {
+			items.push('<li id="' + val.uuid + '">' + val.name + '</li>');
+		  });
+
+		  $('<ul/>', {
+			'class': 'my-new-list',
+			html: items.join('')
+		  }).appendTo('#notebook_list');
+		});		
+		
     });
 </script>
 </head>
@@ -34,6 +48,8 @@
 		</div>
 		<div class="ui-layout-west">
 			<a href="#" id="new_notebook">Create a new NoteBook...</a>
+			<div id="notebook_list">
+			</div>
 		</div>
 	</div>
 </body>

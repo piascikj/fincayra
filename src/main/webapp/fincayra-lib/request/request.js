@@ -28,7 +28,7 @@ try {
 	$log().debug("Loading requested page: {}", $getCurrentPage());
 	var currentPage = $getCurrentPage();
 	$log().debug("RequestURI:{}",$getRequestURI());
-	if ($getRequestURI().match(/^\/api/) && $config().allowAPIAccess) {
+	if ($getRequestURI().match(/^\/api/)) {
 		$setCurrentPage("/api.js");
 		$executePage($app().mergeEngine.jsDir + "/pages/api.js");
 	} else if (currentPage != null) {
