@@ -1,5 +1,6 @@
 <html xmlns="http://www.w3.org/2000/xhtml">
 <head>
+<link rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.13.custom.css" type="text/css"/>
 <style>
 	li {
 		color:blue; 
@@ -23,7 +24,9 @@
 		});
 		
 		$('#new_notebook').click(function(event) {
-			$('#new_notebook_form').show();
+			$('#notebook_name_box').show();
+			$('#notebook_name').hide();
+			$('#notebook_name_form').show();
 			return false;
 		});
 		
@@ -32,15 +35,32 @@
 			var items = [];
 
 			$.each(data.results, function(key, val) {
-				items.push('<li id="' + val.uuid + '" class="notebook-link">' + val.name + '</li>');
+			    items.push('<h5><a href="#" id="{}">{}</a></h5><div>First content</div>'.tokenize(val.uuid,val.name));
 			});
 
-			$('<ul/>', {
-				html: items.join('')
-			}).appendTo('#notebook_list');
+			$('#notebook_list').append(items.join(''));
+
+			$('#notebook_list').accordion();
 
 			$('.notebook-link').click(function() {
-				alert($(this).attr("id"));
+				$('#notebook_name_form').hide();
+				$('#notebook_name_box').show();
+				//get the clicked notebook
+				var uuid = $(this).attr("id");
+				$.getJSON(fincayra.getNoteBookByUuid.tokenize(uuid),function(data) {
+					fincayra.noteBook = data.results[0];
+					$('#notebook_name').html(fincayra.noteBook.name).show();
+				});
+				
+				//alert($(this).attr("id"));
+				return false;
+			});
+			
+			$('#notebook_name').click(function() {
+				$('#notebook_name_box').show();
+				$('#notebook_name').hide();
+				$('#notebook_name_edit').val(fincayra.noteBook.name);
+				$('#notebook_name_form').show();
 				return false;
 			});
 		});		
@@ -53,11 +73,12 @@
 	</script>
 	<div id="notebooks-app" style="height:100%">
 		<div class="ui-layout-center">
-			<div id="new_notebook_form" class="stylized thin" style="display:none;">
-				<form>
-					<input type="text" name="name" id="name" autocomplete="off"/>
+			<div id="notebook_name_box" class="stylized thin" style="display:none;">
+				<form id="notebook_name_form" style="display:none;">
+					<input type="text" name="name" id="notebook_name_edit" autocomplete="off"/>
 					<button>OK</button><button>Cancel</button>
 				</form>
+				<p id="notebook_name" style="display:none;"></p>
 			</div>
 		</div>
 		<div class="ui-layout-west">

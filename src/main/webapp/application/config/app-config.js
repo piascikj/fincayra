@@ -10,7 +10,7 @@
 			req.Templates = new DefaultTemplates(req);
 		},
 		
-		name:"Fincayra2"
+		name:"Fincayra"
 	});
 
 	var userConfig = $getProperty("user.home") + "/.fincayra/app-config.js";

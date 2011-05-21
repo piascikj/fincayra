@@ -198,9 +198,21 @@ font-weight:bold;
 	cursor:pointer;
 }
 
+.thin {
+	height: 34px;
+}
+
+.thin p{
+	margin: 5px 5px 5px 10px;
+	height: 24px;
+	border-bottom:none;
+	padding-bottom:0;
+}
+
 .thin button{
 	margin: 5px 5px 5px 0;
 	height: 24px;
+	line-height: 24px;
 }
 
 .thin input {

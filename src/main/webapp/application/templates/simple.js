@@ -26,8 +26,7 @@ function Simple () {
 		$setMaxInactiveInterval(60 * 45);
 		
 		var pageVars = {
-			user : user,
-			getNoteBooks : "/api/NoteBook?qry=" + encodeURIComponent("owner.uuid = '{}'".tokenize(user.uuid))
+			user : user
 		};
 		
 		$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
