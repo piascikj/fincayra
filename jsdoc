@@ -14,7 +14,7 @@ mkdir -p $dict
 
 ~/NaturalDocs/NaturalDocs -r -i src/main/webapp/fincayra-lib -o FramedHTML $docs -p $dict
 
-if [ $0 = push ]
+if [ "$1" = "push" ]
 then
 	git checkout gh-pages
 
