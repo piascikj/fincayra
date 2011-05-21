@@ -1,5 +1,13 @@
 <html xmlns="http://www.w3.org/2000/xhtml">
 <head>
+<style>
+	li {
+		color:blue; 
+		margin:5px; 
+		cursor:pointer;
+		list-style: none;
+	}
+</style>
 <script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
 <script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
 <script>
@@ -19,19 +27,25 @@
 			return false;
 		});
 		
+		//Get the notebook data
 		$.getJSON(fincayra.getNoteBooks,function(data) {
-		  var items = [];
+			var items = [];
 
-		  $.each(data.results, function(key, val) {
-			items.push('<li id="' + val.uuid + '">' + val.name + '</li>');
-		  });
+			$.each(data.results, function(key, val) {
+				items.push('<li id="' + val.uuid + '" class="notebook-link">' + val.name + '</li>');
+			});
 
-		  $('<ul/>', {
-			'class': 'my-new-list',
-			html: items.join('')
-		  }).appendTo('#notebook_list');
+			$('<ul/>', {
+				html: items.join('')
+			}).appendTo('#notebook_list');
+
+			$('.notebook-link').click(function() {
+				alert($(this).attr("id"));
+				return false;
+			});
 		});		
 		
+
     });
 </script>
 </head>

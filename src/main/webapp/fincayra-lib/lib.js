@@ -1214,19 +1214,19 @@ Request.prototype.$setVal = function(object, name) {
 };
 
 /*
-	Function: $appendScript
+	Func: $appendScript
 	
-	Appends a script element to the matched element
+		Appends a script element to the matched element
 	
 	Parameters:
+
 		selector - The selector to match in the current document
 		js - The javascript string to put in the script element
 */
 Request.prototype.$appendScript = function(selector,js) {
 	el = this.scope.$(selector);
 	return el.append('<script language="JavaScript">{}</script>'.tokenize(js));
-}
-
+};
 
 /*
 	Func: $setVals
