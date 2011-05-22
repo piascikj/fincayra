@@ -3,6 +3,7 @@ body{
 	background: white;
 	color: #444;
 	font: normal normal normal 100%/1.4 helvetica, arial, sans-serif;
+	font-size: 12px;
 	margin: 0px;
 	padding: 0px;
 	text-align: center;
@@ -200,6 +201,7 @@ font-weight:bold;
 
 .thin {
 	height: 34px;
+	margin-bottom: 8px;
 }
 
 .thin p{
@@ -207,6 +209,12 @@ font-weight:bold;
 	height: 24px;
 	border-bottom:none;
 	padding-bottom:0;
+	padding-top:3px;
+}
+
+.thin p span {
+	float: left;
+	margin-left: 10px;
 }
 
 .thin button{

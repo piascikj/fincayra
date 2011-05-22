@@ -29,11 +29,11 @@ function Simple () {
 			user : user
 		};
 		
-		$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
-
 		signNav.append("<span style='padding-right:10px'>" + user.email + "</span>");
 		signNav.append($href({page:"account",text:"Account"}));
 		signNav.append($href({page:"logout",text:"Logout"}));
+
+		$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
 
 	}
 

@@ -30,6 +30,7 @@ fincayra.config = {
 	preInitDb:function(){},
 	onRequest:function(){},
 	dev:true,
+	fileCache:false,
 	allowAPIAccess:function(){return true;},
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
@@ -72,6 +73,10 @@ $log().info("fincayra.home={}", $app().getRootDir());
 $log().info("Running config.preInit");
 $config().preInit();
 
+//Set the FileCache
+FileCache.enable($config().fileCache);
+
+//Configure the main app
 $app().setUrl($config().url);
 $app().setSecureUrl($config().secureUrl);
 $app().setName($config().name);

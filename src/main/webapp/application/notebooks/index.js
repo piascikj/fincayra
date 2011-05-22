@@ -30,9 +30,14 @@
 	var pageVars = {
 		getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
 		getNoteBookByUuid : "/api/NoteBook?qry=uuid = '{}'",
-		getTopicByNoteBook : "/api/Topic?qry=noteBook.uuid = '{}'",
-		getEntryByTopic : "/api/Entry?qry=topic.uuid = '{}'"
+		saveNoteBook : "/api/NoteBook",
+		deleteNoteBook : "/api/NoteBook/{}",
+		getTopics : "/api/Topic?qry=noteBook.uuid = '{}'",
+		getEntrys : "/api/Entry?qry=topic.uuid = '{}'",
+		noteBooks : {}
 	};
+	
+	new NoteBook({owner:{id:user.id}}).findByProperty("owner").each(function(val) {pageVars.noteBooks[val.uuid]=val});
 	
 	$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
 

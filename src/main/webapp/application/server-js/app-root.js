@@ -87,7 +87,9 @@ User.prototype.authenticate = function(inputPassword) {
 
 User.prototype.toJSON = function(key) {
 	if (key == "owner" || key == "user") {
-		return this.extend({password:undefined,email:undefined,role:undefined});
+		var obj = {};
+		obj.extend(this);
+		return obj.extend({password:undefined,email:undefined,role:undefined});
 	} 
 	
 	return this;

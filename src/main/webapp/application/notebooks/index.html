@@ -8,81 +8,210 @@
 		cursor:pointer;
 		list-style: none;
 	}
+	
+	.new-link {
+		font-size: 11px;
+	}
+	
+	.icon-button {
+		cursor: pointer;
+	}
 </style>
 <script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
 <script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#notebooks-app').layout({
-			defaults : {
-				applyDefaultStyles: true
-			},
-			
-			west : {
-				slidable: true
-			}
-		});
+function getNoteBooks() {
+	$.getJSON(fincayra.getNoteBooks,function(data) {
+		fincayra.noteBook = undefined;
+		fincayra.noteBooks = {};
 		
-		$('#new_notebook').click(function(event) {
-			$('#notebook_name_box').show();
-			$('#notebook_name').hide();
-			$('#notebook_name_form').show();
-			return false;
+		$.each(data.results, function(key, val) {
+			fincayra.noteBooks[val.uuid] = val;
 		});
-		
-		//Get the notebook data
-		$.getJSON(fincayra.getNoteBooks,function(data) {
-			var items = [];
-
-			$.each(data.results, function(key, val) {
-			    items.push('<h5><a href="#" id="{}">{}</a></h5><div>First content</div>'.tokenize(val.uuid,val.name));
-			});
-
-			$('#notebook_list').append(items.join(''));
-
-			$('#notebook_list').accordion();
-
-			$('.notebook-link').click(function() {
-				$('#notebook_name_form').hide();
-				$('#notebook_name_box').show();
-				//get the clicked notebook
-				var uuid = $(this).attr("id");
-				$.getJSON(fincayra.getNoteBookByUuid.tokenize(uuid),function(data) {
-					fincayra.noteBook = data.results[0];
-					$('#notebook_name').html(fincayra.noteBook.name).show();
-				});
 				
-				//alert($(this).attr("id"));
-				return false;
-			});
-			
-			$('#notebook_name').click(function() {
-				$('#notebook_name_box').show();
-				$('#notebook_name').hide();
-				$('#notebook_name_edit').val(fincayra.noteBook.name);
-				$('#notebook_name_form').show();
-				return false;
-			});
-		});		
-		
+		$('#notebook_list').accordion("destroy");
 
-    });
+		$('#notebook_name_box').hide();
+		
+		displayNoteBooks();
+	});
+}
+
+function saveNoteBook(noteBook) {
+	var type = (noteBook.uuid)?"POST":"PUT";
+	$.ajax({
+		type: type,
+		url: fincayra.saveNoteBook,
+		data: JSON.stringify(noteBook),
+		success: function(data) {
+			fincayra.noteBook = data;
+			fincayra.noteBooks[data.uuid] = data;
+		},
+		dataType: 'json'
+	});
+}
+
+function getTopics(uuid) {
+	var topics = [];
+	$.getJSON(fincayra.getTopics.tokenize(uuid),function(data) {
+		$.each(data.results, function(key, val) {
+			topics.push(val);
+		});
+	});
+	return topics;
+}
+
+function displayNoteBooks() {
+	//Get the notebook data
+	var items = [];
+	$.each(fincayra.noteBooks, function(key, val) {
+		items.push('<h3><a href="#" id="{}">{}</a></h3><div></div>'.tokenize(key,val.name));
+	});
+	
+	
+	$('#notebook_list').html(items.join('')).accordion({
+		active:false,
+		header:'h3',
+		change:function(event, ui) {
+			var uuid = ui.newHeader.find('a').attr('id');
+			fincayra.noteBook = fincayra.noteBooks[uuid];
+			$('#notebook_name_form').hide();
+			$('#notebook_name_box').show();
+			$('#notebook_name').html(fincayra.noteBook.name);
+			$('#notebook_name_display').show();
+			var topics = [];
+			topics.push('<a href="#" class="new-topic new-link">Create a new Topic...</a>');
+			$.each(getTopics(uuid), function(key, val) {
+				topics.push('<h3><a href="#" id="{}">{}</a></h3><div></div>'.tokenize(key,val.name));
+			});
+			ui.newContent.html(topics.join(''));
+			
+			ui.newContent.find('.new-topic').click(function() {
+				$('#topic_name_box').show();
+				$('#topic_name').hide();
+				$('#topic_name_form').show();
+				return false;
+			});
+		},
+		autoHeight: false
+	});
+}
+	
+$(document).ready(function () {
+	$.ajaxSetup({async:false,contentType:"application/json"});
+	
+	//setup the layout
+	$('#notebooks-app').layout({
+		defaults : {
+			applyDefaultStyles: true
+		},
+		
+		west : {
+			slidable: true,
+			size: 240
+		}
+	});
+	
+	//disable submit
+	$('#notebooks-app').find('form').each(function() {
+		$(this).submit(function() {return false;});
+	});
+	
+	displayNoteBooks();
+
+	$('#new_notebook').click(function(event) {
+		fincayra.noteBook = undefined;
+		$('#notebook_name_box').show();
+		$('#notebook_name_display').hide();
+		$('#notebook_name_form').show();
+		$('#notebook_name_edit').val("New NoteBook").select().focus();
+		return false;
+	});
+	
+	$('#notebook_name').click(function() {
+		$('#notebook_name_box').show();
+		$('#notebook_name_display').hide();
+		$('#notebook_name_edit').val(fincayra.noteBook.name);
+		$('#notebook_name_form').show();
+		return false;
+	});
+	
+	$('#notebook_delete').click(function() {
+		$.ajax({
+			type: "DELETE",
+			url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
+			success: function(data) {
+				getNoteBooks();
+			},
+			dataType: 'json'
+		});		
+	});
+	
+	$('#notebook_ok').click(function() {
+		if (fincayra.noteBook) {
+			var noteBook = {};
+			$.extend(noteBook,fincayra.noteBook);
+			noteBook.name = $('#notebook_name_edit').val();
+			saveNoteBook(noteBook);
+			$('#' + noteBook.uuid).html(fincayra.noteBook.name);
+			$('#notebook_name').html(fincayra.noteBook.name);
+			$('#notebook_name_display').show();
+			$('#notebook_name_form').hide();
+		} else {
+			var noteBook = {name:$('#notebook_name_edit').val(),owner:fincayra.user};
+			saveNoteBook(noteBook);
+			var uuid = fincayra.noteBook.uuid;
+			getNoteBooks();
+			$('#notebook_list').accordion("activate",$("#" + uuid).parent());
+		}
+		return false;
+	});
+	
+	$('#notebook_cancel').click(function() {
+		$('#notebook_name').html(fincayra.noteBook.name);
+		$('#notebook_name_display').show();
+		$('#notebook_name_edit').val(fincayra.noteBook.name);
+		$('#notebook_name_form').hide();
+		return false;
+	});
+	
+
+	$('#topic_name').click(function() {
+		$('#topic_name_box').show();
+		$('#topic_name').hide();
+		$('#topic_name_edit').val(fincayra.topic.name);
+		$('#topic_name_form').show();
+		return false;
+	});
+	
+	$
+});
 </script>
 </head>
 <body>
-	</script>
+</script>
 	<div id="notebooks-app" style="height:100%">
 		<div class="ui-layout-center">
 			<div id="notebook_name_box" class="stylized thin" style="display:none;">
 				<form id="notebook_name_form" style="display:none;">
 					<input type="text" name="name" id="notebook_name_edit" autocomplete="off"/>
+					<button id="notebook_ok">OK</button><button id="notebook_cancel">Cancel</button>
+				</form>
+				<p id="notebook_name_display" style="display:none;">
+					<span id="notebook_name" title="Click to edit"></span>
+					<span id="notebook_delete" class="ui-icon ui-icon-trash icon-button" title="Delete NoteBook"></span>
+				</p>
+			</div>
+			<div id="topic_name_box" class="stylized thin" style="display:none;">
+				<form id="topic_name_form" style="display:none;">
+					<input type="text" name="name" id="topic_name_edit" autocomplete="off"/>
 					<button>OK</button><button>Cancel</button>
 				</form>
-				<p id="notebook_name" style="display:none;"></p>
+				<p id="topic_name" style="display:none;"><span class="ui-icon ui-icon-trash"></span></p>
 			</div>
 		</div>
 		<div class="ui-layout-west">
-			<a href="#" id="new_notebook">Create a new NoteBook...</a>
+			<a href="#" id="new_notebook" class="new-link">Create a new NoteBook...</a>
 			<div id="notebook_list">
 			</div>
 		</div>
