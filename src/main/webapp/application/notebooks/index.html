@@ -266,7 +266,6 @@ $(document).ready(function () {
 			topic = saveTopic(topic);
 			getNoteBooks();
 			$('#notebook_list').accordion("activate",$("#" + topic.noteBook.uuid).parent());
-			//TODO seems like the above is firing after the next line and hiding the topic
 			displayTopic(topic);
 		}
 		return false;
