@@ -33,8 +33,11 @@
 		saveNoteBook : "/api/NoteBook",
 		deleteNoteBook : "/api/NoteBook/{}",
 		getTopics : "/api/Topic?qry=noteBook.uuid = '{}'",
+		saveTopic : "/api/Topic",
+		deleteTopic : "/api/Topic/{}",
 		getEntrys : "/api/Entry?qry=topic.uuid = '{}'",
-		noteBooks : {}
+		noteBooks : {},
+		topics : {}
 	};
 	
 	new NoteBook({owner:{id:user.id}}).findByProperty("owner").each(function(val) {pageVars.noteBooks[val.uuid]=val});

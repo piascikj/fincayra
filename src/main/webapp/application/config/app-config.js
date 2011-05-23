@@ -4,6 +4,7 @@
 
 		preInitDb : function() {
 			$l("app-root.js");
+			$l("notebooks.js");
 		},
 
 		onRequest : function(req) {

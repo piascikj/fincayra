@@ -10,7 +10,16 @@
 	}
 	
 	.new-link {
-		font-size: 11px;
+		font-size: 12px;
+		color:#222;
+	}
+	
+	.controls {
+		padding-bottom: 10px;
+	}
+	
+	#notebook_list p {
+		padding-bottom: 5px;
 	}
 	
 	.icon-button {
@@ -44,21 +53,54 @@ function saveNoteBook(noteBook) {
 		url: fincayra.saveNoteBook,
 		data: JSON.stringify(noteBook),
 		success: function(data) {
-			fincayra.noteBook = data;
+			console.log(JSON.stringify(data,null,"   "));
 			fincayra.noteBooks[data.uuid] = data;
+			fincayra.noteBook = fincayra.noteBooks[data.uuid];
+			fincayra.topic = undefined;
 		},
 		dataType: 'json'
 	});
 }
 
+function saveTopic(topic) {
+	var type = (topic.uuid)?"POST":"PUT";
+	$.ajax({
+		type: type,
+		url: fincayra.saveTopic,
+		data: JSON.stringify(topic),
+		success: function(data) {
+			fincayra.topic = data;
+			fincayra.topics[topic.uuid] = data;
+		},
+		dataType: 'json'
+	});
+	
+	return fincayra.topic;
+}
+
 function getTopics(uuid) {
 	var topics = [];
+	fincayra.topics = {};
 	$.getJSON(fincayra.getTopics.tokenize(uuid),function(data) {
 		$.each(data.results, function(key, val) {
+			fincayra.topics[val.uuid] = val;
 			topics.push(val);
 		});
 	});
 	return topics;
+}
+function displayTopic(topic) {
+	fincayra.topic = topic;
+	$('#topic_name_box').show();
+	$('#topic_name').html(fincayra.topic.name);
+	$('#topic_name_display').show();
+	$('#topic_name_edit').val(fincayra.topic.name);
+	$('#topic_name_form').hide();
+	return fincayra.topic;
+}
+
+function hideTopic() {
+	$('#topic_name_box').hide();
 }
 
 function displayNoteBooks() {
@@ -72,28 +114,35 @@ function displayNoteBooks() {
 	$('#notebook_list').html(items.join('')).accordion({
 		active:false,
 		header:'h3',
-		change:function(event, ui) {
+		changestart:function(event, ui) {
 			var uuid = ui.newHeader.find('a').attr('id');
 			fincayra.noteBook = fincayra.noteBooks[uuid];
-			$('#notebook_name_form').hide();
-			$('#notebook_name_box').show();
-			$('#notebook_name').html(fincayra.noteBook.name);
-			$('#notebook_name_display').show();
-			var topics = [];
-			topics.push('<a href="#" class="new-topic new-link">Create a new Topic...</a>');
-			$.each(getTopics(uuid), function(key, val) {
-				topics.push('<h3><a href="#" id="{}">{}</a></h3><div></div>'.tokenize(key,val.name));
-			});
-			ui.newContent.html(topics.join(''));
-			
-			ui.newContent.find('.new-topic').click(function() {
-				$('#topic_name_box').show();
-				$('#topic_name').hide();
-				$('#topic_name_form').show();
-				return false;
-			});
+			if (fincayra.noteBook) {
+				hideTopic();
+				$('#notebook_name_form').hide();
+				$('#notebook_name_box').show();
+				$('#notebook_name').html(fincayra.noteBook.name);
+				$('#notebook_name_display').show();
+				
+				var topics = [];
+				topics.push('<div class="controls"><a href="#" class="new-topic new-link">Create a new Topic...</a></div>');
+				$.each(getTopics(uuid), function(key, val) {
+					topics.push('<p><a href="#" id="{}" class="topic-link">{}</a></p>'.tokenize(val.uuid,val.name));
+				});
+				ui.newContent.html(topics.join(''));
+				
+				ui.newContent.find('.new-topic').click(function() {
+					fincayra.topic = undefined;
+					$('#topic_name_box').show();
+					$('#topic_name_display').hide();
+					$('#topic_name_form').show();
+					$('#topic_name_edit').val("New Topic").select().focus();
+					return false;
+				});
+			}
 		},
-		autoHeight: false
+		autoHeight: false,
+		collapsible: true
 	});
 }
 	
@@ -121,7 +170,10 @@ $(document).ready(function () {
 
 	$('#new_notebook').click(function(event) {
 		fincayra.noteBook = undefined;
+		fincayra.topic = undefined;
+		$('#notebook_list').accordion('activate', false);
 		$('#notebook_name_box').show();
+		$('#topic_name_box').hide();
 		$('#notebook_name_display').hide();
 		$('#notebook_name_form').show();
 		$('#notebook_name_edit').val("New NoteBook").select().focus();
@@ -133,6 +185,7 @@ $(document).ready(function () {
 		$('#notebook_name_display').hide();
 		$('#notebook_name_edit').val(fincayra.noteBook.name);
 		$('#notebook_name_form').show();
+		$('#notebook_name_edit').focus();
 		return false;
 	});
 	
@@ -142,6 +195,7 @@ $(document).ready(function () {
 			url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
 			success: function(data) {
 				getNoteBooks();
+				hideTopic();
 			},
 			dataType: 'json'
 		});		
@@ -160,31 +214,86 @@ $(document).ready(function () {
 		} else {
 			var noteBook = {name:$('#notebook_name_edit').val(),owner:fincayra.user};
 			saveNoteBook(noteBook);
-			var uuid = fincayra.noteBook.uuid;
+			$.extend(noteBook,fincayra.noteBook);
 			getNoteBooks();
-			$('#notebook_list').accordion("activate",$("#" + uuid).parent());
+			fincayra.noteBook = noteBook;
+			$('#notebook_list').accordion("activate",$("#" + noteBook.uuid).parent());
 		}
 		return false;
 	});
 	
 	$('#notebook_cancel').click(function() {
-		$('#notebook_name').html(fincayra.noteBook.name);
-		$('#notebook_name_display').show();
-		$('#notebook_name_edit').val(fincayra.noteBook.name);
-		$('#notebook_name_form').hide();
+		if (fincayra.noteBook) {
+			$('#notebook_name').html(fincayra.noteBook.name);
+			$('#notebook_name_display').show();
+			$('#notebook_name_edit').val(fincayra.noteBook.name);
+			$('#notebook_name_form').hide();
+		} else {
+			$('#notebook_name_box').hide();
+		}
 		return false;
 	});
 	
 
-	$('#topic_name').click(function() {
-		$('#topic_name_box').show();
-		$('#topic_name').hide();
-		$('#topic_name_edit').val(fincayra.topic.name);
-		$('#topic_name_form').show();
+	//bind click to all topics, now and in future
+	$('.topic-link').live('click',function() {
+		uuid = $(this).attr("id");
+		displayTopic(fincayra.topics[uuid]);
 		return false;
 	});
 	
-	$
+	$('#topic_name').click(function() {
+		$('#topic_name_box').show();
+		$('#topic_name_display').hide();
+		$('#topic_name_edit').val(fincayra.topic.name);
+		$('#topic_name_form').show();
+		$('#topic_name_edit').focus();
+		return false;
+	});
+
+	$('#topic_ok').click(function() {
+		if (fincayra.topic) {
+			var topic = {};
+			$.extend(topic,fincayra.topic);
+			topic.name = $('#topic_name_edit').val();
+			saveTopic(topic);
+			$('#' + topic.uuid).html(fincayra.topic.name);
+			$('#topic_name').html(fincayra.topic.name);
+			$('#topic_name_display').show();
+			$('#topic_name_form').hide();
+		} else {
+			var topic = {name:$('#topic_name_edit').val(),owner:fincayra.user,noteBook:fincayra.noteBook};
+			topic = saveTopic(topic);
+			getNoteBooks();
+			$('#notebook_list').accordion("activate",$("#" + topic.noteBook.uuid).parent());
+			//TODO seems like the above is firing after the next line and hiding the topic
+			displayTopic(topic);
+		}
+		return false;
+	});
+	
+	$('#topic_cancel').click(function() {
+		$('#topic_name').html(fincayra.topic.name);
+		$('#topic_name_display').show();
+		$('#topic_name_edit').val(fincayra.noteBook.name);
+		$('#topic_name_form').hide();
+		return false;
+	});
+	
+	$('#topic_delete').click(function() {
+		$.ajax({
+			type: "DELETE",
+			url: fincayra.deleteTopic.tokenize(fincayra.topic.id),
+			success: function(data) {
+				fincayra.topic = undefined;
+				uuid = fincayra.noteBook.uuid;
+				getNoteBooks();
+				$('#notebook_list').accordion("activate",$("#" + uuid).parent());
+				$('#topic_name_box').hide();
+			},
+			dataType: 'json'
+		});		
+	});
 });
 </script>
 </head>
@@ -205,13 +314,16 @@ $(document).ready(function () {
 			<div id="topic_name_box" class="stylized thin" style="display:none;">
 				<form id="topic_name_form" style="display:none;">
 					<input type="text" name="name" id="topic_name_edit" autocomplete="off"/>
-					<button>OK</button><button>Cancel</button>
+					<button id="topic_ok">OK</button><button id="topic_cancel">Cancel</button>
 				</form>
-				<p id="topic_name" style="display:none;"><span class="ui-icon ui-icon-trash"></span></p>
+				<p id="topic_name_display" style="display:none;">
+					<span id="topic_name" title="Click to edit"></span>
+					<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
+				</p>
 			</div>
 		</div>
 		<div class="ui-layout-west">
-			<a href="#" id="new_notebook" class="new-link">Create a new NoteBook...</a>
+			<div class="controls"><a href="#" id="new_notebook" class="new-link">Create a new NoteBook...</a></div>
 			<div id="notebook_list">
 			</div>
 		</div>

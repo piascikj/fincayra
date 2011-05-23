@@ -222,7 +222,7 @@ function OrientDBObjectManager() {
 				}
 			}
 			
-			obj.onSave();
+			obj.onSave(db);
 
 			//Looks like we'll have to create a doc
 			if (doc == null) {
@@ -523,8 +523,12 @@ function OrientDBObjectManager() {
 			try {
 				db = deebee || manager.openDB();
 				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(storable.id));
-				if (results.size() > 0) doc = results.get(0);
-				doc["delete"]();
+				if (results.size() > 0) {
+					doc = results.get(0);
+					this.onRemove(db);
+					//since delete is a key word we have to do it this way
+					doc["delete"]();
+				}
 			} catch(e) {
 				$log().debug("Swallowing Exception from findById:");
 				if ($log().isDebugEnabled()) {
