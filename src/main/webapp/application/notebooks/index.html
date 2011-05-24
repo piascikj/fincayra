@@ -1,6 +1,8 @@
 <html xmlns="http://www.w3.org/2000/xhtml">
 <head>
 <link rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.13.custom.css" type="text/css"/>
+<link rel="stylesheet" type="text/css" href="/js/markitup/skins/simple/style.css" />
+<link rel="stylesheet" type="text/css" href="/js/markitup/sets/markdown/style.css" />
 <style>
 	li {
 		color:blue; 
@@ -13,11 +15,7 @@
 		font-size: 12px;
 		color:#222;
 	}
-	
-	.controls {
-		padding-bottom: 10px;
-	}
-	
+		
 	#notebook_list p {
 		padding-bottom: 5px;
 	}
@@ -28,6 +26,8 @@
 </style>
 <script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
 <script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
+<script type="text/javascript" src="/js/markitup/jquery.markitup.js"></script>
+<script type="text/javascript" src="/js/markitup/sets/markdown/set.js"></script>
 <script>
 function getNoteBooks() {
 	$.getJSON(fincayra.getNoteBooks,function(data) {
@@ -125,7 +125,7 @@ function displayNoteBooks() {
 				$('#notebook_name_display').show();
 				
 				var topics = [];
-				topics.push('<div class="controls"><a href="#" class="new-topic new-link">Create a new Topic...</a></div>');
+				topics.push('<div class="controls stylized thin"><p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p></div>');
 				$.each(getTopics(uuid), function(key, val) {
 					topics.push('<p><a href="#" id="{}" class="topic-link">{}</a></p>'.tokenize(val.uuid,val.name));
 				});
@@ -157,7 +157,7 @@ $(document).ready(function () {
 		
 		west : {
 			slidable: true,
-			size: 240
+			size: 260
 		}
 	});
 	
@@ -293,6 +293,8 @@ $(document).ready(function () {
 			dataType: 'json'
 		});		
 	});
+	
+	 $('#markdown').markItUp(mySettings);
 });
 </script>
 </head>
@@ -318,11 +320,21 @@ $(document).ready(function () {
 				<p id="topic_name_display" style="display:none;">
 					<span id="topic_name" title="Click to edit"></span>
 					<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
+					<span id="new_entry" class="ui-icon ui-icon-script icon-button" title="Add an Entry"></span>
 				</p>
+			</div>
+			<div id="entries">
+			</div>
+			<div id="entry_editor">
+				<textarea id="markdown" cols="80" rows="20" style="width:100%;"></textarea>
 			</div>
 		</div>
 		<div class="ui-layout-west">
-			<div class="controls"><a href="#" id="new_notebook" class="new-link">Create a new NoteBook...</a></div>
+			<div class="controls" class="stylized thin">
+				<p>
+				<a href="#" id="new_notebook" class="new-link" title="Create a new NoteBook"><span id="entry_add" class="ui-icon ui-icon-note icon-button"></span>Create a new NoteBook...</a>
+				</p>
+			</div>
 			<div id="notebook_list">
 			</div>
 		</div>

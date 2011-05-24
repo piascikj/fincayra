@@ -525,7 +525,7 @@ function OrientDBObjectManager() {
 				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(storable.id));
 				if (results.size() > 0) {
 					doc = results.get(0);
-					this.onRemove(db);
+					storable.onRemove(db);
 					//since delete is a key word we have to do it this way
 					doc["delete"]();
 				}
