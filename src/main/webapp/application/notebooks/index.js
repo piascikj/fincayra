@@ -36,6 +36,7 @@
 		saveTopic : "/api/Topic",
 		deleteTopic : "/api/Topic/{}",
 		getEntrys : "/api/Entry?qry=topic.uuid = '{}'",
+		saveEntry : "/api/Entry",
 		noteBooks : {},
 		topics : {}
 	};

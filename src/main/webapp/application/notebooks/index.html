@@ -23,6 +23,13 @@
 	.icon-button {
 		cursor: pointer;
 	}
+	
+	.entry {
+		padding:5px;
+		color:#666666;
+		border:solid 2px #b7ddf2;
+		/*background:#ebf4fb;*/
+	}		
 </style>
 <script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
 <script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
@@ -76,6 +83,40 @@ function saveTopic(topic) {
 	});
 	
 	return fincayra.topic;
+}
+
+function getEntryElement(entry) {
+	var el = '<div class="entry" id="{}"></div>'.tokenize(entry.uuid);
+	return $(el).html(entry.text).data('object',entry);
+}
+
+function saveEntry() {
+	var type;
+	if (fincayra.entry.uuid) {
+		type = "POST";
+	} else {
+		type = "PUT";
+		fincayra.entry.text = $('#markdown').val();
+	}
+	fincayra.editor.detach();
+	var entry;
+	$.ajax({
+		type: type,
+		url: fincayra.saveEntry,
+		data: JSON.stringify(fincayra.entry),
+		success: function(data) {
+			entry = data;
+			var el = $('#' + data.uuid);
+			if (el.length > 0) {
+				$('#' + data.uuid).html(data.text).data('object',data).show();
+			} else {
+				$('#entries').prepend(getEntryElement(data));
+			}
+		},
+		dataType: 'json'
+	});
+	
+	return entry;
 }
 
 function getTopics(uuid) {
@@ -165,6 +206,10 @@ $(document).ready(function () {
 	$('#notebooks-app').find('form').each(function() {
 		$(this).submit(function() {return false;});
 	});
+	
+	//store the editor and detach it
+	$('#markdown').markItUp(mySettings)
+	fincayra.editor = $('#entry_editor').detach();
 	
 	displayNoteBooks();
 
@@ -294,7 +339,24 @@ $(document).ready(function () {
 		});		
 	});
 	
-	 $('#markdown').markItUp(mySettings);
+	$('#new_entry').live('click',function() {
+		fincayra.entry = {owner:fincayra.user,topic:fincayra.topic};
+		$('#entries').prepend(fincayra.editor);
+		fincayra.editor.show();
+		$('#markdown').val('').focus();
+		return false;
+	});
+	
+	$('.entry').live('click',function() {
+		fincayra.entry = $(this).data('object');
+		$(this).before(fincayra.editor);
+		$(this).hide();
+		fincayra.editor.show();
+		$('#markdown').val(fincayra.entry.text).focus();
+		return false;
+	});
+	
+	
 });
 </script>
 </head>
@@ -320,13 +382,13 @@ $(document).ready(function () {
 				<p id="topic_name_display" style="display:none;">
 					<span id="topic_name" title="Click to edit"></span>
 					<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
-					<span id="new_entry" class="ui-icon ui-icon-script icon-button" title="Add an Entry"></span>
+					<span id="new_entry" class="ui-icon ui-icon-document-b icon-button" title="Add an Entry"></span>
 				</p>
 			</div>
 			<div id="entries">
 			</div>
-			<div id="entry_editor">
-				<textarea id="markdown" cols="80" rows="20" style="width:100%;"></textarea>
+			<div id="entry_editor" style="display:none;">
+				<textarea id="markdown" rows="20" style="width:100%;"></textarea>
 			</div>
 		</div>
 		<div class="ui-layout-west">
