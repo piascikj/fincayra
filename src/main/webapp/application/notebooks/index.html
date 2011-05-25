@@ -35,6 +35,7 @@
 <script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
 <script type="text/javascript" src="/js/markitup/jquery.markitup.js"></script>
 <script type="text/javascript" src="/js/markitup/sets/markdown/set.js"></script>
+<script type="text/javascript" src="/js/showdown.js"></script>
 <script>
 function getNoteBooks() {
 	$.getJSON(fincayra.getNoteBooks,function(data) {
@@ -85,9 +86,32 @@ function saveTopic(topic) {
 	return fincayra.topic;
 }
 
-function getEntryElement(entry) {
-	var el = '<div class="entry" id="{}"></div>'.tokenize(entry.uuid);
-	return $(el).html(entry.text).data('object',entry);
+function parseMD(text) {
+	return fincayra.showdown.makeHtml(text);
+}
+
+function getEntries() {
+	fincayra.entry = undefined;
+	$.getJSON(fincayra.getEntries.tokenize(fincayra.topic.uuid),function(data) {
+		var entries = $('#entries');
+		entries.html('');
+		$.each(data.results, function(key, val) {
+			var entry = getEntryElement(val);
+			entries.append(entry);
+		});
+
+	});
+}
+
+function getEntryElement(entry,existing) {
+	var jqo;
+	if (existing) {
+		jqo = $('#' + entry.uuid);
+	} else {
+		jqo = $('<div class="entry" id="{}"></div>'.tokenize(entry.uuid));
+	}
+	var html = parseMD(entry.text);
+	return jqo.html(html).data({object:entry, html:html});;
 }
 
 function saveEntry() {
@@ -96,8 +120,8 @@ function saveEntry() {
 		type = "POST";
 	} else {
 		type = "PUT";
-		fincayra.entry.text = $('#markdown').val();
 	}
+	fincayra.entry.text = $('#markdown').val();
 	fincayra.editor.detach();
 	var entry;
 	$.ajax({
@@ -108,7 +132,7 @@ function saveEntry() {
 			entry = data;
 			var el = $('#' + data.uuid);
 			if (el.length > 0) {
-				$('#' + data.uuid).html(data.text).data('object',data).show();
+				getEntryElement(entry,true).show();
 			} else {
 				$('#entries').prepend(getEntryElement(data));
 			}
@@ -137,6 +161,7 @@ function displayTopic(topic) {
 	$('#topic_name_display').show();
 	$('#topic_name_edit').val(fincayra.topic.name);
 	$('#topic_name_form').hide();
+	getEntries();
 	return fincayra.topic;
 }
 
@@ -159,6 +184,7 @@ function displayNoteBooks() {
 			var uuid = ui.newHeader.find('a').attr('id');
 			fincayra.noteBook = fincayra.noteBooks[uuid];
 			if (fincayra.noteBook) {
+				$('#entries').html('');
 				hideTopic();
 				$('#notebook_name_form').hide();
 				$('#notebook_name_box').show();
@@ -186,8 +212,12 @@ function displayNoteBooks() {
 		collapsible: true
 	});
 }
-	
+
 $(document).ready(function () {
+	//Set up converter
+	fincayra.showdown = new Showdown.converter();
+	
+	//No asynch
 	$.ajaxSetup({async:false,contentType:"application/json"});
 	
 	//setup the layout
@@ -348,10 +378,14 @@ $(document).ready(function () {
 	});
 	
 	$('.entry').live('click',function() {
-		fincayra.entry = $(this).data('object');
+		if (fincayra.entry && fincayra.entry.uuid) {
+			$('#' + fincayra.entry.uuid).show();
+			fincayra.editor.detach();
+		}
 		$(this).before(fincayra.editor);
 		$(this).hide();
 		fincayra.editor.show();
+		fincayra.entry = $(this).data('object');
 		$('#markdown').val(fincayra.entry.text).focus();
 		return false;
 	});

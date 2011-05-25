@@ -29,13 +29,12 @@
 	
 	var pageVars = {
 		getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
-		getNoteBookByUuid : "/api/NoteBook?qry=uuid = '{}'",
 		saveNoteBook : "/api/NoteBook",
 		deleteNoteBook : "/api/NoteBook/{}",
 		getTopics : "/api/Topic?qry=noteBook.uuid = '{}'",
 		saveTopic : "/api/Topic",
 		deleteTopic : "/api/Topic/{}",
-		getEntrys : "/api/Entry?qry=topic.uuid = '{}'",
+		getEntries : "/api/Entry?qry=topic.uuid = '{}'",
 		saveEntry : "/api/Entry",
 		noteBooks : {},
 		topics : {}
