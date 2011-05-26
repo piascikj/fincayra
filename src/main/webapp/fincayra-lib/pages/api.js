@@ -87,7 +87,8 @@
 				} else {
 					//First instantiate the object
 					var object = $getInstance(objName,ro);
-					result = object.save();
+					object = object.save();
+					result = object.findByProperty("uuid");
 				}
 				
 			} else if (Methods.POST == method) {

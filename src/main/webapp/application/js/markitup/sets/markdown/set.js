@@ -21,10 +21,10 @@ mySettings = {
 		{name:'Heading 5', key:'5', openWith:'##### ', placeHolder:'Your title here...' },
 		{name:'Heading 6', key:'6', openWith:'###### ', placeHolder:'Your title here...' },
 		{separator:'---------------' },		
-		{name:'Bold', key:'b', openWith:'**', closeWith:'**'},
-		{name:'Italic', key:'i', openWith:'_', closeWith:'_'},
+		{name:'Bold', key:'B', openWith:'**', closeWith:'**'},
+		{name:'Italic', key:'I', openWith:'_', closeWith:'_'},
 		{separator:'---------------' },
-		{name:'Bulleted List',key:'B', openWith:'- ' },
+		{name:'Bulleted List',key:'O', openWith:'- ' },
 		{name:'Numeric List',key:'N', openWith:function(markItUp) {
 			return markItUp.line+'. ';
 		}},
@@ -35,7 +35,9 @@ mySettings = {
 		{name:'Quotes', openWith:'> '},
 		{name:'Code Block / Code', openWith:'(!(\t|!|`)!)', closeWith:'(!(`)!)'},
 		{separator:'---------------'},
-		{name:'Save', key: 's', call:'saveEntry', className:"save"}
+		{name:'Save', key: 'S', call:'saveEntry', className:"save"},
+		{separator:'---------------'},
+		{name:'Cancel', key: 'C', call:'cancelEntry', className:"cancel"}
 	]
 }
 

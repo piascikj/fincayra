@@ -56,3 +56,7 @@
 .markItUp .save a {
 	background-image:url(images/disk.png);
 }
+
+.markItUp .cancel a {
+	background-image:url(images/cancel.png);
+}

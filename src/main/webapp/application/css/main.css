@@ -10,7 +10,7 @@ body{
 	height: 100%;
 }
 
-p, h1, form, button{border:0; margin:0; padding:0;}
+.container p, .container h1, .container form, .container button{border:0; margin:0; padding:0;}
 
 div.container {
 	margin-left: auto;

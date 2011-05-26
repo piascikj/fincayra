@@ -4,14 +4,14 @@
 <link rel="stylesheet" type="text/css" href="/js/markitup/skins/simple/style.css" />
 <link rel="stylesheet" type="text/css" href="/js/markitup/sets/markdown/style.css" />
 <style>
-	li {
+	.container ul {
 		color:blue; 
 		margin:5px; 
 		cursor:pointer;
 		list-style: none;
 	}
 	
-	.new-link {
+	.container .new-link {
 		font-size: 12px;
 		color:#222;
 	}
@@ -29,7 +29,27 @@
 		color:#666666;
 		border:solid 2px #b7ddf2;
 		/*background:#ebf4fb;*/
-	}		
+		margin-bottom: 10px;
+	}
+	
+	.entry * {
+		color:#666666;
+	}
+	
+	.entry ul *, .entry ol *{
+		color: #666666;
+	}
+	
+	.entry ul li{
+		list-style: disc;
+		cursor:default;
+	}
+	
+	.entry ol li{
+		list-style: decimal;
+	}
+				
+	
 </style>
 <script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
 <script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
@@ -143,6 +163,17 @@ function saveEntry() {
 	return entry;
 }
 
+function cancelEntry() {
+	if (fincayra.entry.uuid) {
+		getEntryElement(fincayra.entry,true).show();
+	} else {
+		fincayra.entry = undefined;
+	}
+	
+	fincayra.editor.detach();
+
+}
+
 function getTopics(uuid) {
 	var topics = [];
 	fincayra.topics = {};
@@ -167,6 +198,8 @@ function displayTopic(topic) {
 
 function hideTopic() {
 	$('#topic_name_box').hide();
+	$('#entries').html('');
+	$('#entry_editor').detach();
 }
 
 function displayNoteBooks() {
@@ -200,6 +233,7 @@ function displayNoteBooks() {
 				
 				ui.newContent.find('.new-topic').click(function() {
 					fincayra.topic = undefined;
+					hideTopic();
 					$('#topic_name_box').show();
 					$('#topic_name_display').hide();
 					$('#topic_name_form').show();
@@ -246,6 +280,7 @@ $(document).ready(function () {
 	$('#new_notebook').click(function(event) {
 		fincayra.noteBook = undefined;
 		fincayra.topic = undefined;
+		hideTopic();
 		$('#notebook_list').accordion('activate', false);
 		$('#notebook_name_box').show();
 		$('#topic_name_box').hide();
@@ -347,10 +382,15 @@ $(document).ready(function () {
 	});
 	
 	$('#topic_cancel').click(function() {
-		$('#topic_name').html(fincayra.topic.name);
-		$('#topic_name_display').show();
-		$('#topic_name_edit').val(fincayra.noteBook.name);
-		$('#topic_name_form').hide();
+		if (fincayra.topic) {
+			$('#topic_name').html(fincayra.topic.name);
+			$('#topic_name_display').show();
+			$('#topic_name_edit').val(fincayra.noteBook.name);
+			$('#topic_name_form').hide();
+		} else {
+			hideTopic();
+		}
+
 		return false;
 	});
 	
@@ -375,6 +415,10 @@ $(document).ready(function () {
 		fincayra.editor.show();
 		$('#markdown').val('').focus();
 		return false;
+	});
+	
+	$('.entry a').live('click', function() {
+		alert('HAHA');
 	});
 	
 	$('.entry').live('click',function() {
