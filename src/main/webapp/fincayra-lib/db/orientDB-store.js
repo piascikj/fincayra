@@ -25,13 +25,15 @@ orientDB.packages = new JavaImporter(
 
 orientDB.Type = {};
 with(orientDB.packages) {
-	orientDB.Type.String = OType.STRING;
+	orientDB.Type.String=OType.STRING;
 	orientDB.Type.Boolean=OType.BOOLEAN;
 	orientDB.Type.Date=OType.DATE;
 	orientDB.Type.Decimal=OType.FLOAT;
 	orientDB.Type.Double=OType.DOUBLE;
 	orientDB.Type.Long=OType.LONG;
 }
+
+$log().debug(JSON.stringify(orientDB.Type, null, "   "));
 
 function OrientDBObjectManager() {
 	var manager = this;
@@ -246,7 +248,9 @@ function OrientDBObjectManager() {
 							$log().debug("SAVING PROPERTY: " + prop + " TYPE: " + $type(obj[prop]) + " REL:" + rel + " PROPTYPE:" + propType + " VALUE: " + obj[prop]);
 						
 							if (Type[propType]) {
-								doc.field(prop, manager.toJava(obj[prop], type));
+								var val = manager.toJava(obj[prop], propType);
+								$log().debug("Saving javascript:{} as Java:{}",[obj[prop], val]);
+								doc.field(prop, val, orientDB.Type[propType]);
 							} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
 								$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
 								var propDoc = manager.saveObject(db, manager.cast(obj[prop],propType), true);
@@ -452,7 +456,7 @@ function OrientDBObjectManager() {
 						//Doesn't matter if the rel is ownsA or hasA, ownsMany or HasMany.  We still use a node property for simple types;
 						if (rel == Relationship.ownsMany || rel == Relationship.hasMany) {
 							$log().debug("GETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + Type[propType]);
-							var field = doc.field(prop);
+							var field = doc.field(prop, orientDB.Type[propType]);
 							var propValues = [];
 							if (field != null) {
 								var values = field.toArray();
@@ -463,7 +467,7 @@ function OrientDBObjectManager() {
 							obj[prop] = propValues;
 						} else { 
 							$log().debug("GETTING SIMPLE ownsA or hasA PROPERTY " + prop + "|" + Type[propType]);
-							obj[prop] = finder.getValue(doc.field(prop), propType);
+							obj[prop] = finder.getValue(doc.field(prop, orientDB.Type[propType]), propType);
 						}
 					} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
 						$log().debug("GETTING ownsA PROPERTY " + prop + "|" + propType);
@@ -489,6 +493,10 @@ function OrientDBObjectManager() {
 		
 		//Works for Property and Value
 		this.getValue = function(val, type) {
+			if ($log().isDebugEnabled() && val != null)	$log().debug("Converting Java {} to javascript {}",[val.getClass().getName(), val]);
+			
+			if (val == null) return undefined;
+			
 			switch (type) {
 				case Type.String:
 					return new String(val);
@@ -503,7 +511,7 @@ function OrientDBObjectManager() {
 					return new Number(val);
 					break;
 				case Type.Date:
-					return new Date(val);
+					return new Date(val.getTime());
 					break;
 				case Type.Boolean:
 					return new Boolean(val);
@@ -570,7 +578,7 @@ function OrientDBObjectManager() {
 						javaType = java.lang.Float;
 						break;
 					case Type.Date:
-						javaType = java.util.Date;
+						javaType = java.lang.Date;
 						break;
 					case Type.Boolean:
 						javaType = java.lang.Boolean;
@@ -580,6 +588,7 @@ function OrientDBObjectManager() {
 				}
 				return this.toJavaArray(val, javaType, type);
 			} else {
+				if (val == undefined) return null;
 				switch (type) {
 					case Type.Long:
 						return new java.lang.Long(val);
@@ -591,7 +600,7 @@ function OrientDBObjectManager() {
 						return new java.lang.Float(val);
 						break;
 					case Type.Date:
-						return new Date(val);
+						return new java.util.Date(val.getTime());
 						break;
 					case Type.Boolean:
 						return new Boolean(val);

@@ -81,7 +81,7 @@ function saveNoteBook(noteBook) {
 		url: fincayra.saveNoteBook,
 		data: JSON.stringify(noteBook),
 		success: function(data) {
-			console.log(JSON.stringify(data,null,"   "));
+			$log("NoteBook returned from save!",data);
 			fincayra.noteBooks[data.uuid] = data;
 			fincayra.noteBook = fincayra.noteBooks[data.uuid];
 			fincayra.topic = undefined;
@@ -131,7 +131,14 @@ function getEntryElement(entry,existing) {
 		jqo = $('<div class="entry" id="{}"></div>'.tokenize(entry.uuid));
 	}
 	var html = parseMD(entry.text);
-	return jqo.html(html).data({object:entry, html:html});;
+	return jqo.html(html).data({object:entry, html:html});
+}
+
+function $log(message, obj) {
+	if (console && console.log) {
+		console.log(message);
+		if (obj) console.log(JSON.stringify(obj, null, "   "));
+	}
 }
 
 function saveEntry() {
@@ -150,11 +157,14 @@ function saveEntry() {
 		data: JSON.stringify(fincayra.entry),
 		success: function(data) {
 			entry = data;
+			$log("Entry returned from save!",entry);
 			var el = $('#' + data.uuid);
 			if (el.length > 0) {
 				getEntryElement(entry,true).show();
 			} else {
-				$('#entries').prepend(getEntryElement(data));
+				el = getEntryElement(entry);
+				$log("Appending entry", el);
+				$('#entries').prepend(el);
 			}
 		},
 		dataType: 'json'
@@ -466,7 +476,7 @@ $(document).ready(function () {
 			<div id="entries">
 			</div>
 			<div id="entry_editor" style="display:none;">
-				<textarea id="markdown" rows="20" style="width:100%;"></textarea>
+				<textarea id="markdown" rows="20" style="width:98%;"></textarea>
 			</div>
 		</div>
 		<div class="ui-layout-west">

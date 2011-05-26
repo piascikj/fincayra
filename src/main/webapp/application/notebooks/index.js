@@ -34,7 +34,7 @@
 		getTopics : "/api/Topic?qry=noteBook.uuid = '{}'",
 		saveTopic : "/api/Topic",
 		deleteTopic : "/api/Topic/{}",
-		getEntries : "/api/Entry?qry=topic.uuid = '{}'",
+		getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
 		saveEntry : "/api/Entry",
 		noteBooks : {},
 		topics : {}

@@ -51,16 +51,18 @@ function User(clone) {
 	this.active = true;
 	
 	this.createDate = new Date();
+
+	//This runs prior to Sortable.save
+	this.onSave = function() {
+		//If the user has an id, it has previously been saved
+		//If user.reset is true we have modified the password
+		if (!this.id || this.reset) {
+			this.password = encryptor.encryptPassword(this.password);
+		}
+	};
+
 }; 
 
-//This runs prior to Sortable.save
-User.prototype.onSave = function() {
-	//If the user has an id, it has previously been saved
-	//If user.reset is true we have modified the password
-	if (!this.id || this.reset) {
-		this.password = encryptor.encryptPassword(this.password);
-	}
-};
 
 User.prototype.getResetString = function() {
 	//Set the reset string and timestamp
