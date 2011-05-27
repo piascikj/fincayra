@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.13.custom.css" type="text/css"/>
 <link rel="stylesheet" type="text/css" href="/js/markitup/skins/simple/style.css" />
 <link rel="stylesheet" type="text/css" href="/js/markitup/sets/markdown/style.css" />
+<link rel="stylesheet" href="/css/zenburn.css" type="text/css"/>
 <style>
 	.container ul {
 		color:blue; 
@@ -22,6 +23,11 @@
 	
 	.icon-button {
 		cursor: pointer;
+	}
+	
+	.level1 {
+		background: #B7C9F1;
+		border-color: #D4D4D4;
 	}
 	
 	.entry {
@@ -51,6 +57,7 @@
 				
 	
 </style>
+<script type="text/javascript" src="/js/highlight.min.js"></script>
 <script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
 <script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
 <script type="text/javascript" src="/js/markitup/jquery.markitup.js"></script>
@@ -84,7 +91,7 @@ function saveNoteBook(noteBook) {
 			$log("NoteBook returned from save!",data);
 			fincayra.noteBooks[data.uuid] = data;
 			fincayra.noteBook = fincayra.noteBooks[data.uuid];
-			fincayra.topic = undefined;
+			if (type == "PUT") fincayra.topic = undefined;
 		},
 		dataType: 'json'
 	});
@@ -119,15 +126,17 @@ function getEntries() {
 			var entry = getEntryElement(val);
 			entries.append(entry);
 		});
-
+		highlight();
 	});
 }
 
-function getEntryElement(entry,existing) {
-	var jqo;
-	if (existing) {
-		jqo = $('#' + entry.uuid);
-	} else {
+function highlight() {
+	$('pre code').each(function(i, e) {hljs.highlightBlock(e, '    ')});
+}
+
+function getEntryElement(entry) {
+	var jqo = $('#' + entry.uuid);
+	if (jqo.length == 0) {
 		jqo = $('<div class="entry" id="{}"></div>'.tokenize(entry.uuid));
 	}
 	var html = parseMD(entry.text);
@@ -149,7 +158,7 @@ function saveEntry() {
 		type = "PUT";
 	}
 	fincayra.entry.text = $('#markdown').val();
-	fincayra.editor.detach();
+	//fincayra.editor.detach();
 	var entry;
 	$.ajax({
 		type: type,
@@ -159,11 +168,11 @@ function saveEntry() {
 			entry = data;
 			$log("Entry returned from save!",entry);
 			var el = $('#' + data.uuid);
-			if (el.length > 0) {
-				getEntryElement(entry,true).show();
-			} else {
+			if (el.length == 0) {
+				fincayra.entry = entry;
 				el = getEntryElement(entry);
-				$log("Appending entry", el);
+				el.css({display:"none"});
+				$log("Appending entry", el.html());
 				$('#entries').prepend(el);
 			}
 		},
@@ -173,14 +182,15 @@ function saveEntry() {
 	return entry;
 }
 
-function cancelEntry() {
-	if (fincayra.entry.uuid) {
-		getEntryElement(fincayra.entry,true).show();
+function closeEntry() {
+	if (fincayra.entry && fincayra.entry.uuid) {
+		getEntryElement(fincayra.entry).show();
 	} else {
 		fincayra.entry = undefined;
 	}
 	
 	fincayra.editor.detach();
+	highlight();
 
 }
 
@@ -420,6 +430,7 @@ $(document).ready(function () {
 	});
 	
 	$('#new_entry').live('click',function() {
+		closeEntry();
 		fincayra.entry = {owner:fincayra.user,topic:fincayra.topic};
 		$('#entries').prepend(fincayra.editor);
 		fincayra.editor.show();
@@ -427,8 +438,9 @@ $(document).ready(function () {
 		return false;
 	});
 	
-	$('.entry a').live('click', function() {
-		alert('HAHA');
+	$('.entry a').live('click', function(e) {
+		e.stopPropigation();
+		return true;
 	});
 	
 	$('.entry').live('click',function() {
@@ -452,7 +464,7 @@ $(document).ready(function () {
 </script>
 	<div id="notebooks-app" style="height:100%">
 		<div class="ui-layout-center">
-			<div id="notebook_name_box" class="stylized thin" style="display:none;">
+			<div id="notebook_name_box" class="stylized thin level1" style="display:none;">
 				<form id="notebook_name_form" style="display:none;">
 					<input type="text" name="name" id="notebook_name_edit" autocomplete="off"/>
 					<button id="notebook_ok">OK</button><button id="notebook_cancel">Cancel</button>
@@ -480,7 +492,7 @@ $(document).ready(function () {
 			</div>
 		</div>
 		<div class="ui-layout-west">
-			<div class="controls" class="stylized thin">
+			<div class="controls" class="stylized thin level1">
 				<p>
 				<a href="#" id="new_notebook" class="new-link" title="Create a new NoteBook"><span id="entry_add" class="ui-icon ui-icon-note icon-button"></span>Create a new NoteBook...</a>
 				</p>
