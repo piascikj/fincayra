@@ -28,12 +28,15 @@
 	});
 	
 	var pageVars = {
+		dev : $config().dev,
 		getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
 		saveNoteBook : "/api/NoteBook",
 		deleteNoteBook : "/api/NoteBook/{}",
 		getTopics : "/api/Topic?qry=noteBook.uuid = '{}'",
 		saveTopic : "/api/Topic",
 		deleteTopic : "/api/Topic/{}",
+		getLastTopic : "/notebooks/api/topic/getLastTopic",
+		setLastTopic : "/notebooks/api/topic/setLastTopic/{}",
 		getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
 		saveEntry : "/api/Entry",
 		noteBooks : {},

@@ -389,51 +389,54 @@ function Storable(clone) {
 			* error - (Optional) An error message for failed validation
 */
 Storable.prototype.define = function(classDef) {
-	if (!$om().hasStorable(this)) {
+	var apiOpt;
+	//for backward compatability we will check for the _model attribute, but use the parm if it's not there
+	if (classDef.hasOwnProperty("_model")) {
+		if (classDef.hasOwnProperty("_api")) apiOpt = classDef._api;
+		//TODO look for the APIAccessHandler 
+		classDef = classDef._model;
+	}
+	
+	classDef.uuid = {
+		required: true,
+		unique: true
+	};
+	
+	//Extend the classdef if it already exists
+	if ($om().getClassDef($type(this))) {
+		classDef.extend($om().getClassDef($type(this)));
+	}
+	
+	for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
+		$log().debug(prop + ":" + classDef[prop]);
+		var propSpecs = classDef[prop];
 		
-		var apiOpt;
-		//for backward compatability we will check for the _model attribute, but use the parm if it's not there
-		if (classDef.hasOwnProperty("_model")) {
-			if (classDef.hasOwnProperty("_api")) apiOpt = classDef._api; 
-			classDef = classDef._model;
+		if(!propSpecs.hasOwnProperty("rel")) {
+			propSpecs.rel = Relationship.ownsA;
 		}
 		
-		classDef.uuid = {
-			required: true,
-			unique: true
-		};
+		if(!propSpecs.hasOwnProperty("type")) {
+			propSpecs.type = Type.String;
+		} else {
+			var clazz = propSpecs.type;
+			//Check if clazz is a PropType, or a user defined class
+			if (!Type.hasOwnProperty(clazz)) {
+				//if it's user defined, replace the function reference with a string
+				propSpecs.type = $type(clazz);
+				propSpecs.clazz = clazz;
+			}
+		}
 		
-		for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
-			$log().debug(prop + ":" + classDef[prop]);
-			var propSpecs = classDef[prop];
-			
-			if(!propSpecs.hasOwnProperty("rel")) {
-				propSpecs.rel = Relationship.ownsA;
-			}
-			
-			if(!propSpecs.hasOwnProperty("type")) {
-				propSpecs.type = Type.String;
-			} else {
-				var clazz = propSpecs.type;
-				//Check if clazz is a PropType, or a user defined class
-				if (!Type.hasOwnProperty(clazz)) {
-					//if it's user defined, replace the function reference with a string
-					propSpecs.type = $type(clazz);
-					propSpecs.clazz = clazz;
-				}
-			}
-			
-			if (!propSpecs.hasOwnProperty("unique")) {
-				propSpecs.unique = false;
-			}
-			
-			if (!propSpecs.hasOwnProperty("index")) {
-				propSpecs.index = false;
-			}
+		if (!propSpecs.hasOwnProperty("unique")) {
+			propSpecs.unique = false;
+		}
+		
+		if (!propSpecs.hasOwnProperty("index")) {
+			propSpecs.index = false;
+		}
 
-		}}
-		$om().addStorable(this, classDef);
-	}
+	}}
+	$om().addStorable(this, classDef);
 };
 
 /*
@@ -587,5 +590,9 @@ Storable.prototype.findById = function(s) {
 
 Storable.prototype.json = function(replacer, space) {
 	return JSON.stringify(this, rep, space);
+};
+
+Storable.prototype.getClassDef = function() {
+	return $om().getClassDef($type(this));
 };
 //-------------------------------------------------------------------------------------------------

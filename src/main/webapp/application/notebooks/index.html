@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.13.custom.css" type="text/css"/>
 <link rel="stylesheet" type="text/css" href="/js/markitup/skins/simple/style.css" />
 <link rel="stylesheet" type="text/css" href="/js/markitup/sets/markdown/style.css" />
-<link rel="stylesheet" href="/css/zenburn.css" type="text/css"/>
+<link rel="stylesheet" href="/css/github.css" type="text/css"/>
 <style>
 	.container ul {
 		color:blue; 
@@ -32,26 +32,26 @@
 	
 	.entry {
 		padding:5px;
-		color:#666666;
+		color:#444;
 		border:solid 2px #b7ddf2;
 		/*background:#ebf4fb;*/
 		margin-bottom: 10px;
 	}
 	
 	.entry * {
-		color:#666666;
+		color:#444;
 	}
 	
 	.entry ul *, .entry ol *{
-		color: #666666;
+		color: #444;
 	}
 	
-	.entry ul li{
+	.entry ul {
 		list-style: disc;
 		cursor:default;
 	}
 	
-	.entry ol li{
+	.entry ol {
 		list-style: decimal;
 	}
 				
@@ -144,7 +144,7 @@ function getEntryElement(entry) {
 }
 
 function $log(message, obj) {
-	if (console && console.log) {
+	if (fincayra.dev && console && console.log) {
 		console.log(message);
 		if (obj) console.log(JSON.stringify(obj, null, "   "));
 	}
@@ -206,6 +206,7 @@ function getTopics(uuid) {
 	return topics;
 }
 function displayTopic(topic) {
+	$.getJSON(fincayra.setLastTopic.tokenize(topic.id));
 	fincayra.topic = topic;
 	$('#topic_name_box').show();
 	$('#topic_name').html(fincayra.topic.name);
@@ -267,6 +268,12 @@ function displayNoteBooks() {
 	});
 }
 
+function displayNoteBook(noteBook) {
+	fincayra.noteBook = noteBook;
+	$('#notebook_list').accordion("activate",$("#" + noteBook.uuid).parent());
+};
+
+
 $(document).ready(function () {
 	//Set up converter
 	fincayra.showdown = new Showdown.converter();
@@ -295,8 +302,10 @@ $(document).ready(function () {
 	$('#markdown').markItUp(mySettings)
 	fincayra.editor = $('#entry_editor').detach();
 	
+	//display the notebooks
 	displayNoteBooks();
 
+	//event handlers
 	$('#new_notebook').click(function(event) {
 		fincayra.noteBook = undefined;
 		fincayra.topic = undefined;
@@ -346,8 +355,7 @@ $(document).ready(function () {
 			saveNoteBook(noteBook);
 			$.extend(noteBook,fincayra.noteBook);
 			getNoteBooks();
-			fincayra.noteBook = noteBook;
-			$('#notebook_list').accordion("activate",$("#" + noteBook.uuid).parent());
+			displayNoteBook(noteBook);
 		}
 		return false;
 	});
@@ -443,7 +451,7 @@ $(document).ready(function () {
 		return true;
 	});
 	
-	$('.entry').live('click',function() {
+	$('.entry').live('dblclick',function() {
 		if (fincayra.entry && fincayra.entry.uuid) {
 			$('#' + fincayra.entry.uuid).show();
 			fincayra.editor.detach();
@@ -456,7 +464,15 @@ $(document).ready(function () {
 		return false;
 	});
 	
-	
+	//show the lastTopic
+	$.getJSON(fincayra.getLastTopic,function(data) {
+		var topic = data.topic;
+		if (topic) {
+			$log("Display last topic: ", topic);
+			displayNoteBook(topic.noteBook);
+			displayTopic(topic);
+		}
+	});
 });
 </script>
 </head>

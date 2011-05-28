@@ -106,3 +106,11 @@ new Task().define({
 		type:User,
 	}
 });
+
+//Extend user
+new User().define({
+	lastTopic : {
+		type:Topic,
+		rel: Relationship.hasA
+	}
+});

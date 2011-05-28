@@ -19,8 +19,8 @@ function Simple () {
 	var signNav = $("#sign_nav");
 
 	if (!$getSession().user || $getSession().user == null) {
-		signNav.append($href({page:"register", text:"Register", ssl:true}));
-		signNav.append($href({page:"login", text:"Sign In", ssl:true}));
+		signNav.append($href({page:"register", text:"REGISTER", ssl:true}));
+		signNav.append($href({page:"login", text:"SIGN IN", ssl:true}));
 	} else {
 		var user = $getSession().user;
 		$setMaxInactiveInterval(60 * 45);
@@ -30,8 +30,8 @@ function Simple () {
 		};
 		
 		signNav.append("<span style='padding-right:10px'>" + user.email + "</span>");
-		signNav.append($href({page:"account",text:"Account"}));
-		signNav.append($href({page:"logout",text:"Logout"}));
+		signNav.append($href({page:"account",text:"ACCOUNT"}));
+		signNav.append($href({page:"logout",text:"SIGN OUT"}));
 
 		$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
 
