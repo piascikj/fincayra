@@ -237,7 +237,7 @@ function OrientDBObjectManager() {
 				//we only save the properties defined in the classDef
 				for (var prop in classDef) {
 					if (prop == "uuid" && existing) continue;
-					if (classDef.hasOwnProperty(prop)) {
+					if (classDef.hasOwnProperty(prop) && typeof classDef[prop] != 'function') {
 						var propSpec = classDef[prop];
 						var rel = propSpec.rel;
 						var propType = propSpec.type;

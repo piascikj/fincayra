@@ -407,8 +407,8 @@ Storable.prototype.define = function(classDef) {
 		classDef.extend($om().getClassDef($type(this)));
 	}
 	
-	for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
-		$log().debug(prop + ":" + classDef[prop]);
+	for (prop in classDef) {if (classDef.hasOwnProperty(prop) && typeof classDef[prop] != 'function') {
+		$log().debug(prop + ":" + typeof classDef[prop] + ":" + classDef[prop]);
 		var propSpecs = classDef[prop];
 		
 		if(!propSpecs.hasOwnProperty("rel")) {
@@ -589,7 +589,7 @@ Storable.prototype.findById = function(s) {
 };
 
 Storable.prototype.json = function(replacer, space) {
-	return JSON.stringify(this, rep, space);
+	return JSON.stringify(this, replacer, space);
 };
 
 Storable.prototype.getClassDef = function() {
