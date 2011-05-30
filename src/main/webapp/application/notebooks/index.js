@@ -39,6 +39,7 @@
 		setLastTopic : "/notebooks/api/topic/setLastTopic/{}",
 		getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
 		saveEntry : "/api/Entry",
+		deleteEntry : "/api/Entry/{}",
 		noteBooks : {},
 		topics : {}
 	};

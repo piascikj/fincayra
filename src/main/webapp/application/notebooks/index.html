@@ -38,22 +38,34 @@
 		margin-bottom: 10px;
 	}
 	
-	.entry * {
+	.entry-body * {
 		color:#444;
 	}
 	
-	.entry ul *, .entry ol *{
+	.entry-body ul *, .entry ol *{
 		color: #444;
 	}
 	
-	.entry ul {
+	.entry-body ul {
 		list-style: disc;
 		cursor:default;
 	}
 	
-	.entry ol {
+	.entry-body ol {
 		list-style: decimal;
 	}
+	
+	.entry-header {
+		border-bottom: 1px solid #D4D4D4;
+		height: 20px;
+		margin: 0px 0px 4px 0px;
+	}
+	
+	.date {
+		float:right;
+		font-size: 10px;
+	}
+	
 				
 	
 </style>
@@ -137,14 +149,15 @@ function highlight() {
 function getEntryElement(entry) {
 	var jqo = $('#' + entry.uuid);
 	if (jqo.length == 0) {
-		jqo = $('<div class="entry" id="{}"></div>'.tokenize(entry.uuid));
+		jqo = $('<div class="entry" id="{}"><div class="entry-header"><span class="date">{}</span></span><span id="entry_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Entry"></span></div><div class="entry-body"></div></div>'.tokenize(entry.uuid, new Date(entry.createDate).format("EE MMM d, yyyy H:mm a")));
 	}
 	var html = parseMD(entry.text);
-	return jqo.html(html).data({object:entry, html:html});
+	jqo.find('.entry-body').html(html);
+	return jqo.data({object:entry, html:html});
 }
 
 function $log(message, obj) {
-	if (fincayra.dev && console && console.log) {
+	if (fincayra.dev && window.console) {
 		console.log(message);
 		if (obj) console.log(JSON.stringify(obj, null, "   "));
 	}
@@ -274,6 +287,28 @@ function displayNoteBook(noteBook) {
 };
 
 
+function confirmDelete(title, message, okCallback) {
+	var confirm = $("#dialog_confirm").attr("title", title);
+	$("#confirm_message").html(message);
+	confirm.dialog({
+		resizable: false,
+		height:160,
+		width:400,
+		modal: true,
+		buttons: {
+			OK: function() {
+				okCallback();
+				$( this ).dialog( "close" );
+				$( this ).dialog( "destroy" );
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+				$( this ).dialog( "destroy" );
+			}
+		}
+	});	
+};
+
 $(document).ready(function () {
 	//Set up converter
 	fincayra.showdown = new Showdown.converter();
@@ -329,14 +364,17 @@ $(document).ready(function () {
 	});
 	
 	$('#notebook_delete').click(function() {
-		$.ajax({
-			type: "DELETE",
-			url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
-			success: function(data) {
-				getNoteBooks();
-				hideTopic();
-			},
-			dataType: 'json'
+		confirmDelete("Delete NoteBook", 'Do you realy want to delete "{}"?'.tokenize(fincayra.noteBook.name),
+		function() {
+			$.ajax({
+				type: "DELETE",
+				url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
+				success: function(data) {
+					getNoteBooks();
+					hideTopic();
+				},
+				dataType: 'json'
+			});
 		});		
 	});
 	
@@ -423,17 +461,20 @@ $(document).ready(function () {
 	});
 	
 	$('#topic_delete').click(function() {
-		$.ajax({
-			type: "DELETE",
-			url: fincayra.deleteTopic.tokenize(fincayra.topic.id),
-			success: function(data) {
-				fincayra.topic = undefined;
-				uuid = fincayra.noteBook.uuid;
-				getNoteBooks();
-				$('#notebook_list').accordion("activate",$("#" + uuid).parent());
-				$('#topic_name_box').hide();
-			},
-			dataType: 'json'
+		confirmDelete("Delete Topic", 'Do you realy want to delete "{}"?'.tokenize(fincayra.topic.name),
+		function() {
+			$.ajax({
+				type: "DELETE",
+				url: fincayra.deleteTopic.tokenize(fincayra.topic.id),
+				success: function(data) {
+					fincayra.topic = undefined;
+					uuid = fincayra.noteBook.uuid;
+					getNoteBooks();
+					$('#notebook_list').accordion("activate",$("#" + uuid).parent());
+					$('#topic_name_box').hide();
+				},
+				dataType: 'json'
+			});
 		});		
 	});
 	
@@ -446,6 +487,22 @@ $(document).ready(function () {
 		return false;
 	});
 	
+	$('#entry_delete').live("click", function() {
+		var el = $(this).parents(".entry");
+		var entryId = el.data("object").id;
+		confirmDelete("Delete Entry", 'Do you realy want to delete this Entry?',
+		function() {
+			$.ajax({
+				type: "DELETE",
+				url: fincayra.deleteEntry.tokenize(entryId),
+				success: function(data) {
+					el.remove();
+				},
+				dataType: 'json'
+			});
+		});		
+	});
+
 	$('.entry a').live('click', function(e) {
 		e.stopPropigation();
 		return true;
@@ -477,7 +534,9 @@ $(document).ready(function () {
 </script>
 </head>
 <body>
-</script>
+	<div id="dialog_confirm" title="Delete Item" style="display:none;">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 0 10px 0;"></span><span id="confirm_message">This item will be permanently deleted and cannot be recovered. Are you sure?</span></p>
+	</div>
 	<div id="notebooks-app" style="height:100%">
 		<div class="ui-layout-center">
 			<div id="notebook_name_box" class="stylized thin level1" style="display:none;">
@@ -498,7 +557,7 @@ $(document).ready(function () {
 				<p id="topic_name_display" style="display:none;">
 					<span id="topic_name" title="Click to edit"></span>
 					<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
-					<span id="new_entry" class="ui-icon ui-icon-document-b icon-button" title="Add an Entry"></span>
+					<span id="new_entry" class="ui-icon ui-icon-document icon-button" title="Add an Entry"></span>
 				</p>
 			</div>
 			<div id="entries">
