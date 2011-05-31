@@ -51,8 +51,17 @@
 		cursor:default;
 	}
 	
+	.entry-body ul ul {
+		list-style-type: circle;
+		cursor:default;
+	}	
+	
 	.entry-body ol {
 		list-style: decimal;
+	}
+	
+	.entry-body ol ol {
+		list-style: lower-alpha;
 	}
 	
 	.entry-header {
@@ -335,7 +344,9 @@ $(document).ready(function () {
 	});
 	
 	//store the editor and detach it
-	$('#markdown').markItUp(mySettings)
+	var markDownEditor = $('#markdown');
+	markDownEditor.markItUp(mySettings);
+	markDownEditor.live("dblclick", closeEntry);
 	fincayra.editor = $('#entry_editor').detach();
 	
 	//display the notebooks
