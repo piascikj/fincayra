@@ -46,12 +46,12 @@ function AuthRequiredException(msg) {
 //Define some model objects
 function User(clone) {
 	
-	this.extend(new Storable(clone));
-	
 	this.active = true;
 	
 	this.createDate = new Date();
 
+	this.extend(new Storable(clone));
+	
 	//This runs prior to Sortable.save
 	this.onSave = function() {
 		//If the user has an id, it has previously been saved

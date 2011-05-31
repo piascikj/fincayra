@@ -168,6 +168,7 @@ function OrientDBObjectManager() {
 	 */
 	this.save = function(obj, deebee) {
 		if(!manager.isStorable(obj)) throw new NotStorableException();
+		$log().debug("Preparing to save object:{}",obj.json());
 		var type = $type(obj);
 		var db = deebee || this.openDB();
 		var saved;
@@ -600,6 +601,9 @@ function OrientDBObjectManager() {
 						return new java.lang.Float(val);
 						break;
 					case Type.Date:
+						if (!val instanceof Date) {
+							val = new Date(val); 
+						}
 						return new java.util.Date(val.getTime());
 						break;
 					case Type.Boolean:

@@ -749,7 +749,17 @@ Request.prototype.$getPageParams = function(checkJson) {
 		} else if (checkJson && (this.$getMethod() == Methods.POST || this.$getMethod() == Methods.PUT)) {
 			var req = this.$getRequestBody();
 			$log().debug("$getPageParams requestBody={}", req);
-			if (req != "") obj = JSON.parse(req);
+			if (req != "") obj = JSON.parse(req,function (key, value) {
+                var a;
+                if (typeof value === 'string') {
+                    a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+                    if (a) {
+						var dt = new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+                        return dt;
+                    }
+                }
+                return value;
+            });
 		}
 		
 		this.params = obj;

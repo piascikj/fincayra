@@ -1,8 +1,8 @@
 
 
 function NoteBook(clone) {
-	this.extend(new Storable(clone));
 	this.createDate = new Date();
+	this.extend(new Storable(clone));
 };
 
 new NoteBook().define({
@@ -25,8 +25,8 @@ new NoteBook().define({
 });
 
 function Topic(clone) {
-	this.extend(new Storable(clone));
 	this.createDate = new Date();
+	this.extend(new Storable(clone));
 }
 
 new Topic().define({
@@ -49,8 +49,8 @@ new Topic().define({
 });
 
 function Entry(clone) {
-	this.extend(new Storable(clone));
 	this.createDate = new Date();
+	this.extend(new Storable(clone));
 }
 
 new Entry().define({
@@ -71,8 +71,8 @@ new Entry().define({
 });
 
 function Task(clone) {
-	this.extend(new Storable(clone));
 	this.createDate = new Date();
+	this.extend(new Storable(clone));
 }
 
 new Task().define({

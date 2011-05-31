@@ -315,6 +315,8 @@ APIAccessHandler.prototype.onDelete = function(storables, session) {}
 	(start code)
 
 	function User(clone) {
+		//Be sure to place defaults ahead of the extend
+		this.active = true;
 		this.extend(new Storable(clone));
 	} 
 	new User().define({

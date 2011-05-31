@@ -149,7 +149,7 @@ function highlight() {
 function getEntryElement(entry) {
 	var jqo = $('#' + entry.uuid);
 	if (jqo.length == 0) {
-		jqo = $('<div class="entry" id="{}"><div class="entry-header"><span class="date">{}</span></span><span id="entry_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Entry"></span></div><div class="entry-body"></div></div>'.tokenize(entry.uuid, new Date(entry.createDate).format("EE MMM d, yyyy H:mm a")));
+		jqo = $('<div class="entry" id="{}"><div class="entry-header"><span class="date">{}</span></span><span id="entry_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Entry"></span></div><div class="entry-body"></div></div>'.tokenize(entry.uuid, new Date(entry.createDate).format("EE MMM d, yyyy h:mm a")));
 	}
 	var html = parseMD(entry.text);
 	jqo.find('.entry-body').html(html);
@@ -173,6 +173,7 @@ function saveEntry() {
 	fincayra.entry.text = $('#markdown').val();
 	//fincayra.editor.detach();
 	var entry;
+	$log("saving entry:",fincayra.entry);
 	$.ajax({
 		type: type,
 		url: fincayra.saveEntry,
@@ -563,7 +564,7 @@ $(document).ready(function () {
 			<div id="entries">
 			</div>
 			<div id="entry_editor" style="display:none;">
-				<textarea id="markdown" rows="20" style="width:98%;"></textarea>
+				<textarea id="markdown" rows="20" style="width:98%; height:400px;"></textarea>
 			</div>
 		</div>
 		<div class="ui-layout-west">
