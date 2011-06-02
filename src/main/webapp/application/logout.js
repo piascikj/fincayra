@@ -13,13 +13,12 @@
  *   limitations under the License.
  */
 (function() {
+	removePersistentKey();
+	$invalidateSession();
+	
 	Templates.simple({
-		
-		title : "Thank you!",
-		
-		before : function() {
-			$getHttpSession().removeAttribute("fincayra");
-		}
+	
+		title : "Thank you!"
 	});
 
 	$("#content").html("<p>Thank you for using Fincayra</p>");

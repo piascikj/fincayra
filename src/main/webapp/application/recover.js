@@ -59,6 +59,7 @@
 					try {
 						user.password = params.password;
 						user.reset = true;
+						removePersistentKey();
 						//Save the user
 						user = user.save();
 						success = true;

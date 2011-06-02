@@ -166,14 +166,25 @@ text-align:left;
 width:140px;
 }
 
-.stylized input {
+.stylized input.text {
 float:left;
 font-size:12px;
 padding:4px 2px;
 border:solid 1px #aacfe4;
 width:200px;
-margin:2px 2px 20px 10px;
+margin:2px 5px 20px 10px;
 }
+
+input.check {
+	float:left;
+	margin:2px 2px 20px 10px;
+}
+
+span.check {
+	float: left;
+	margin:0 2px 20px 10px;
+}
+
 .stylized .link{
 float:left;
 font-size:12px;

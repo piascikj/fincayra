@@ -61,7 +61,7 @@
 		//MMM d, yyyy @ H:m a
 		p(alerts, "Root scope reloaded : " + (new Date()).format("MMM d, yyyy @ H:m:ss a"));
 	} else if (params.invalidate) {
-		$getHttpSession().invalidate();
+		$invalidateSession();
 		p(alerts, "Session Invalidated : " + (new Date()).format("MMM d, yyyy @ H:m:ss a"));
 	} else if (params.clearFileCache) {
 		FileCache.clear();

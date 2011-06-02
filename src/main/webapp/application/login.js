@@ -45,8 +45,9 @@
 				
 				if (auth) {
 					$getAuthSession().user = user;
+					if (params.persistent == "y") setPersistentKey(user);
 					//Keep session alive for 1hr
-					$setMaxInactiveInterval(3600);
+					$setMaxInactiveInterval(60 * 45);
 				} else {
 					$("#form_box").prepend("<p>Cannot sign in with the email and password combination entered.  <br/>Please try again or Sign up for a new account.</p>");
 				}

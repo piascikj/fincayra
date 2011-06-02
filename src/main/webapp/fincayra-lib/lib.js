@@ -1256,6 +1256,90 @@ Request.prototype.$setVals = function(object, names) {
 };
 
 /*
+Func: $setCookie
+
+	Set a cookie
+	
+Paramters:
+
+	name - (String) The name of the cookie or an object of the format
+		
+		(start code)
+		{
+			name: "cookieName", // required
+			value: "cookieValue", // required
+			comment: "description", //optional
+			domain: "www.mydomain.com", //optional This cookie should be presented only to hosts satisfying this domain name pattern.
+			maxAge: 2592000, //optional max age in milliseconds
+			path: "", //optional This cookie should be presented only with requests beginning with this URL.
+			secure: true //optional Indicates to the user agent that the cookie should only be sent using a secure protocol. (https)
+		}
+		(end)
+		
+	value - (String) The value of the cookie
+	maxAge - (Number) The max age of the cookie in milliseconds
+	
+*/
+Request.prototype.$setCookie = function(name, value, maxAge) {
+	var cookie;
+	if (name instanceof Object) {
+		var parms = name;
+		cookie = new javax.servlet.http.Cookie(parms.name, parms.value);
+		if (parms.comment) cookie.comment = parms.comment;
+		if (parms.domain) cookie.domain = parms.domain;
+		if (parms.maxAge) cookie.maxAge = parms.maxAge;
+		if (parms.path) cookie.path = pams.path;
+		if (parms.secure) cookie.secure = parms.secure;
+	} else {
+		cookie = new javax.servlet.http.Cookie(name, value);
+		if (maxAge) cookie.maxAge = maxAge;
+	}
+	
+	this.scope.context.response.addCookie(cookie);
+};
+
+/*
+Func: $removeCookie
+
+	Remove a cookie
+
+Parameters:
+	
+	name - the name of the cookie to remove.
+	
+*/
+Request.prototype.$removeCookie = function(name) {
+	this.$setCookie(name, null, 0);
+}
+
+/*
+Func: $getCookie
+	
+	Get a cookie value
+	
+Paramters:
+	
+	name - The cookie name
+	
+Returns:
+
+	The cookie value
+*/
+Request.prototype.$getCookie = function(name) {
+    var cookies = this.scope.context.request.getCookies();
+    var val;
+    if (cookies != null) {
+        cookies.each(function(cookie) {
+            if (name == new String(cookie.name)) {
+				$log().debug("Found cookie {}:{}", cookie.name, cookie.value);
+                val = new String(cookie.value);
+            }
+        });
+    }
+    return val;	
+}
+
+/*
 Func: $setSessionClass
 
 	Set the class to use for session
@@ -1313,6 +1397,15 @@ Request.prototype.$getSession = function() {
 Request.prototype.$getAuthSession = function() {
 	return this.sessionMgr.getAuthSession();
 };
+
+/*
+	Function: $invalidateSession
+	Invalidate the session
+ */
+Request.prototype.$invalidateSession = function() {
+	return this.sessionMgr.invalidateSession();
+};
+
 
 /*
 	Function: $sendMail
@@ -1380,6 +1473,11 @@ SessionManager.prototype.setSessionClass = function(clazz) {
  */
 SessionManager.prototype.getHttpSession = function() {
 	return this.scope.context.getRequest().getSession();
+}
+
+SessionManager.prototype.invalidateSession = function() {
+	this.session = null;
+	this.getHttpSession().invalidate();
 }
 
 /*

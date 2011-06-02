@@ -39,6 +39,8 @@ $config({
 		},
 
 		onRequest : function(req) {
+			//Check if the user is set to stay logged in
+			req.checkPersistentKey();
 			req.Templates = new DefaultTemplates(req);
 		},
 		

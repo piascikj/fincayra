@@ -132,14 +132,45 @@ new User().define({
 	createDate:{
 		required:true,
 		type:Type.Date
+	},
+	
+	persistentKey: {
+		index:true,
+		unique:true
 	}
 });
 
 //We should now create an admin
 
+Request.prototype.checkPersistentKey = function() {
+	if (!this.$getSession().user) {
+		var persistentKey = this.$getCookie("persistent");
+		if (persistentKey) {
+			var users = new User({persistentKey:persistentKey}).findByProperty("persistentKey");
+			if (users.length == 1) this.$getSession().user = users[0];
+		}
+	}
+}
+
+Request.prototype.setPersistentKey = function(user) {
+	user.persistentKey = uuid();
+	this.$setCookie("persistent", user.persistentKey,2592000);
+	user.save();
+}
+
+Request.prototype.removePersistentKey = function() {
+	if (this.$getSession().user) {
+		var user = this.$getSession().user.findById();
+		user.persistentKey = uuid();
+		user.save();
+	}
+	this.$setCookie("persistent", null, 0);
+};
+
 //This function will redirect to login if user is not authenticated
 //Upon authentication you will be recirected to your detination
 Request.prototype.requireAuth = function() {
+
 	if(!this.$getSession().user) {
 		//set the destination so we can take them there after login
 		this.$getSession().destination = this.$getRequestURL();
