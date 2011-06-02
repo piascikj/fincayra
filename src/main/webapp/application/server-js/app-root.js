@@ -147,7 +147,7 @@ Request.prototype.checkPersistentKey = function() {
 		var persistentKey = this.$getCookie("persistent");
 		if (persistentKey) {
 			var users = new User({persistentKey:persistentKey}).findByProperty("persistentKey");
-			if (users.length == 1) this.$getSession().user = users[0];
+			if (users.length == 1) this.$getAuthSession().user = users[0];
 		}
 	}
 }
