@@ -154,6 +154,7 @@ display:block;
 font-weight:bold;
 text-align:right;
 width:140px;
+padding: 4px 0 0 0;
 float:left;
 clear:left;
 }
@@ -212,7 +213,7 @@ font-weight:bold;
 
 .thin {
 	height: 30px;
-	margin-bottom: 8px;
+	margin: 10px;
 }
 
 .thin p{

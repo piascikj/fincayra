@@ -64,8 +64,8 @@
 			$getSession().destination = false;
 			$redirect(dest);
 		} else {
-			//Just redirect to the home page
-			$redirect($app().url);
+			//redirect to default page
+			forwardToDefault();
 		}
 	} else if ($getSession().user) {
 			

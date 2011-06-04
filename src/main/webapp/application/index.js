@@ -13,6 +13,8 @@
  *   limitations under the License.
  */
 (function() {
+	this.checkPersistentKey();
+	
 	Templates.simple( {
 		title : "Home"
 	});

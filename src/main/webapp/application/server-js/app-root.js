@@ -76,8 +76,7 @@ User.prototype.getResetString = function() {
 User.prototype.resetOK = function(resetString) {
 	var now = new Date();
 	var resetTime = new Date(this.resetTimeStamp);
-	var minutes = 10;
-	var allowedTime = new Number(1000 * 60 * minutes);
+	var allowedTime = $config().resetPasswordTokenTimeout;
 	var limit = new Number(resetTime.getTime() + allowedTime);
 	//does resetStrings match and are we under the allowedTime
 	return (encryptor.checkPassword(this.email, resetString) && (now.getTime() < limit));
@@ -142,19 +141,9 @@ new User().define({
 
 //We should now create an admin
 
-Request.prototype.checkPersistentKey = function() {
-	if (!this.$getSession().user) {
-		var persistentKey = this.$getCookie("persistent");
-		if (persistentKey) {
-			var users = new User({persistentKey:persistentKey}).findByProperty("persistentKey");
-			if (users.length == 1) this.$getAuthSession().user = users[0];
-		}
-	}
-}
-
 Request.prototype.setPersistentKey = function(user) {
 	user.persistentKey = uuid();
-	this.$setCookie("persistent", user.persistentKey,2592000);
+	this.$setCookie("persistent", user.persistentKey,$config().persistentLoginDuration);
 	user.save();
 }
 
@@ -167,9 +156,25 @@ Request.prototype.removePersistentKey = function() {
 	this.$setCookie("persistent", null, 0);
 };
 
+Request.prototype.checkPersistentKey = function() {
+	if (!this.$getSession().user) {
+		var persistentKey = this.$getCookie("persistent");
+		if (persistentKey) {
+			var users = new User({persistentKey:persistentKey}).findByProperty("persistentKey");
+			if (users.length == 1) this.$getAuthSession().user = users[0];this.forwardToDefault();
+		}
+	}
+}
+
+Request.prototype.forwardToDefault = function() {
+	this.$redirect("/notebooks/");
+}
+
 //This function will redirect to login if user is not authenticated
 //Upon authentication you will be recirected to your detination
 Request.prototype.requireAuth = function() {
+	//Check if the user is set to stay logged in
+	this.checkPersistentKey();
 
 	if(!this.$getSession().user) {
 		//set the destination so we can take them there after login

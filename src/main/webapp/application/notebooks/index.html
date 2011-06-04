@@ -4,10 +4,9 @@
 <link rel="stylesheet" type="text/css" href="/js/markitup/skins/simple/style.css" />
 <link rel="stylesheet" type="text/css" href="/js/markitup/sets/markdown/style.css" />
 <link rel="stylesheet" href="/css/github.css" type="text/css"/>
-<style>
+<style>	
 	.container ul {
 		color:blue; 
-		margin:5px; 
 		cursor:pointer;
 		list-style: none;
 	}
@@ -20,9 +19,11 @@
 	#notebook_list p {
 		padding-bottom: 5px;
 	}
-	
+
 	.icon-button {
 		cursor: pointer;
+		float: left;
+		margin-left: 5px;
 	}
 	
 	.level1 {
@@ -75,12 +76,14 @@
 		font-size: 10px;
 	}
 	
+	.ui-layout-content {
+		padding: 5px;
+	}
+	
 				
 	
 </style>
 <script type="text/javascript" src="/js/highlight.min.js"></script>
-<script type="text/javascript" src="/js/jquery-ui-1.8.13.min.js"></script>
-<script type="text/javascript" src="/js/jquery.layout-latest.js"></script>
 <script type="text/javascript" src="/js/markitup/jquery.markitup.js"></script>
 <script type="text/javascript" src="/js/markitup/sets/markdown/set.js"></script>
 <script type="text/javascript" src="/js/showdown.js"></script>
@@ -158,10 +161,16 @@ function highlight() {
 function getEntryElement(entry) {
 	var jqo = $('#' + entry.uuid);
 	if (jqo.length == 0) {
-		jqo = $('<div class="entry" id="{}"><div class="entry-header"><span class="date">{}</span></span><span id="entry_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Entry"></span></div><div class="entry-body"></div></div>'.tokenize(entry.uuid, new Date(entry.createDate).format("EE MMM d, yyyy h:mm a")));
+		var date = new Date(entry.createDate).format("EE MMM d, yyyy h:mm a");
+		var html = $("#entry_tmpl").jqote({
+			id:entry.uuid,
+			date: date
+		});
+		jqo = $(html);
 	}
 	var html = parseMD(entry.text);
 	jqo.find('.entry-body').html(html);
+	$log("jqo=" + $("#entry_tmpl").text());
 	return jqo.data({object:entry, html:html});
 }
 
@@ -329,12 +338,16 @@ $(document).ready(function () {
 	//setup the layout
 	$('#notebooks-app').layout({
 		defaults : {
-			applyDefaultStyles: true
+			applyDefaultStyles: true,
+			contentSelector:".ui-layout-content"
 		},
 		
 		west : {
 			slidable: true,
-			size: 260
+			size: 260,
+			onresize: function () {
+				$('#notebook_list').accordion('resize');
+			}
 		}
 	});
 	
@@ -499,7 +512,7 @@ $(document).ready(function () {
 		return false;
 	});
 	
-	$('#entry_delete').live("click", function() {
+	$('.entry_delete').live("click", function() {
 		var el = $(this).parents(".entry");
 		var entryId = el.data("object").id;
 		confirmDelete("Delete Entry", 'Do you realy want to delete this Entry?',
@@ -521,16 +534,19 @@ $(document).ready(function () {
 	});
 	
 	$('.entry').live('dblclick',function() {
-		if (fincayra.entry && fincayra.entry.uuid) {
-			$('#' + fincayra.entry.uuid).show();
-			fincayra.editor.detach();
-		}
+		closeEntry();
 		$(this).before(fincayra.editor);
 		$(this).hide();
 		fincayra.editor.show();
 		fincayra.entry = $(this).data('object');
 		$('#markdown').val(fincayra.entry.text).focus();
 		return false;
+	});
+	
+	$('.entry_print').live("click", function() {
+		var el = $(this).parents(".entry");
+		//TODO create entryView object to handle finding the element from child and other stuff
+		el.printElement();
 	});
 	
 	//show the lastTopic
@@ -546,45 +562,61 @@ $(document).ready(function () {
 </script>
 </head>
 <body>
+	<script type="text/html" id="entry_tmpl">
+	  <![CDATA[
+		<div class="entry" id="<%= this.id %>">
+			<div class="entry-header">
+				<span class="date"><%= this.date %></span>
+				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
+				<span class="entry_print ui-icon ui-icon-print icon-button" title="Print Entry"></span>
+			</div>
+			<div class="entry-body"></div>
+		</div>
+	  ]]>
+	</script>
 	<div id="dialog_confirm" title="Delete Item" style="display:none;">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 0 10px 0;"></span><span id="confirm_message">This item will be permanently deleted and cannot be recovered. Are you sure?</span></p>
 	</div>
 	<div id="notebooks-app" style="height:100%">
 		<div class="ui-layout-center">
-			<div id="notebook_name_box" class="stylized thin level1" style="display:none;">
-				<form id="notebook_name_form" style="display:none;">
-					<input type="text" class="text" name="name" id="notebook_name_edit" autocomplete="off"/>
-					<button id="notebook_ok">OK</button><button id="notebook_cancel">Cancel</button>
-				</form>
-				<p id="notebook_name_display" style="display:none;">
-					<span id="notebook_name" title="Click to edit"></span>
-					<span id="notebook_delete" class="ui-icon ui-icon-trash icon-button" title="Delete NoteBook"></span>
-				</p>
+			<div class="ui-layout-header">
+				<div id="notebook_name_box" class="stylized thin level1" style="display:none;">
+					<form id="notebook_name_form" style="display:none;">
+						<input type="text" class="text" name="name" id="notebook_name_edit" autocomplete="off"/>
+						<button id="notebook_ok">OK</button><button id="notebook_cancel">Cancel</button>
+					</form>
+					<p id="notebook_name_display" style="display:none;">
+						<span id="notebook_name" title="Click to edit"></span>
+						<span id="notebook_delete" class="ui-icon ui-icon-trash icon-button" title="Delete NoteBook"></span>
+					</p>
+				</div>
+				<div id="topic_name_box" class="stylized thin" style="display:none;">
+					<form id="topic_name_form" style="display:none;">
+						<input type="text" class="text" name="name" id="topic_name_edit" autocomplete="off"/>
+						<button id="topic_ok">OK</button><button id="topic_cancel">Cancel</button>
+					</form>
+					<p id="topic_name_display" style="display:none;">
+						<span id="topic_name" title="Click to edit"></span>
+						<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
+						<span id="new_entry" class="ui-icon ui-icon-document icon-button" title="Add an Entry"></span>
+					</p>
+				</div>
 			</div>
-			<div id="topic_name_box" class="stylized thin" style="display:none;">
-				<form id="topic_name_form" style="display:none;">
-					<input type="text" class="text" name="name" id="topic_name_edit" autocomplete="off"/>
-					<button id="topic_ok">OK</button><button id="topic_cancel">Cancel</button>
-				</form>
-				<p id="topic_name_display" style="display:none;">
-					<span id="topic_name" title="Click to edit"></span>
-					<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
-					<span id="new_entry" class="ui-icon ui-icon-document icon-button" title="Add an Entry"></span>
-				</p>
-			</div>
-			<div id="entries">
-			</div>
-			<div id="entry_editor" style="display:none;">
-				<textarea id="markdown" rows="20" style="width:98%; height:400px;"></textarea>
+			<div class="ui-layout-content">
+				<div id="entries">
+				</div>
+				<div id="entry_editor" style="display:none;">
+					<textarea id="markdown" rows="20" style="width:98%; height:400px;"></textarea>
+				</div>
 			</div>
 		</div>
 		<div class="ui-layout-west">
-			<div class="controls" class="stylized thin level1">
+			<div class="controls stylized thin level1 ui-layout-header">
 				<p>
 				<a href="#" id="new_notebook" class="new-link" title="Create a new NoteBook"><span id="entry_add" class="ui-icon ui-icon-note icon-button"></span>Create a new NoteBook...</a>
 				</p>
 			</div>
-			<div id="notebook_list">
+			<div id="notebook_list" class="ui-layout-content">
 			</div>
 		</div>
 	</div>

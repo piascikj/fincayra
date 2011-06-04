@@ -39,12 +39,15 @@ $config({
 		},
 
 		onRequest : function(req) {
-			//Check if the user is set to stay logged in
-			req.checkPersistentKey();
 			req.Templates = new DefaultTemplates(req);
 		},
 		
-		name:"Fincayra"
+		name:"Fincayra",
+		
+		persistentLoginDuration: 60*60*24*30, //Seconds to stay logged in
+		
+		resetPasswordTokenTimeout: 1000*60*10 //timeout in miliseconds
+		
 	});
 
 	var userConfig = $getProperty("user.home") + "/.fincayra/app-config.js";
