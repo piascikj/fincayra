@@ -53,10 +53,10 @@
 	background-image:url(images/preview.png);
 }
 
-.markItUp .save a {
-	background-image:url(images/disk.png);
+.markItUp .saveButton a {
+	background-image:url(images/disk-saved.png);
 }
 
-.markItUp .cancel a {
+.markItUp .cancelButton a {
 	background-image:url(images/cancel.png);
 }

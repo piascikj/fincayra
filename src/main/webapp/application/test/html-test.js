@@ -12,29 +12,4 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-(function() {
-	this.checkPersistentKey();
-	
-	if ($getSession().user) forwardToDefault();
-	
-	Templates.simple( {
-		title : "Home"
-	});
-
-
-	var params = $getPageParams();
-
-	//This is where we put some things
-	var content = $("#content");
-	var p = function(str) {
-		return content.append("<p>" + str + "</p>");
-	};
-
-	var h2 = function(str) {
-		return content.append("<h2>" + str + "</h2>");
-	};
-
-	h2("Welcome to " + $app().name + "!");
-
-	p("We guarantee you'll get things done.  Fast!");
-})();
+$('#content').append("Hello world");

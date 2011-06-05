@@ -35,9 +35,9 @@ mySettings = {
 		{name:'Quotes', openWith:'> '},
 		{name:'Code Block / Code', openWith:'(!(\t|!|`)!)', closeWith:'(!(`)!)'},
 		{separator:'---------------'},
-		{name:'Save', key: 'S', call:'saveEntry', className:"save"},
+		{name:'Save', key: 'S', call:'saveEntry', className:"saveButton"},
 		{separator:'---------------'},
-		{name:'Close', key: 'Z', call:'closeEntry', className:"cancel"}
+		{name:'Close', key: 'Z', call:'closeEntry', className:"cancelButton"}
 	]
 }
 
