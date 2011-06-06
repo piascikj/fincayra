@@ -178,6 +178,7 @@ function displayTopic(topic) {
 	$('#topic_name_edit').val(fincayra.topic.name);
 	$('#topic_name_form').hide();
 	getEntries();
+	fincayra.layout.initContent("center",true);
 	return fincayra.topic;
 }
 
@@ -210,7 +211,8 @@ function displayNoteBooks() {
 				$('#notebook_name_display').show();
 				
 				var topics = [];
-				topics.push('<div class="controls stylized thin"><p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p></div>');
+				//topics.push('<div class="controls stylized thin"><p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p></div>');
+				topics.push('<p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
 				$.each(getTopics(uuid), function(key, val) {
 					topics.push('<p><a href="#" id="{}" class="topic-link">{}</a></p>'.tokenize(val.uuid,val.name));
 				});
@@ -293,7 +295,7 @@ function init() {
 	$.ajaxSetup({async:false,contentType:"application/json"});
 	
 	//setup the layout
-	$('#notebooks-app').layout({
+	fincayra.layout = $('#notebooks-app').layout({
 		defaults : {
 			applyDefaultStyles: true,
 			contentSelector:".ui-layout-content"
@@ -519,7 +521,7 @@ $(document).ready(function () {
 	$('.entry_print').live("click", function() {
 		var el = $(this).parents(".entry");
 		//TODO create entryView object to handle finding the element from child and other stuff
-		el.printElement();
+		el.printElement({printMode:'iframe'});
 	});
 	
 });

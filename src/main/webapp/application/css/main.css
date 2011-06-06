@@ -256,7 +256,7 @@ font-weight:bold;
 .icon-button {
 	cursor: pointer;
 	float: left;
-	margin-left: 5px;
+	/*margin-left: 5px;*/
 }
 
 .level1 {
@@ -264,6 +264,12 @@ font-weight:bold;
 	border-color: #D4D4D4;
 }
 
+.entries {
+	height:auto;
+	width:auto;
+	overflow:auto;
+}
+	
 .entry {
 	padding:5px;
 	color:#444;
