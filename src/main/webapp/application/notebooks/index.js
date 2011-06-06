@@ -41,7 +41,8 @@
 		saveEntry : "/api/Entry",
 		deleteEntry : "/api/Entry/{}",
 		noteBooks : {},
-		topics : {}
+		topics : {},
+		autoSaveIncrement : 1000*60 //save once a minute
 	};
 	
 	new NoteBook({owner:{id:user.id}}).findByProperty("owner").each(function(val) {pageVars.noteBooks[val.uuid]=val});

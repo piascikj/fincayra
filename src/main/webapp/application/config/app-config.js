@@ -46,9 +46,7 @@ $config({
 		
 		persistentLoginDuration: 60*60*24*30, //Seconds to stay logged in
 		
-		resetPasswordTokenTimeout: 1000*60*10, //timeout in miliseconds
-		
-		entryAutoSaveIncrement: 1000*20
+		resetPasswordTokenTimeout: 1000*60*10 //timeout in miliseconds
 		
 	});
 

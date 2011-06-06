@@ -83,10 +83,14 @@ function highlight() {
 	$('pre code').each(function(i, e) {hljs.highlightBlock(e, '    ')});
 }
 
+function getDateString(date) {
+ return date.format("EE MMM d, yyyy h:mm:ss a");
+}
+
 function getEntryElement(entry) {
 	var jqo = $('#' + entry.uuid);
 	if (jqo.length == 0) {
-		var date = new Date(entry.createDate).format("EE MMM d, yyyy h:mm a");
+		var date = getDateString(new Date(entry.createDate));
 		var html = $("#entry_tmpl").jqote({
 			id:entry.uuid,
 			date: date
@@ -114,9 +118,10 @@ function saveEntry() {
 		type = "PUT";
 	}
 	fincayra.entry.text = $('#markdown').val();
-	//fincayra.editor.detach();
 	var entry;
 	$log("saving entry:",fincayra.entry);
+	fincayra.lastSevedEntry.hide();
+	fincayra.savingEntry.show();
 	$.ajax({
 		type: type,
 		url: fincayra.saveEntry,
@@ -125,14 +130,18 @@ function saveEntry() {
 			entry = data;
 			$log("Entry returned from save!",entry);
 			var el = $('#' + data.uuid);
+			fincayra.entry = entry;
 			if (el.length == 0) {
-				fincayra.entry = entry;
 				el = getEntryElement(entry);
 				el.css({display:"none"});
 				$log("Appending entry", el.html());
 				$('#entries').prepend(el);
 			}
+			$log("Entry saved",entry);
 			$('.saveButton a').css({'backgroundImage':'url(/js/markitup/sets/markdown/images/disk-saved.png)'});
+			fincayra.savingEntry.hide();
+			fincayra.lastSevedEntryTime.html(getDateString(new Date()));
+			fincayra.lastSevedEntry.show();
 		},
 		dataType: 'json'
 	});
@@ -143,13 +152,10 @@ function saveEntry() {
 function closeEntry() {
 	if (fincayra.entry && fincayra.entry.uuid) {
 		getEntryElement(fincayra.entry).show();
-	} else {
-		fincayra.entry = undefined;
 	}
-	
+	fincayra.entry = undefined;
 	fincayra.editor.detach();
 	highlight();
-
 }
 
 function getTopics(uuid) {
@@ -228,6 +234,8 @@ function displayNoteBooks() {
 
 function displayNoteBook(noteBook) {
 	fincayra.noteBook = noteBook;
+	fincayra.topic = undefined;
+	fincayra.entry = undefined;
 	$('#notebook_list').accordion("activate",$("#" + noteBook.uuid).parent());
 };
 
@@ -254,8 +262,31 @@ function confirmDelete(title, message, okCallback) {
 	});	
 };
 
-$(document).ready(function () {
-	//Set up converter
+function initEditor() {
+	fincayra.markDownEditor = $('#markdown');
+	fincayra.markDownEditor.keyup(function(e) {
+		var c = e.keyCode;
+		$log("key pressed:",c);
+		if ((c == 32 || c == 8 || c == 46 || c == 13) || fincayra.entry.text != fincayra.markDownEditor.val()) {
+			$('.saveButton a').css({'backgroundImage':'url(/js/markitup/sets/markdown/images/disk.png)'});			
+		} else {
+			$('.saveButton a').css({'backgroundImage':'url(/js/markitup/sets/markdown/images/disk-saved.png)'});
+		}
+	});
+	fincayra.markDownEditor.markItUp(mySettings);
+	$(".markItUpHeader").append('<div id="saving_entry" style="float:right; padding-right:35px; display:none;">saving...</div>');
+	$(".markItUpHeader").append('<div id="last_saved_entry" style="float:right; padding-right:35px; display:none;">Last Saved: <span id="last_saved_entry_time"></span></div>');
+	
+	fincayra.savingEntry = $('#saving_entry');
+	fincayra.lastSevedEntry = $('#last_saved_entry');
+	fincayra.lastSevedEntryTime = $('#last_saved_entry_time');
+	
+	fincayra.markDownEditor.live("dblclick", closeEntry);
+	fincayra.editor = $('#entry_editor').detach();
+}
+	
+function init() {
+		//Set up converter
 	fincayra.showdown = new Showdown.converter();
 	
 	//No asynch
@@ -282,23 +313,31 @@ $(document).ready(function () {
 		$(this).submit(function() {return false;});
 	});
 	
+	
 	//store the editor and detach it
-	var markDownEditor = $('#markdown');
-	markDownEditor.live("keypress", function(e) {
-		var c = e.charCode;
-		if ((c == 32 || c == 8 || c == 46 || c == 13) || fincayra.entry.text != markDownEditor.val()) {
-			$('.saveButton a').css({'backgroundImage':'url(/js/markitup/sets/markdown/images/disk.png)'});			
-		} else {
-			$('.saveButton a').css({'backgroundImage':'url(/js/markitup/sets/markdown/images/disk-saved.png)'});
-		}
-	});
-	markDownEditor.markItUp(mySettings);
-	markDownEditor.live("dblclick", closeEntry);
-	fincayra.editor = $('#entry_editor').detach();
+	initEditor();
 	
 	//display the notebooks
 	displayNoteBooks();
+	
+	//Save entry if open
+	setInterval(function () {if (fincayra.entry) saveEntry()},fincayra.autoSaveIncrement);
 
+	//show the lastTopic
+	$.getJSON(fincayra.getLastTopic,function(data) {
+		var topic = data.topic;
+		if (topic) {
+			$log("Display last topic: ", topic);
+			displayNoteBook(topic.noteBook);
+			displayTopic(topic);
+		}
+	});
+}
+
+$(document).ready(function () {
+
+	init();
+	
 	//event handlers
 	$('#new_notebook').click(function(event) {
 		fincayra.noteBook = undefined;
@@ -483,15 +522,6 @@ $(document).ready(function () {
 		el.printElement();
 	});
 	
-	//show the lastTopic
-	$.getJSON(fincayra.getLastTopic,function(data) {
-		var topic = data.topic;
-		if (topic) {
-			$log("Display last topic: ", topic);
-			displayNoteBook(topic.noteBook);
-			displayTopic(topic);
-		}
-	});
 });
 </script>
 </head>
