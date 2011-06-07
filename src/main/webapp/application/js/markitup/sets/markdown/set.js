@@ -37,7 +37,7 @@ mySettings = {
 		{separator:'---------------'},
 		{name:'Save', key: 'S', call:'saveEntry', className:"saveButton"},
 		{separator:'---------------'},
-		{name:'Close', key: 'Z', call:'closeEntry', className:"cancelButton"}
+		{name:'Close', key: 'Q', call:'closeEntry', className:"cancelButton"}
 	]
 }
 

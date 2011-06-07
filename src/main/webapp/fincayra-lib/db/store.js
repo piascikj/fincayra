@@ -41,12 +41,12 @@ var Relationship = {
 	Boolean - Boolean()
 */
 var Type = {
-		String:"String",
-		Long:"Long",
-		Double:"Double",
-		Decimal:"Decimal",
-		Date:"Date",
-		Boolean:"Boolean"
+		"String":"String",
+		"Long":"Long",
+		"Double":"Double",
+		"Decimal":"Decimal",
+		"Date":"Date",
+		"Boolean":"Boolean"
 };
 
 /*

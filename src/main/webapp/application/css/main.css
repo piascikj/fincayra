@@ -278,6 +278,10 @@ font-weight:bold;
 	margin-bottom: 10px;
 }
 
+.entry-body {
+	border-top: 1px solid #D4D4D4;
+}
+
 .entry-body * {
 	color:#444;
 }
@@ -305,9 +309,12 @@ font-weight:bold;
 }
 
 .entry-header {
-	border-bottom: 1px solid #D4D4D4;
 	height: 20px;
 	margin: 0px 0px 4px 0px;
+}
+
+.entry-header .ui-icon {
+	margin-right: 5px;
 }
 
 .date {

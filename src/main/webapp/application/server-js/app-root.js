@@ -90,7 +90,12 @@ User.prototype.toJSON = function(key) {
 	if (key == "owner" || key == "user") {
 		var obj = {};
 		obj.extend(this);
-		return obj.extend({password:undefined,email:undefined,role:undefined});
+		return obj.extend({
+			password:undefined,
+			email:undefined,
+			role:undefined,
+			persistentKey:undefined
+		});
 	} 
 	
 	return this;

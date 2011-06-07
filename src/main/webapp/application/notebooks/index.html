@@ -120,7 +120,7 @@ function saveEntry() {
 	fincayra.entry.text = $('#markdown').val();
 	var entry;
 	$log("saving entry:",fincayra.entry);
-	fincayra.lastSevedEntry.hide();
+	fincayra.lastSavedEntry.hide();
 	fincayra.savingEntry.show();
 	$.ajax({
 		type: type,
@@ -140,8 +140,9 @@ function saveEntry() {
 			$log("Entry saved",entry);
 			$('.saveButton a').css({'backgroundImage':'url(/js/markitup/sets/markdown/images/disk-saved.png)'});
 			fincayra.savingEntry.hide();
-			fincayra.lastSevedEntryTime.html(getDateString(new Date()));
-			fincayra.lastSevedEntry.show();
+			fincayra.lastSavedEntryTime.html(getDateString(new Date()));
+			fincayra.lastSavedEntry.show();
+			fincayra.edited = false;
 		},
 		dataType: 'json'
 	});
@@ -154,6 +155,8 @@ function closeEntry() {
 		getEntryElement(fincayra.entry).show();
 	}
 	fincayra.entry = undefined;
+	fincayra.lastSavedEntry.hide();
+	fincayra.edited = false;
 	fincayra.editor.detach();
 	highlight();
 }
@@ -267,6 +270,7 @@ function confirmDelete(title, message, okCallback) {
 function initEditor() {
 	fincayra.markDownEditor = $('#markdown');
 	fincayra.markDownEditor.keyup(function(e) {
+		fincayra.edited = true;
 		var c = e.keyCode;
 		$log("key pressed:",c);
 		if ((c == 32 || c == 8 || c == 46 || c == 13) || fincayra.entry.text != fincayra.markDownEditor.val()) {
@@ -280,8 +284,8 @@ function initEditor() {
 	$(".markItUpHeader").append('<div id="last_saved_entry" style="float:right; padding-right:35px; display:none;">Last Saved: <span id="last_saved_entry_time"></span></div>');
 	
 	fincayra.savingEntry = $('#saving_entry');
-	fincayra.lastSevedEntry = $('#last_saved_entry');
-	fincayra.lastSevedEntryTime = $('#last_saved_entry_time');
+	fincayra.lastSavedEntry = $('#last_saved_entry');
+	fincayra.lastSavedEntryTime = $('#last_saved_entry_time');
 	
 	fincayra.markDownEditor.live("dblclick", closeEntry);
 	fincayra.editor = $('#entry_editor').detach();
@@ -323,7 +327,7 @@ function init() {
 	displayNoteBooks();
 	
 	//Save entry if open
-	setInterval(function () {if (fincayra.entry) saveEntry()},fincayra.autoSaveIncrement);
+	setInterval(function () {if (fincayra.entry && fincayra.edited) saveEntry()},fincayra.autoSaveIncrement);
 
 	//show the lastTopic
 	$.getJSON(fincayra.getLastTopic,function(data) {
@@ -335,6 +339,16 @@ function init() {
 		}
 	});
 }
+
+function editEntry(el) {
+	closeEntry();
+	el.before(fincayra.editor);
+	el.hide();
+	fincayra.editor.show();
+	fincayra.entry = el.data('object');
+	$('#markdown').val(fincayra.entry.text).focus();
+	return false;
+}	
 
 $(document).ready(function () {
 
@@ -509,17 +523,47 @@ $(document).ready(function () {
 	});
 	
 	$('.entry').live('dblclick',function() {
-		closeEntry();
-		$(this).before(fincayra.editor);
-		$(this).hide();
-		fincayra.editor.show();
-		fincayra.entry = $(this).data('object');
-		$('#markdown').val(fincayra.entry.text).focus();
-		return false;
+		editEntry($(this));
+	});
+	
+	$('#topic_expand').live("click", function() {
+		$('.entry-body').each(function() {
+			if ($(this).is(':hidden'))
+				$(this).show("slide",{direction:"up"},500);
+		});
+		$('.entry_collapse').each(function() {$(this).show();});
+		$('.entry_expand').each(function() {$(this).hide();});
+	});
+	
+	$('#topic_collapse').live("click", function() {
+		$('.entry-body').each(function() {
+			if ($(this).is(':visible'))
+				$(this).hide("slide",{direction:"up"},500);
+		});
+		$('.entry_collapse').each(function() {$(this).hide();});
+		$('.entry_expand').each(function() {$(this).show();});
+	});
+	
+	$('.entry_collapse').live("click", function() {
+		var el = $(this).closest('.entry')
+		el.find('.entry-body').hide("slide",{direction:"up"},500);
+		el.find('.entry_collapse').hide();
+		el.find('.entry_expand').show();
+	});
+	
+	$('.entry_expand').live("click", function() {
+		var el = $(this).closest('.entry')
+		el.find('.entry-body').show("slide",{direction:"up"},500);
+		el.find('.entry_collapse').show();
+		el.find('.entry_expand').hide();
+	});
+
+	$('.entry_edit').live("click", function() {
+		editEntry($(this).closest(".entry"));
 	});
 	
 	$('.entry_print').live("click", function() {
-		var el = $(this).parents(".entry");
+		var el = $(this).closest(".entry");
 		//TODO create entryView object to handle finding the element from child and other stuff
 		el.printElement({printMode:'iframe'});
 	});
@@ -533,8 +577,11 @@ $(document).ready(function () {
 		<div class="entry" id="<%= this.id %>">
 			<div class="entry-header">
 				<span class="date"><%= this.date %></span>
-				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
+				<span class="entry_expand ui-icon ui-icon-plus icon-button" style="display:none" title="Expand entry"></span>
+				<span class="entry_collapse ui-icon ui-icon-minus icon-button" title="Collapse entry"></span>
+				<span class="entry_edit ui-icon ui-icon-pencil icon-button" title="Edit Entry"></span>
 				<span class="entry_print ui-icon ui-icon-print icon-button" title="Print Entry"></span>
+				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
 			</div>
 			<div class="entry-body"></div>
 		</div>
@@ -563,8 +610,10 @@ $(document).ready(function () {
 					</form>
 					<p id="topic_name_display" style="display:none;">
 						<span id="topic_name" title="Click to edit"></span>
-						<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
+						<span id="topic_expand" class="ui-icon ui-icon-plus icon-button" title="Expand all entries"></span>
+						<span id="topic_collapse" class="ui-icon ui-icon-minus icon-button" title="Collapse all entries"></span>
 						<span id="new_entry" class="ui-icon ui-icon-document icon-button" title="Add an Entry"></span>
+						<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
 					</p>
 				</div>
 			</div>
