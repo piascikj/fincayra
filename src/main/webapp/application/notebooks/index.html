@@ -8,6 +8,7 @@
 <script type="text/javascript" src="/js/markitup/jquery.markitup.js"></script>
 <script type="text/javascript" src="/js/markitup/sets/markdown/set.js"></script>
 <script type="text/javascript" src="/js/showdown.js"></script>
+<script type="text/javascript" src="/js/jquery.toc-1.1.1.js"></script>
 <script>
 var spinnerOpts = {position:'center',img:'/js/spinner.gif'};
 
@@ -152,7 +153,8 @@ function saveEntry() {
 
 function closeEntry() {
 	if (fincayra.entry && fincayra.entry.uuid) {
-		getEntryElement(fincayra.entry).show();
+		var el = getEntryElement(fincayra.entry).show();
+		getTOC(el);
 	}
 	fincayra.entry = undefined;
 	fincayra.lastSavedEntry.hide();
@@ -292,7 +294,7 @@ function initEditor() {
 }
 	
 function init() {
-		//Set up converter
+	//Set up converter
 	fincayra.showdown = new Showdown.converter();
 	
 	//No asynch
@@ -349,6 +351,14 @@ function editEntry(el) {
 	$('#markdown').val(fincayra.entry.text).focus();
 	return false;
 }	
+
+function getTOC(entry) {
+	var toc = entry.find('.entry-toc');
+	toc.html("");
+	var entryId = entry.attr("id");
+	toc.toc({context:'#' + entryId + ' > .entry-body'});
+	return toc;
+};
 
 $(document).ready(function () {
 
@@ -522,8 +532,8 @@ $(document).ready(function () {
 		return true;
 	});
 	
-	$('.entry').live('dblclick',function() {
-		editEntry($(this));
+	$('.entry-body').live('dblclick',function() {
+		editEntry($(this).closest(".entry"));
 	});
 	
 	$('#topic_expand').live("click", function() {
@@ -568,6 +578,16 @@ $(document).ready(function () {
 		el.printElement({printMode:'iframe'});
 	});
 	
+	$('.entry_toc').live("click", function() {
+		var entry = $(this).closest(".entry");
+		var toc = getTOC(entry);
+		if (toc.is(':visible')) {
+			toc.hide();
+		} else {
+			toc.show();
+		}
+	});
+	
 });
 </script>
 </head>
@@ -580,9 +600,11 @@ $(document).ready(function () {
 				<span class="entry_expand ui-icon ui-icon-plus icon-button" style="display:none" title="Expand entry"></span>
 				<span class="entry_collapse ui-icon ui-icon-minus icon-button" title="Collapse entry"></span>
 				<span class="entry_edit ui-icon ui-icon-pencil icon-button" title="Edit Entry"></span>
+				<span class="entry_toc ui-icon ui-icon-bookmark icon-button" title="Show TOC"></span>
 				<span class="entry_print ui-icon ui-icon-print icon-button" title="Print Entry"></span>
 				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
 			</div>
+			<div class="entry-toc" style="display:none"></div>
 			<div class="entry-body"></div>
 		</div>
 	  ]]>
