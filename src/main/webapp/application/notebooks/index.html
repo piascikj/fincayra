@@ -232,7 +232,10 @@ function displayNoteBooks() {
 					$('#topic_name_edit').val("New Topic").select().focus();
 					return false;
 				});
+				
+				ui.newContent.find('.topic-link').first().click();
 			}
+
 		},
 		autoHeight: false,
 		collapsible: true
@@ -600,7 +603,7 @@ $(document).ready(function () {
 				<span class="entry_expand ui-icon ui-icon-plus icon-button" style="display:none" title="Expand entry"></span>
 				<span class="entry_collapse ui-icon ui-icon-minus icon-button" title="Collapse entry"></span>
 				<span class="entry_edit ui-icon ui-icon-pencil icon-button" title="Edit Entry"></span>
-				<span class="entry_toc ui-icon ui-icon-bookmark icon-button" title="Show TOC"></span>
+				<span class="entry_toc ui-icon ui-icon-bookmark icon-button" title="Toggle Table of Contents"></span>
 				<span class="entry_print ui-icon ui-icon-print icon-button" title="Print Entry"></span>
 				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
 			</div>
