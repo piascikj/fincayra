@@ -46,8 +46,8 @@ $config({
 		
 		persistentLoginDuration: 60*60*24*30, //Seconds to stay logged in
 		
-		resetPasswordTokenTimeout: 1000*60*10 //timeout in miliseconds
-		
+		resetPasswordTokenTimeout: 1000*60*10 //timeout in miliseconds,
+				
 	});
 
 	var userConfig = $getProperty("user.home") + "/.fincayra/app-config.js";

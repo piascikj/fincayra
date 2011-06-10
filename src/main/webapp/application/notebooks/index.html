@@ -81,7 +81,7 @@ function getEntries() {
 }
 
 function highlight() {
-	$('pre code').each(function(i, e) {hljs.highlightBlock(e, '    ')});
+	$('.entry pre code').each(function(i, e) {hljs.highlightBlock(e, '    ')});
 }
 
 function getDateString(date) {
@@ -332,7 +332,17 @@ function init() {
 	displayNoteBooks();
 	
 	//Save entry if open
-	setInterval(function () {if (fincayra.entry && fincayra.edited) saveEntry()},fincayra.autoSaveIncrement);
+	setInterval(function () {
+		try {
+			$log("Running autosave interval function");
+			if (fincayra.entry && fincayra.edited) { 
+				$log("Auto svaing entry.");
+				saveEntry()
+			}
+		} catch (e) {
+			$log("Caught exception during autosave interval", e);
+		}
+	},fincayra.autoSaveIncrement);
 
 	//show the lastTopic
 	$.getJSON(fincayra.getLastTopic,function(data) {
@@ -497,8 +507,8 @@ $(document).ready(function () {
 					fincayra.topic = undefined;
 					uuid = fincayra.noteBook.uuid;
 					getNoteBooks();
-					$('#notebook_list').accordion("activate",$("#" + uuid).parent());
 					$('#topic_name_box').hide();
+					$('#notebook_list').accordion("activate",$("#" + uuid).parent());
 				},
 				dataType: 'json'
 			});
@@ -591,6 +601,22 @@ $(document).ready(function () {
 		}
 	});
 	
+	$('#markdown_help').live("click", function() {
+		if (fincayra.markdownHelp == undefined) {
+			$.get("/js/help/markdown/syntax.text",function(data) {
+				fincayra.markdownHelp = data;
+			});
+				
+			$('.help-body').html(parseMD(fincayra.markdownHelp));
+			var toc = $('.help-toc');
+			toc.html("");
+			toc.toc({context:'.help-body'});
+
+		}
+		$('.help').toggle("slide",{direction:"up"},500);
+		$('.ui-layout-center .ui-layout-content').scrollTop(0);
+	});
+	
 });
 </script>
 </head>
@@ -638,11 +664,16 @@ $(document).ready(function () {
 						<span id="topic_expand" class="ui-icon ui-icon-plus icon-button" title="Expand all entries"></span>
 						<span id="topic_collapse" class="ui-icon ui-icon-minus icon-button" title="Collapse all entries"></span>
 						<span id="new_entry" class="ui-icon ui-icon-document icon-button" title="Add an Entry"></span>
+						<span id="markdown_help" class="ui-icon ui-icon-help icon-button" title="Markdown Help"></span>
 						<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
 					</p>
 				</div>
 			</div>
 			<div class="ui-layout-content">
+				<div class="help" style="display:none">
+					<div class="help-toc"></div>
+					<div class="help-body"></div>
+				</div>
 				<div id="entries">
 				</div>
 				<div id="entry_editor" style="display:none;">

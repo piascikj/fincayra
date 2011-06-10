@@ -218,7 +218,7 @@ font-weight:bold;
 
 .thin p{
 	margin: 6px 0px 3px 0px;
-	height: 24px;
+	height: 20px;
 	border-bottom:none;
 }
 
@@ -229,13 +229,13 @@ font-weight:bold;
 
 .thin button{
 	margin: 5px 5px 5px 0;
-	height: 24px;
-	line-height: 24px;
+	height: 20px;
+	line-height: 20px;
 }
 
-.thin input {
+.thin input.text{
 	margin: 5px 5px 5px 10px;
-	height: 24px;
+	height: 20px;
 }
 
 .container ul {
@@ -280,6 +280,8 @@ font-weight:bold;
 
 .entry-body {
 	border-top: 1px solid #D4D4D4;
+	margin-top: 5px;
+	padding-top: 5px;	
 }
 
 .entry-body * {
@@ -309,12 +311,22 @@ font-weight:bold;
 }
 
 .entry-header {
+	line-height: 20px;
 	height: 20px;
-	margin: 0px 0px 4px 0px;
+	margin: 0;
 }
 
 .entry-header .ui-icon {
 	margin-right: 5px;
+}
+
+.entry-toc {
+	border-top: 1px solid #D4D4D4;
+
+}
+
+.entry-toc ul {
+	padding-left: 10px;
 }
 
 .date {
@@ -324,4 +336,48 @@ font-weight:bold;
 
 .ui-layout-content {
 	padding: 5px;
+}
+
+.help {
+	padding:5px;
+	color:#444;
+	border:solid 2px #b7ddf2;
+	/*background:#ebf4fb;*/
+	margin-bottom: 10px;
+}
+
+.help-body {
+	border-top: 1px solid #D4D4D4;
+	margin-top: 5px;
+	padding-top: 5px;	
+}
+
+.help-body * {
+	color:#444;
+}
+
+.help-body ul *, .help ol *{
+	color: #444;
+}
+
+.help-body ul {
+	list-style: disc;
+	cursor:default;
+}
+
+.help-body ul ul {
+	list-style-type: circle;
+	cursor:default;
+}	
+
+.help-body ol {
+	list-style: decimal;
+}
+
+.help-body ol ol {
+	list-style: lower-alpha;
+}
+
+.help-toc ul {
+	padding-left: 10px;
 }
