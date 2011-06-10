@@ -31,6 +31,33 @@ new NoteBook().define({
 function Topic(clone) {
 	this.createDate = new Date();
 	this.extend(new Storable(clone));
+	this.onRemove = function(db) {
+		var self = this.findById(db);
+		var noteBook = self.noteBook.findById(db);
+		if (noteBook.topics && noteBook.topics.length > 0) {
+			noteBook.topics = [];
+			var topics = self.findByProperty("noteBook");
+			topics.each(function(topic) {
+				if (!self.equals(topic)) noteBook.topics.push(topic.uuid);
+			});
+			noteBook.save(db);
+		}
+	};
+	
+	this.onSave = function(db) {
+		var self = this;		
+		var noteBook = new NoteBook(self.noteBook).findById(db);
+		if (noteBook.topics && noteBook.topics.length > 0) {
+			var topics = self.findByProperty("noteBook");
+			var ok = false;
+			topics.each(function(topic) {
+				if (topic.equals(self)) ok = true;
+			});
+			if (!ok) noteBook.topics.push(self.uuid);
+			noteBook.save(db);
+		}
+	
+	};
 }
 
 new Topic().define({

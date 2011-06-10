@@ -292,7 +292,7 @@ font-weight:bold;
 	padding-top: 5px;	
 }
 
-.entry-body * {
+.entry-body a {
 	color:#444;
 }
 

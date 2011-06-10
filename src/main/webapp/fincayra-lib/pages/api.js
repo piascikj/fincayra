@@ -116,6 +116,7 @@
 			} else if (Methods.DELETE == method) {
 				//TODO if objectId contains commas delete a series of objects
 				var object = $getInstance(objName,{id:info.objectId});
+				$log().debug("Preparing to delete object:{}", object.json());
 				result = object.remove();
 			}
 

@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.13.custom.css" type="text/css"/>
 <link rel="stylesheet" type="text/css" href="/js/markitup/skins/simple/style.css" />
 <link rel="stylesheet" type="text/css" href="/js/markitup/sets/markdown/style.css" />
-<link rel="stylesheet" href="/css/github.css" type="text/css"/>
+<link rel="stylesheet" href="/css/zenburn.css" type="text/css"/>
 <script type="text/javascript" src="/js/highlight.min.js"></script>
 <script type="text/javascript" src="/js/markitup/jquery.markitup.js"></script>
 <script type="text/javascript" src="/js/markitup/sets/markdown/set.js"></script>
@@ -218,10 +218,10 @@ function displayNoteBooks() {
 				var topicItems = [];
 				var topics = getTopics(uuid);
 				
-				if (fincayra.noteBook.topics) {
+				if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
 					//If there is a custom sort we use it
 					$.each(fincayra.noteBook.topics, function(key, val) {
-						topicItems.push('<li id="{}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>'.tokenize(val,fincayra.topics[val].name));
+						topicItems.push('<li id="{}"><span title="Drag and drop sort" class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>'.tokenize(val,fincayra.topics[val].name));
 					});
 				} else {
 					//If not we sort alphabetically

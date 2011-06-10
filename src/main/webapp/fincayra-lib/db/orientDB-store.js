@@ -539,11 +539,10 @@ function OrientDBObjectManager() {
 					doc["delete"]();
 				}
 			} catch(e) {
-				$log().debug("Swallowing Exception from findById:");
 				if ($log().isDebugEnabled()) {
 					e.printStackTrace();
 				}
-				//throw new ObjectNotFoundError();
+				throw e;
 			} finally {
 				if (deebee == undefined) db.close();
 			}
