@@ -21,6 +21,10 @@ new NoteBook().define({
 	createDate:{
 		required: true,
 		type: Type.Date
+	},
+	
+	topics:{
+		rel: Relationship.ownsMany
 	}
 });
 

@@ -215,14 +215,35 @@ function displayNoteBooks() {
 				$('#notebook_name').html(fincayra.noteBook.name);
 				$('#notebook_name_display').show();
 				
-				var topics = [];
-				//topics.push('<div class="controls stylized thin"><p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p></div>');
-				topics.push('<p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
-				$.each(getTopics(uuid), function(key, val) {
-					topics.push('<p><a href="#" id="{}" class="topic-link">{}</a></p>'.tokenize(val.uuid,val.name));
-				});
-				ui.newContent.html(topics.join(''));
+				var topicItems = [];
+				var topics = getTopics(uuid);
 				
+				if (fincayra.noteBook.topics) {
+					//If there is a custom sort we use it
+					$.each(fincayra.noteBook.topics, function(key, val) {
+						topicItems.push('<li id="{}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>'.tokenize(val,fincayra.topics[val].name));
+					});
+				} else {
+					//If not we sort alphabetically
+					$.each(topics, function(key, val) {
+						topicItems.push('<li id="{}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>'.tokenize(val.uuid,val.name));
+					});
+				}
+				
+				//Add the topics to the content
+				ui.newContent.html('<ul>' + topicItems.join('') + '</ul>');
+				ui.newContent.find('ul').sortable({
+					//Save the new sort order when a topic is moved
+					stop: function(e, ui) {
+						fincayra.noteBook.topics = ui.item.closest('ul').sortable( "toArray" );
+						saveNoteBook(fincayra.noteBook);
+						
+					}
+				});
+				//add the new topic link to the content
+				ui.newContent.prepend('<p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
+				
+				//The new topic event handler
 				ui.newContent.find('.new-topic').click(function() {
 					fincayra.topic = undefined;
 					hideTopic();
@@ -450,7 +471,7 @@ $(document).ready(function () {
 
 	//bind click to all topics, now and in future
 	$('.topic-link').live('click',function() {
-		uuid = $(this).attr("id");
+		uuid = $(this).closest('li').attr("id");
 		displayTopic(fincayra.topics[uuid]);
 		return false;
 	});
@@ -465,22 +486,24 @@ $(document).ready(function () {
 	});
 
 	$('#topic_ok').click(function() {
+		var topic;
 		if (fincayra.topic) {
-			var topic = {};
+			topic = {};
 			$.extend(topic,fincayra.topic);
 			topic.name = $('#topic_name_edit').val();
 			saveTopic(topic);
-			$('#' + topic.uuid).html(fincayra.topic.name);
+			//$('#' + topic.uuid).html(fincayra.topic.name);
 			$('#topic_name').html(fincayra.topic.name);
 			$('#topic_name_display').show();
 			$('#topic_name_form').hide();
 		} else {
-			var topic = {name:$('#topic_name_edit').val(),owner:fincayra.user,noteBook:fincayra.noteBook};
+			topic = {name:$('#topic_name_edit').val(),owner:fincayra.user,noteBook:fincayra.noteBook};
 			topic = saveTopic(topic);
-			getNoteBooks();
-			$('#notebook_list').accordion("activate",$("#" + topic.noteBook.uuid).parent());
-			displayTopic(topic);
 		}
+
+		getNoteBooks();
+		displayNoteBook(topic.noteBook);
+		displayTopic(topic);
 		return false;
 	});
 	

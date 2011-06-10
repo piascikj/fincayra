@@ -22,9 +22,7 @@
 	//Extend the Simple template - it only needs a title
 	Templates.simple({
 		requireAuth : true,
-		title : "NoteBooks",
-		
-		before : function() {}
+		title : "NoteBooks"
 	});
 	
 	var pageVars = {

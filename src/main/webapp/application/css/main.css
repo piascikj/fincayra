@@ -253,6 +253,14 @@ font-weight:bold;
 	padding-bottom: 5px;
 }
 
+#notebook_list ul {
+	padding: 0;
+}
+
+#notebook_list span.ui-icon {
+	float: left;
+}
+
 .icon-button {
 	cursor: pointer;
 	float: left;
