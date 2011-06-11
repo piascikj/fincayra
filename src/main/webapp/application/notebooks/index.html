@@ -55,6 +55,9 @@ function saveTopic(topic) {
 			fincayra.topic = data;
 			fincayra.topics[topic.uuid] = data;
 		},
+		error: function(data) {
+			$log("returned error from topic save", data);
+		},
 		dataType: 'json'
 	});
 	
@@ -163,9 +166,11 @@ function saveEntry() {
 			fincayra.entry = entry;
 			fincayra.entries[entry.uuid] = entry;
 			//This is a new entry
-			if (el.length == 0) {
-				fincayra.topic.entries.unshift(entry.uuid);
+			if (el.length < 1) {
+				$log("This is a new Entry");
+				if (fincayra.topic.entries)	fincayra.topic.entries.unshift(entry.uuid);
 				saveTopic(fincayra.topic);
+				$log("Done saving topic");
 				el = getEntryElement(entry);
 				el.css({display:"none"});
 				$log("Appending entry", el.html());
@@ -682,7 +687,7 @@ $(document).ready(function () {
 			toc.toc({context:'.help-body'});
 
 		}
-		$('.help').toggle("slide",{direction:"up"},500);
+		$('.help').toggle();
 		$('.ui-layout-center .ui-layout-content').scrollTop(0);
 	});
 	
