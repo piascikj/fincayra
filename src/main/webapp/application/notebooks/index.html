@@ -115,14 +115,17 @@ function getDateString(date) {
 
 function getEntryElement(entry) {
 	var jqo = $('#' + entry.uuid);
+	var title = fincayra.truncate(entry.text.split("\n")[0],100,"...");
 	if (jqo.length == 0) {
 		var date = getDateString(new Date(entry.createDate));
 		var html = $("#entry_tmpl").jqote({
 			id:entry.uuid,
 			date: date,
-			title: fincayra.truncate(entry.text.split("\n")[0],100,"...")
+			title: title
 		});
 		jqo = $(html);
+	} else {
+		jqo.find('.entry-title').html(title);
 	}
 	var html = parseMD(entry.text);
 	jqo.find('.entry-body').html(html);

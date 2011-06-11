@@ -238,7 +238,7 @@ font-weight:bold;
 	height: 20px;
 }
 
-.thin .ui-icon-trash, .entry-header .ui-icon-trash {
+.thin .ui-icon-trash {
 	float: right;
 	margin-right: 5px;
 }
@@ -335,6 +335,11 @@ font-weight:bold;
 
 .entry-header .ui-icon {
 	margin-right: 5px;
+}
+
+.entry-header .ui-icon-trash  {
+	float: right;
+	margin-right: 0;
 }
 
 .entry-toc {
