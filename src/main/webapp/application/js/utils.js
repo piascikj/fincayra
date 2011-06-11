@@ -9,7 +9,7 @@ fincayra.setContentType = function(type) {
 fincayra.truncate = function(text, len, suffix) {
 	if (text != null && text != undefined && text.length > len) {
 		text = text.substring(0, len-suffix.length);
-		text = text.replace(/^(.*) \w*$/, "$1" + suffix);
+		text = text.replace(/^(.*) \w*$/, "$1") + suffix;
 	}
 	
 	return text;

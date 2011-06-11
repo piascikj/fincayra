@@ -238,6 +238,11 @@ font-weight:bold;
 	height: 20px;
 }
 
+.thin .ui-icon-trash, .entry-header .ui-icon-trash {
+	float: right;
+	margin-right: 5px;
+}
+
 .container ul {
 	color:blue; 
 	cursor:pointer;
@@ -284,6 +289,10 @@ font-weight:bold;
 	border:solid 2px #b7ddf2;
 	/*background:#ebf4fb;*/
 	margin-bottom: 10px;
+}
+
+.entry-title {
+	margin-left: 10px;
 }
 
 .entry-body {
@@ -340,6 +349,7 @@ font-weight:bold;
 .date {
 	float:right;
 	font-size: 10px;
+	margin-right: 5px;
 }
 
 .ui-layout-content {
@@ -360,7 +370,7 @@ font-weight:bold;
 	padding-top: 5px;	
 }
 
-.help-body * {
+.help-body a {
 	color:#444;
 }
 

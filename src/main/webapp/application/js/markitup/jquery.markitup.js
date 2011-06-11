@@ -506,7 +506,10 @@
 
 				if (e.type === 'keydown') {
 					if (ctrlKey === true) {
-						li = $("a[accesskey="+String.fromCharCode(e.keyCode)+"]", header).parent('li');
+						try {
+							li = $("a[accesskey="+String.fromCharCode(e.keyCode)+"]", header).parent('li');
+						} catch(e) {
+						}
 						if (li.length !== 0) {
 							ctrlKey = false;
 							setTimeout(function() {

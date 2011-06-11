@@ -32,6 +32,7 @@
 		deleteNoteBook : "/api/NoteBook/{}",
 		getTopics : "/api/Topic?qry=noteBook.uuid = '{}' order by name",
 		saveTopic : "/api/Topic",
+		getTopic : "/api/Topic/{}",
 		deleteTopic : "/api/Topic/{}",
 		getLastTopic : "/notebooks/api/topic/getLastTopic",
 		setLastTopic : "/notebooks/api/topic/setLastTopic/{}",
@@ -40,6 +41,7 @@
 		deleteEntry : "/api/Entry/{}",
 		noteBooks : {},
 		topics : {},
+		entries : {},
 		autoSaveIncrement : 1000*20 //save once every twenty seconds
 	};
 	

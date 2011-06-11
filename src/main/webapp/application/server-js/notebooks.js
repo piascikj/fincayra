@@ -76,12 +76,43 @@ new Topic().define({
 	createDate:{
 		required:true,
 		type:Type.Date
+	},
+
+	entries:{
+		rel: Relationship.ownsMany
 	}
 });
 
 function Entry(clone) {
 	this.createDate = new Date();
 	this.extend(new Storable(clone));
+	this.onRemove = function(db) {
+		var self = this.findById(db);
+		var topic = self.topic.findById(db);
+		if (topic.entries && topic.entries.length > 0) {
+			topic.entries = [];
+			var entries = self.findByProperty("topic");
+			entries.each(function(entry) {
+				if (!self.equals(entry)) topic.entries.push(entry.uuid);
+			});
+			topic.save(db);
+		}
+	};
+	
+	this.onSave = function(db) {
+		var self = this;		
+		var topic = new Topic(self.topic).findById(db);
+		if (topic.entries && topic.entries.length > 0) {
+			var entries = self.findByProperty("topic");
+			var ok = false;
+			entries.each(function(entry) {
+				if (entry.equals(self)) ok = true;
+			});
+			if (!ok) topic.entries.push(self.uuid);
+			topic.save(db);
+		}
+	
+	};
 }
 
 new Entry().define({

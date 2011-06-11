@@ -71,11 +71,36 @@ function getEntries() {
 	entries.spinner(spinnerOpts);
 	fincayra.entry = undefined;
 	$.getJSON(fincayra.getEntries.tokenize(fincayra.topic.uuid),function(data) {
-		$.each(data.results, function(key, val) {
-			var entry = getEntryElement(val);
-			entries.append(entry);
+		
+		if (fincayra.topic.entries && fincayra.topic.entries.length > 0) {
+			fincayra.entries = {};
+			$.each(data.results, function(key, val) {
+				fincayra.entries[val.uuid] = val;
+			});
+			$.each(fincayra.topic.entries, function(key, val) {
+				var entry = getEntryElement(fincayra.entries[val]);
+				entries.append(entry);
+			});
+		} else {
+			$.each(data.results, function(key, val) {
+				var entry = getEntryElement(val);
+				entries.append(entry);
+			});
+		}
+
+		$('#entries').sortable({
+			axis:"y",
+			handle:".entry-header",
+			//Save the new sort order when a topic is moved
+			stop: function(e, ui) {
+				fincayra.topic.entries = $('#entries').sortable( "toArray" );
+				saveTopic(fincayra.topic);
+			}
+			
 		});
+
 		highlight();
+
 	});
 	entries.spinner('remove');
 }
@@ -94,13 +119,14 @@ function getEntryElement(entry) {
 		var date = getDateString(new Date(entry.createDate));
 		var html = $("#entry_tmpl").jqote({
 			id:entry.uuid,
-			date: date
+			date: date,
+			title: fincayra.truncate(entry.text.split("\n")[0],100,"...")
 		});
 		jqo = $(html);
 	}
 	var html = parseMD(entry.text);
 	jqo.find('.entry-body').html(html);
-	$log("jqo=" + $("#entry_tmpl").text());
+	//$log("jqo=" + $("#entry_tmpl").text());
 	return jqo.data({object:entry, html:html});
 }
 
@@ -132,7 +158,11 @@ function saveEntry() {
 			$log("Entry returned from save!",entry);
 			var el = $('#' + data.uuid);
 			fincayra.entry = entry;
+			fincayra.entries[entry.uuid] = entry;
+			//This is a new entry
 			if (el.length == 0) {
+				fincayra.topic.entries.unshift(entry.uuid);
+				saveTopic(fincayra.topic);
 				el = getEntryElement(entry);
 				el.css({display:"none"});
 				$log("Appending entry", el.html());
@@ -174,6 +204,15 @@ function getTopics(uuid) {
 	});
 	return topics;
 }
+
+function getTopic(id) {
+	$.getJSON(fincayra.getTopic.tokenize(id),function(data) {
+		fincayra.topics[data.uuid] = data;
+		fincayra.topic = data;
+	});
+	return fincayra.topic;
+}
+
 function displayTopic(topic) {
 	$.getJSON(fincayra.setLastTopic.tokenize(topic.id));
 	fincayra.topic = topic;
@@ -217,16 +256,17 @@ function displayNoteBooks() {
 				
 				var topicItems = [];
 				var topics = getTopics(uuid);
+				var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
 				
 				if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
 					//If there is a custom sort we use it
 					$.each(fincayra.noteBook.topics, function(key, val) {
-						topicItems.push('<li id="{}"><span title="Drag and drop sort" class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>'.tokenize(val,fincayra.topics[val].name));
+						topicItems.push(topicTmpl.tokenize(val,fincayra.topics[val].name));
 					});
 				} else {
 					//If not we sort alphabetically
 					$.each(topics, function(key, val) {
-						topicItems.push('<li id="{}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>'.tokenize(val.uuid,val.name));
+						topicItems.push(topicTmpl.tokenize(val.uuid,val.name));
 					});
 				}
 				
@@ -238,7 +278,8 @@ function displayNoteBooks() {
 						fincayra.noteBook.topics = ui.item.closest('ul').sortable( "toArray" );
 						saveNoteBook(fincayra.noteBook);
 						
-					}
+					},
+					axis:"y"
 				});
 				//add the new topic link to the content
 				ui.newContent.prepend('<p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
@@ -369,7 +410,7 @@ function init() {
 	$.getJSON(fincayra.getLastTopic,function(data) {
 		var topic = data.topic;
 		if (topic) {
-			$log("Display last topic: ", topic);
+			//$log("Display last topic: ", topic);
 			displayNoteBook(topic.noteBook);
 			displayTopic(topic);
 		}
@@ -549,14 +590,16 @@ $(document).ready(function () {
 	
 	$('.entry_delete').live("click", function() {
 		var el = $(this).parents(".entry");
-		var entryId = el.data("object").id;
+		var entry = el.data("object");
 		confirmDelete("Delete Entry", 'Do you realy want to delete this Entry?',
 		function() {
 			$.ajax({
 				type: "DELETE",
-				url: fincayra.deleteEntry.tokenize(entryId),
+				url: fincayra.deleteEntry.tokenize(entry.id),
 				success: function(data) {
 					el.remove();
+					fincayra.entries[entry.uuid] = undefined;
+					getTopic(fincayra.topic.id);
 				},
 				dataType: 'json'
 			});
@@ -648,13 +691,14 @@ $(document).ready(function () {
 	  <![CDATA[
 		<div class="entry" id="<%= this.id %>">
 			<div class="entry-header">
-				<span class="date"><%= this.date %></span>
 				<span class="entry_expand ui-icon ui-icon-plus icon-button" style="display:none" title="Expand entry"></span>
 				<span class="entry_collapse ui-icon ui-icon-minus icon-button" title="Collapse entry"></span>
 				<span class="entry_edit ui-icon ui-icon-pencil icon-button" title="Edit Entry"></span>
 				<span class="entry_toc ui-icon ui-icon-bookmark icon-button" title="Toggle Table of Contents"></span>
 				<span class="entry_print ui-icon ui-icon-print icon-button" title="Print Entry"></span>
+				<span class="entry-title"><%= this.title%></span>
 				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
+				<span class="date"><%= this.date %></span>
 			</div>
 			<div class="entry-toc" style="display:none"></div>
 			<div class="entry-body"></div>
