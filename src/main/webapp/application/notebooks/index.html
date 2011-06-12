@@ -46,6 +46,7 @@ function saveNoteBook(noteBook) {
 }
 
 function saveTopic(topic) {
+	$log("Saving topic", topic);
 	var type = (topic.uuid)?"POST":"PUT";
 	$.ajax({
 		type: type,
@@ -225,7 +226,7 @@ function displayTopic(topic) {
 	$.getJSON(fincayra.setLastTopic.tokenize(topic.id));
 	fincayra.topic = topic;
 	$('#topic_name_box').show();
-	$('#topic_name').html(fincayra.topic.name);
+	$('#topic_name').text(fincayra.topic.name);
 	$('#topic_name_display').show();
 	$('#topic_name_edit').val(fincayra.topic.name);
 	$('#topic_name_form').hide();
@@ -259,7 +260,7 @@ function displayNoteBooks() {
 				hideTopic();
 				$('#notebook_name_form').hide();
 				$('#notebook_name_box').show();
-				$('#notebook_name').html(fincayra.noteBook.name);
+				$('#notebook_name').text(fincayra.noteBook.name);
 				$('#notebook_name_display').show();
 				
 				var topicItems = [];
@@ -309,7 +310,7 @@ function displayNoteBooks() {
 		},
 		autoHeight: false,
 		collapsible: true
-	});
+	}).css({padding:"0 10px"});
 }
 
 function displayNoteBook(noteBook) {
@@ -491,7 +492,7 @@ $(document).ready(function () {
 			$.extend(noteBook,fincayra.noteBook);
 			noteBook.name = $('#notebook_name_edit').val();
 			saveNoteBook(noteBook);
-			$('#' + noteBook.uuid).html(fincayra.noteBook.name);
+			$('#' + noteBook.uuid).text(fincayra.noteBook.name);
 			$('#notebook_name').html(fincayra.noteBook.name);
 			$('#notebook_name_display').show();
 			$('#notebook_name_form').hide();
@@ -507,7 +508,7 @@ $(document).ready(function () {
 	
 	$('#notebook_cancel').click(function() {
 		if (fincayra.noteBook) {
-			$('#notebook_name').html(fincayra.noteBook.name);
+			$('#notebook_name').text(fincayra.noteBook.name);
 			$('#notebook_name_display').show();
 			$('#notebook_name_edit').val(fincayra.noteBook.name);
 			$('#notebook_name_form').hide();
@@ -542,7 +543,7 @@ $(document).ready(function () {
 			topic.name = $('#topic_name_edit').val();
 			saveTopic(topic);
 			//$('#' + topic.uuid).html(fincayra.topic.name);
-			$('#topic_name').html(fincayra.topic.name);
+			$('#topic_name').text(fincayra.topic.name);
 			$('#topic_name_display').show();
 			$('#topic_name_form').hide();
 		} else {
@@ -558,7 +559,7 @@ $(document).ready(function () {
 	
 	$('#topic_cancel').click(function() {
 		if (fincayra.topic) {
-			$('#topic_name').html(fincayra.topic.name);
+			$('#topic_name').text(fincayra.topic.name);
 			$('#topic_name_display').show();
 			$('#topic_name_edit').val(fincayra.noteBook.name);
 			$('#topic_name_form').hide();
@@ -744,7 +745,7 @@ $(document).ready(function () {
 					</p>
 				</div>
 			</div>
-			<div class="ui-layout-content">
+			<div class="ui-layout-content" id="notebook_container">
 				<div class="help" style="display:none">
 					<div class="help-toc"></div>
 					<div class="help-body"></div>

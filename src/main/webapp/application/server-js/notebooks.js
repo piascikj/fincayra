@@ -8,8 +8,8 @@ function NoteBook(clone) {
 new NoteBook().define({
 	name:{
 		index:true,
-		pattern:/^([a-zA-Z0-9 .'-_])+$/,
-		error:"Must be letters, numbers, spaces and _ . -"
+		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
+		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%"
 	},
 	
 	owner:{
@@ -63,8 +63,8 @@ function Topic(clone) {
 new Topic().define({
 	name:{
 		index:true,
-		pattern:/^([a-zA-Z0-9 .'-_])+$/,
-		error:"Must be letters, numbers, spaces and _ . -"
+		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
+		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%"
 	},
 	
 	noteBook:{

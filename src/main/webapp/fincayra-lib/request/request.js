@@ -13,10 +13,10 @@
  *   limitations under the License.
  */
 //Get a reference to the request scope
-var scope = this;
+var scope = this, req;
 
 try {
-	var req = new Request(scope);
+	req = new Request(scope);
 
 	//Put all request functions in scope
 	for (prop in req) {scope[prop] = req[prop];}
@@ -43,6 +43,7 @@ try {
 	$setPageParams({error:e});
 	$log().debug("isAPI:{}", scope.isAPI);
 	if (scope.isAPI == true) {
+		$setStatus(400);
 		$j({error:e});
 	} else {
 		$f($getErrorPage());

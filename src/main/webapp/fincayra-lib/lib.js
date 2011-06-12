@@ -803,6 +803,17 @@ Request.prototype.$getMethod = function() {
 };
 
 /*
+	Func: $setStatus
+	Set the HTTP status code of the reponse
+
+	Parameters:
+		code - int
+*/
+Request.prototype.$setStatus = function(code) {
+	this.scope.context.response.setStatus(code);
+};
+
+/*
 	Func: $getCurrentDir
 	Get the current directory path assuming the application.pageDir is root.
 	
