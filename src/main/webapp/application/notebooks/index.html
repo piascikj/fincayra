@@ -3,14 +3,17 @@
 <link rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.13.custom.css" type="text/css"/>
 <link rel="stylesheet" type="text/css" href="/js/markitup/skins/simple/style.css" />
 <link rel="stylesheet" type="text/css" href="/js/markitup/sets/markdown/style.css" />
-<link rel="stylesheet" href="/css/zenburn.css" type="text/css"/>
+<link rel="stylesheet" href="/css/sunburst.css" type="text/css"/>
+<link rel="stylesheet" href="/css/tipsy.css" type="text/css"/>
 <script type="text/javascript" src="/js/highlight.min.js"></script>
 <script type="text/javascript" src="/js/markitup/jquery.markitup.js"></script>
 <script type="text/javascript" src="/js/markitup/sets/markdown/set.js"></script>
 <script type="text/javascript" src="/js/showdown.js"></script>
 <script type="text/javascript" src="/js/jquery.toc-1.1.1.js"></script>
+<script type="text/javascript" src="/js/jquery.tipsy.js"></script>
 <script>
 var spinnerOpts = {position:'center',img:'/js/spinner.gif'};
+
 
 function getNoteBooks() {
 	$.getJSON(fincayra.getNoteBooks,function(data) {
@@ -47,7 +50,7 @@ function saveNoteBook(noteBook) {
 
 function saveTopic(topic) {
 	$log("Saving topic", topic);
-	var type = (topic.uuid)?"POST":"PUT";
+	var e, type = (topic.uuid)?"POST":"PUT";
 	$.ajax({
 		type: type,
 		url: fincayra.saveTopic,
@@ -58,9 +61,13 @@ function saveTopic(topic) {
 		},
 		error: function(data) {
 			$log("returned error from topic save", data);
+			e = JSON.parse(data.responseText).error;
+			$log("Error:", e);
 		},
 		dataType: 'json'
 	});
+	
+	if (e) throw e;
 	
 	return fincayra.topic;
 }
@@ -201,6 +208,21 @@ function closeEntry() {
 	fincayra.editor.detach();
 	highlight();
 }
+
+function TopicView() {
+	this.nameBox = $('#topic_name_box');
+	//These are the display elements
+	this.nameDisplay = $('#topic_name_display');
+	this.name = $('#topic_name');
+	this.delete = $('#topic_delete');
+	//These are the form elements
+	this.nameForm = $('#topic_name_form');
+	this.nameInput = $('#topic_name_edit');
+	this.okButton = $('#topic_ok');
+	this.cancelButton = $('#topic_cancel');
+	
+	
+};
 
 function getTopics(uuid) {
 	var topics = [];
@@ -536,24 +558,42 @@ $(document).ready(function () {
 	});
 
 	$('#topic_ok').click(function() {
-		var topic;
+		var topic, ok = true;
 		if (fincayra.topic) {
 			topic = {};
 			$.extend(topic,fincayra.topic);
 			topic.name = $('#topic_name_edit').val();
-			saveTopic(topic);
-			//$('#' + topic.uuid).html(fincayra.topic.name);
-			$('#topic_name').text(fincayra.topic.name);
-			$('#topic_name_display').show();
-			$('#topic_name_form').hide();
+			try {
+				saveTopic(topic);
+				//$('#' + topic.uuid).html(fincayra.topic.name);
+				$('#topic_name').text(fincayra.topic.name);
+				$('#topic_name_display').show();
+				$('#topic_name_form').hide();
+			} catch (error) {
+				ok = false;
+				$log("Caught exception while saving topic", error);
+				var title;
+				if (error && error.violations && error.violations.name) title = error.violations.name;
+				var tip = $('#topic_name_edit');
+				tip.attr('title',title);
+				tip.tipsy({
+					trigger:'focus',
+					gravity:'s'
+				});
+				//tip.tipsy(true).show();
+				tip.select().focus();
+			}
+				
 		} else {
 			topic = {name:$('#topic_name_edit').val(),owner:fincayra.user,noteBook:fincayra.noteBook};
 			topic = saveTopic(topic);
 		}
 
-		getNoteBooks();
-		displayNoteBook(topic.noteBook);
-		displayTopic(topic);
+		if (ok) {
+			getNoteBooks();
+			displayNoteBook(topic.noteBook);
+			displayTopic(topic);
+		}
 		return false;
 	});
 	
@@ -719,7 +759,7 @@ $(document).ready(function () {
 	</div>
 	<div id="notebooks-app" style="height:100%">
 		<div class="ui-layout-center">
-			<div class="ui-layout-header">
+			<div class="ui-layout-header" id="notebooks_app_header">
 				<div id="notebook_name_box" class="stylized thin level1" style="display:none;">
 					<form id="notebook_name_form" style="display:none;">
 						<input type="text" class="text" name="name" id="notebook_name_edit" autocomplete="off"/>
