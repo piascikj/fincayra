@@ -24,11 +24,11 @@ function getNoteBooks() {
 			fincayra.noteBooks[val.uuid] = val;
 		});
 				
-		$('#notebook_list').accordion("destroy");
+		fincayra.noteBookView.list.accordion("destroy");
 
-		$('#notebook_name_box').hide();
+		fincayra.noteBookView.nameBox.hide();
 		
-		displayNoteBooks();
+		fincayra.noteBookView.displayNoteBooks();
 	});
 }
 
@@ -209,8 +209,182 @@ function closeEntry() {
 	highlight();
 }
 
+function NoteBookView() {
+	var $this = this;
+	this.list = $('#notebook_list');
+	this.name = $('#notebook_name');
+	this.nameBox = $('#notebook_name_box');
+	this.nameDisplay = $('#notebook_name_display');
+	this.nameForm =	$('#notebook_name_form');
+	this.nameInput = $('#notebook_name_edit');
+	
+	this.newButton = $('#new_notebook');
+	this.deleteButton = $('#notebook_delete');
+	this.okButton = $('#notebook_ok');
+	this.cancelButton = $('#notebook_cancel');
+	
+	this.newClick = function(event) {
+		fincayra.noteBook = undefined;
+		fincayra.topic = undefined;
+		fincayra.topicView.hideTopic();
+		$this.list.accordion('activate', false);
+		$this.nameBox.show();
+		fincayra.topicView.nameBox.hide();
+		$this.nameDisplay.hide();
+		$this.nameForm.show();
+		$this.nameInput.val("New NoteBook").select().focus();
+		return false;
+	};
+	
+	this.newButton.click(this.newClick);
+	
+	this.nameClick = function() {
+		$this.nameBox.show();
+		$this.nameDisplay.hide();
+		$this.nameInput.val(fincayra.noteBook.name);
+		$this.nameForm.show();
+		$this.nameInput.focus();
+		return false;
+	};
+	
+	this.name.click(this.nameClick);
+	
+	this.deleteClick = function() {
+		confirmDelete("Delete NoteBook", 'Do you realy want to delete "{}"?'.tokenize(fincayra.noteBook.name),
+		function() {
+			$.ajax({
+				type: "DELETE",
+				url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
+				success: function(data) {
+					getNoteBooks();
+					fincayra.topicView.hideTopic();
+				},
+				dataType: 'json'
+			});
+		});		
+	};
+	
+	this.deleteButton.click(this.deleteClick);
+	
+	this.okClick = function() {
+		if (fincayra.noteBook) {
+			var noteBook = {};
+			$.extend(noteBook,fincayra.noteBook);
+			noteBook.name = $this.nameInput.val();
+			saveNoteBook(noteBook);
+			$('#' + noteBook.uuid).text(fincayra.noteBook.name);
+			$this.name.html(fincayra.noteBook.name);
+			$this.nameDisplay.show();
+			$this.nameForm.hide();
+		} else {
+			var noteBook = {name:$this.nameInput.val(),owner:fincayra.user};
+			saveNoteBook(noteBook);
+			$.extend(noteBook,fincayra.noteBook);
+			getNoteBooks();
+			fincayra.noteBookView.displayNoteBook(noteBook);
+		}
+		return false;
+	};
+	
+	this.okButton.click(this.okClick);
+	
+	this.cancelClick = function() {
+		if (fincayra.noteBook) {
+			$this.name.text(fincayra.noteBook.name);
+			$this.nameDisplay.show();
+			$this.nameInput.val(fincayra.noteBook.name);
+			$this.nameForm.hide();
+		} else {
+			$this.nameBox.hide();
+		}
+		return false;
+	};
+	
+	this.cancelButton.click(this.cancelClick);
+
+	this.displayNoteBooks = function() {
+		//Get the notebook data
+		var items = [];
+		$.each(fincayra.noteBooks, function(key, val) {
+			items.push('<h3><a href="#" id="{}">{}</a></h3><div></div>'.tokenize(key,val.name));
+		});
+		
+		
+		$this.list.html(items.join('')).accordion({
+			active:false,
+			header:'h3',
+			changestart:function(event, ui) {
+				var uuid = ui.newHeader.find('a').attr('id');
+				fincayra.noteBook = fincayra.noteBooks[uuid];
+				if (fincayra.noteBook) {
+					$('#entries').html('');
+					fincayra.topicView.hideTopic();
+					$this.nameForm.hide();
+					$this.nameBox.show();
+					$this.name.text(fincayra.noteBook.name);
+					$this.nameDisplay.show();
+					
+					var topicItems = [];
+					var topics = getTopics(uuid);
+					var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="tip ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
+					
+					if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
+						//If there is a custom sort we use it
+						$.each(fincayra.noteBook.topics, function(key, val) {
+							topicItems.push(topicTmpl.tokenize(val,fincayra.topics[val].name));
+						});
+					} else {
+						//If not we sort alphabetically
+						$.each(topics, function(key, val) {
+							topicItems.push(topicTmpl.tokenize(val.uuid,val.name));
+						});
+					}
+					
+					//Add the topics to the content
+					ui.newContent.html('<ul>' + topicItems.join('') + '</ul>');
+					ui.newContent.find('ul').sortable({
+						//Save the new sort order when a topic is moved
+						stop: function(e, ui) {
+							fincayra.noteBook.topics = ui.item.closest('ul').sortable( "toArray" );
+							saveNoteBook(fincayra.noteBook);
+							
+						},
+						axis:"y"
+					});
+					//add the new topic link to the content
+					ui.newContent.prepend('<p><a href="#" title="Add a Topic to this NoteBook." class="tip new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
+					
+					//The new topic event handler
+					ui.newContent.find('.new-topic').click(function() {
+						fincayra.topic = undefined;
+						fincayra.topicView.hideTopic();
+						fincayra.topicView.nameBox.show();
+						fincayra.topicView.nameDisplay.hide();
+						fincayra.topicView.nameForm.show();
+						fincayra.topicView.nameInput.val("New Topic").select().focus();
+						return false;
+					});
+					
+					ui.newContent.find('.topic-link').first().click();
+				}
+
+			},
+			autoHeight: false,
+			collapsible: true
+		}).css({padding:"0 10px"});
+	};
+
+	this.displayNoteBook = function(noteBook) {
+		fincayra.noteBook = noteBook;
+		fincayra.topic = undefined;
+		fincayra.entry = undefined;
+		$this.list.accordion("activate",$("#" + noteBook.uuid).parent());
+	};
+
+};
+	
 function TopicView() {
-	$this = this;
+	var $this = this;
 	$this.nameBox = $('#topic_name_box');
 	//These are the display elements
 	$this.nameDisplay = $('#topic_name_display');
@@ -267,8 +441,8 @@ function TopicView() {
 
 		if (ok) {
 			getNoteBooks();
-			displayNoteBook(topic.noteBook);
-			displayTopic(topic);
+			fincayra.noteBookView.displayNoteBook(topic.noteBook);
+			fincayra.topicView.displayTopic(topic);
 		}
 
 		return false;
@@ -283,7 +457,7 @@ function TopicView() {
 			$this.nameInput.val(fincayra.noteBook.name);
 			$this.nameForm.hide();
 		} else {
-			hideTopic();
+			$this.hideTopic();
 		}
 
 		return false;
@@ -310,8 +484,26 @@ function TopicView() {
 	};
 	
 	this.deleteButton.click(this.deleteClick);
-	
-};
+
+	this.displayTopic = function(topic) {
+		$.getJSON(fincayra.setLastTopic.tokenize(topic.id));
+		fincayra.topic = topic;
+		this.nameBox.show();
+		this.name.text(fincayra.topic.name);
+		this.nameDisplay.show();
+		this.nameInput.val(fincayra.topic.name);
+		this.nameForm.hide();
+		getEntries();
+		fincayra.layout.initContent("center",true);
+		return fincayra.topic;
+	}
+
+	this.hideTopic = function() {
+		this.nameBox.hide();
+		$('#entries').html('');
+		$('#entry_editor').detach();
+	}
+}
 
 function getTopics(uuid) {
 	var topics = [];
@@ -332,105 +524,6 @@ function getTopic(id) {
 	});
 	return fincayra.topic;
 }
-
-function displayTopic(topic) {
-	$.getJSON(fincayra.setLastTopic.tokenize(topic.id));
-	fincayra.topic = topic;
-	$('#topic_name_box').show();
-	$('#topic_name').text(fincayra.topic.name);
-	$('#topic_name_display').show();
-	$('#topic_name_edit').val(fincayra.topic.name);
-	$('#topic_name_form').hide();
-	getEntries();
-	fincayra.layout.initContent("center",true);
-	return fincayra.topic;
-}
-
-function hideTopic() {
-	$('#topic_name_box').hide();
-	$('#entries').html('');
-	$('#entry_editor').detach();
-}
-
-function displayNoteBooks() {
-	//Get the notebook data
-	var items = [];
-	$.each(fincayra.noteBooks, function(key, val) {
-		items.push('<h3><a href="#" id="{}">{}</a></h3><div></div>'.tokenize(key,val.name));
-	});
-	
-	
-	$('#notebook_list').html(items.join('')).accordion({
-		active:false,
-		header:'h3',
-		changestart:function(event, ui) {
-			var uuid = ui.newHeader.find('a').attr('id');
-			fincayra.noteBook = fincayra.noteBooks[uuid];
-			if (fincayra.noteBook) {
-				$('#entries').html('');
-				hideTopic();
-				$('#notebook_name_form').hide();
-				$('#notebook_name_box').show();
-				$('#notebook_name').text(fincayra.noteBook.name);
-				$('#notebook_name_display').show();
-				
-				var topicItems = [];
-				var topics = getTopics(uuid);
-				var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
-				
-				if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
-					//If there is a custom sort we use it
-					$.each(fincayra.noteBook.topics, function(key, val) {
-						topicItems.push(topicTmpl.tokenize(val,fincayra.topics[val].name));
-					});
-				} else {
-					//If not we sort alphabetically
-					$.each(topics, function(key, val) {
-						topicItems.push(topicTmpl.tokenize(val.uuid,val.name));
-					});
-				}
-				
-				//Add the topics to the content
-				ui.newContent.html('<ul>' + topicItems.join('') + '</ul>');
-				ui.newContent.find('ul').sortable({
-					//Save the new sort order when a topic is moved
-					stop: function(e, ui) {
-						fincayra.noteBook.topics = ui.item.closest('ul').sortable( "toArray" );
-						saveNoteBook(fincayra.noteBook);
-						
-					},
-					axis:"y"
-				});
-				//add the new topic link to the content
-				ui.newContent.prepend('<p><a href="#" title="Add a Topic" class="new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
-				
-				//The new topic event handler
-				ui.newContent.find('.new-topic').click(function() {
-					fincayra.topic = undefined;
-					hideTopic();
-					$('#topic_name_box').show();
-					$('#topic_name_display').hide();
-					$('#topic_name_form').show();
-					$('#topic_name_edit').val("New Topic").select().focus();
-					return false;
-				});
-				
-				ui.newContent.find('.topic-link').first().click();
-			}
-
-		},
-		autoHeight: false,
-		collapsible: true
-	}).css({padding:"0 10px"});
-}
-
-function displayNoteBook(noteBook) {
-	fincayra.noteBook = noteBook;
-	fincayra.topic = undefined;
-	fincayra.entry = undefined;
-	$('#notebook_list').accordion("activate",$("#" + noteBook.uuid).parent());
-};
-
 
 function confirmDelete(title, message, okCallback) {
 	var confirm = $("#dialog_confirm").attr("title", title);
@@ -481,12 +574,17 @@ function initEditor() {
 function init() {
 	//Tipsy for icon-button
 	$(".icon-button").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
+	
+	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 
 	//Set up converter
 	fincayra.showdown = new Showdown.converter();
 
 	//Create the TopicView
 	fincayra.topicView = new TopicView();
+	
+	//Create the NoteBookView
+	fincayra.noteBookView = new NoteBookView();
 
 	//No asynch
 	$.ajaxSetup({async:false,contentType:"application/json"});
@@ -517,7 +615,7 @@ function init() {
 	initEditor();
 	
 	//display the notebooks
-	displayNoteBooks();
+	fincayra.noteBookView.displayNoteBooks();
 	
 	//Save entry if open
 	setInterval(function () {
@@ -537,8 +635,8 @@ function init() {
 		var topic = data.topic;
 		if (topic) {
 			//$log("Display last topic: ", topic);
-			displayNoteBook(topic.noteBook);
-			displayTopic(topic);
+			fincayra.noteBookView.displayNoteBook(topic.noteBook);
+			fincayra.topicView.displayTopic(topic);
 		}
 	});
 }
@@ -561,86 +659,14 @@ function getTOC(entry) {
 	return toc;
 };
 
-var topicView;
-
 $(document).ready(function () {
 	init();
 	
 	//event handlers
-	$('#new_notebook').click(function(event) {
-		fincayra.noteBook = undefined;
-		fincayra.topic = undefined;
-		hideTopic();
-		$('#notebook_list').accordion('activate', false);
-		$('#notebook_name_box').show();
-		$('#topic_name_box').hide();
-		$('#notebook_name_display').hide();
-		$('#notebook_name_form').show();
-		$('#notebook_name_edit').val("New NoteBook").select().focus();
-		return false;
-	});
-	
-	$('#notebook_name').click(function() {
-		$('#notebook_name_box').show();
-		$('#notebook_name_display').hide();
-		$('#notebook_name_edit').val(fincayra.noteBook.name);
-		$('#notebook_name_form').show();
-		$('#notebook_name_edit').focus();
-		return false;
-	});
-	
-	$('#notebook_delete').click(function() {
-		confirmDelete("Delete NoteBook", 'Do you realy want to delete "{}"?'.tokenize(fincayra.noteBook.name),
-		function() {
-			$.ajax({
-				type: "DELETE",
-				url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
-				success: function(data) {
-					getNoteBooks();
-					hideTopic();
-				},
-				dataType: 'json'
-			});
-		});		
-	});
-	
-	$('#notebook_ok').click(function() {
-		if (fincayra.noteBook) {
-			var noteBook = {};
-			$.extend(noteBook,fincayra.noteBook);
-			noteBook.name = $('#notebook_name_edit').val();
-			saveNoteBook(noteBook);
-			$('#' + noteBook.uuid).text(fincayra.noteBook.name);
-			$('#notebook_name').html(fincayra.noteBook.name);
-			$('#notebook_name_display').show();
-			$('#notebook_name_form').hide();
-		} else {
-			var noteBook = {name:$('#notebook_name_edit').val(),owner:fincayra.user};
-			saveNoteBook(noteBook);
-			$.extend(noteBook,fincayra.noteBook);
-			getNoteBooks();
-			displayNoteBook(noteBook);
-		}
-		return false;
-	});
-	
-	$('#notebook_cancel').click(function() {
-		if (fincayra.noteBook) {
-			$('#notebook_name').text(fincayra.noteBook.name);
-			$('#notebook_name_display').show();
-			$('#notebook_name_edit').val(fincayra.noteBook.name);
-			$('#notebook_name_form').hide();
-		} else {
-			$('#notebook_name_box').hide();
-		}
-		return false;
-	});
-	
-
 	//bind click to all topics, now and in future
 	$('.topic-link').live('click',function() {
 		uuid = $(this).closest('li').attr("id");
-		displayTopic(fincayra.topics[uuid]);
+		fincayra.topicView.displayTopic(fincayra.topics[uuid]);
 		return false;
 	});
 	
@@ -817,7 +843,7 @@ $(document).ready(function () {
 		<div class="ui-layout-west">
 			<div class="controls stylized thin level1 ui-layout-header">
 				<p>
-				<a href="#" id="new_notebook" class="new-link" title="Create a new NoteBook"><span id="entry_add" class="ui-icon ui-icon-note icon-button"></span>Create a new NoteBook...</a>
+				<a href="#" id="new_notebook" class="tip new-link" title="Add a new NoteBook to your collection."><span id="entry_add" class="ui-icon ui-icon-note icon-button"></span>Create a new NoteBook...</a>
 				</p>
 			</div>
 			<div id="notebook_list" class="ui-layout-content">
