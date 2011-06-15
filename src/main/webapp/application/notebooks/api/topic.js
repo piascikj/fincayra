@@ -1,5 +1,6 @@
 (function() {
-
+	$isAPI(true);//Have to set in case we get an auth error
+	requireAuth();
 	$api({
 		
 		getLastTopic : function() {

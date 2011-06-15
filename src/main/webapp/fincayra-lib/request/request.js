@@ -41,8 +41,8 @@ try {
 	$log().error("Caught an exception while running global request file");
 	e.printStackTrace();
 	$setPageParams({error:e});
-	$log().debug("isAPI:{}", scope.isAPI);
-	if (scope.isAPI == true) {
+	$log().debug("isAPI:{}", scope.$isAPI());
+	if (scope.$isAPI() == true) {
 		$setStatus(400);
 		$j({error:e});
 	} else {

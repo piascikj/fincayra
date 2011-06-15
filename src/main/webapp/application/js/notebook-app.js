@@ -332,13 +332,17 @@ function NoteBookView() {
 					ui.newContent.find('ul').sortable({
 						start: function(e, ui) {
 							ui.item.find('.tip').tipsy(true).hide();
-							ui.item.closest('ul').find('.tip').tipsy(true).disable();
+							//ui.item.closest('ul').find('.tip').tipsy(true).disable();
 						},
 						//Save the new sort order when a topic is moved
 						stop: function(e, ui) {
-							ui.item.closest('ul').find('.tip').tipsy(true).enable();
 							fincayra.noteBook.topics = ui.item.closest('ul').sortable( "toArray" );
 							saveNoteBook(fincayra.noteBook);
+							//ui.item.closest('ul').find('.tip').tipsy(true).enable();
+						},
+						
+						update: function(e, ui) {
+							//ui.item.closest('ul').find('.tip').tipsy(true).enable();
 						},
 						axis:"y"
 					});
@@ -382,6 +386,7 @@ function TopicView() {
 	$this.nameDisplay = $('#topic_name_display');
 	$this.name = $('#topic_name');
 	$this.deleteButton = $('#topic_delete');
+	
 	//These are the form elements
 	$this.nameForm = $('#topic_name_form');
 	$this.nameInput = $('#topic_name_edit');
@@ -497,6 +502,10 @@ function TopicView() {
 	}
 }
 
+function EntryView() {
+	var $this = this;
+}
+
 function getTopics(uuid) {
 	var topics = [];
 	fincayra.topics = {};
@@ -564,7 +573,8 @@ function initEditor() {
 	fincayra.lastSavedEntryTime = $('#last_saved_entry_time');
 	
 	fincayra.markDownEditor.live("dblclick", closeEntry);
-	fincayra.editor = $('#entry_editor').detach();
+	fincayra.editor = $('#entry_editor');
+	fincayra.editor.detach();
 }
 	
 function init() {
@@ -572,15 +582,14 @@ function init() {
 	$(".icon-button").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	
 	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
-
+	
 	//Set up converter
 	fincayra.showdown = new Showdown.converter();
 
-	//Create the TopicView
+	//Create the Views
 	fincayra.topicView = new TopicView();
-	
-	//Create the NoteBookView
 	fincayra.noteBookView = new NoteBookView();
+	fincayra.entryView = new EntryView();
 
 	//No asynch
 	$.ajaxSetup({async:false,contentType:"application/json"});
@@ -696,10 +705,12 @@ try {
 			});		
 		});
 
-		$('.entry a').live('click', function(e) {
+		
+		$('.entry-body a').live('click', function(e) {
 			e.stopPropigation();
 			return true;
 		});
+		
 		
 		$('.entry-body').live('dblclick',function() {
 			editEntry($(this).closest(".entry"));
@@ -755,6 +766,17 @@ try {
 			} else {
 				toc.show();
 			}
+		});
+		
+		$('.entry-toc a').live("click", function() {
+			var entry = $(this).closest('.entry')
+			var eBody = entry.find('.entry-body');
+			if(eBody.is(':hidden'))	{
+				eBody.show();
+				entry.find('.entry_collapse').show();
+				entry.find('.entry_expand').hide();
+			}
+			return true;
 		});
 		
 		$('#markdown_help').live("click", function() {

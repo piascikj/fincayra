@@ -615,6 +615,20 @@ function Request(scope) {
 }
 
 /*
+	Func: $isAPI
+	
+	Set API flag so errors will go out as JSON
+	
+	Parameters: api - true if you want it on, false if off, don't pass to just get the current setting
+*/
+Request.prototype.$isAPI = function(api) {
+	if (api != undefined) {
+		this.isAPI = api;
+	}
+	return this.isAPI;
+}
+
+/*
 	Func: $requestScope
 	
 	Get the request scope
@@ -1167,7 +1181,7 @@ Request.prototype.$headCSS = function(path) {
 Request.prototype.$api = function(actions) {
 	var action = this.$getExtraPath().split("/")[0];
 	if (actions[action] != undefined) {
-		this.isAPI = true;
+		this.$isAPI(true);
 		actions[action]();
 	}
 };
