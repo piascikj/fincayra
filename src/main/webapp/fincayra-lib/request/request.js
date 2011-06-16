@@ -38,12 +38,13 @@ try {
 	}
 
 } catch(e) {
-	$log().error("Caught an exception while running global request file");
+	$log().error("Caught an exception while handling fincayra request");
 	e.printStackTrace();
 	$setPageParams({error:e});
-	$log().debug("isAPI:{}", scope.$isAPI());
-	if (scope.$isAPI() == true) {
-		$setStatus(400);
+	$log().debug("isAPI:{}", $isAPI());
+	if ($isAPI()) {
+		//If the error has a statusCode, then use it
+		$setStatus(e.statusCode || 400);
 		$j({error:e});
 	} else {
 		$f($getErrorPage());

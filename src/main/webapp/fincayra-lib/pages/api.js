@@ -13,7 +13,7 @@
  *   limitations under the License.
  */
  (function() {
-	$requestScope().$isAPI(true);
+	$isAPI(true);
 	$log().debug("IN api.js");
 	var htmlRegex = /\.[hH][tT][mM][lL]$/;
 	var params = $getPageParams(true);

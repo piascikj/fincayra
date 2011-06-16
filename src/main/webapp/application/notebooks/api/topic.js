@@ -1,9 +1,8 @@
 (function() {
-	$isAPI(true);//Have to set in case we get an auth error
-	requireAuth();
 	$api({
 		
 		getLastTopic : function() {
+			requireAuth();
 			var s = $getSession();
 			var topic;
 			if (s.user.lastTopicId) {
@@ -15,6 +14,7 @@
 		},
 		
 		setLastTopic : function() {
+			requireAuth();
 			var path = $getExtraPath().split("/");
 			var ok = false;
 			if (path.length > 1) {

@@ -20,7 +20,7 @@ function getNoteBooks() {
 }
 
 function saveNoteBook(noteBook) {
-	var type = (noteBook.uuid)?"POST":"PUT";
+	var e, type = (noteBook.uuid)?"POST":"PUT";
 	$.ajax({
 		type: type,
 		url: fincayra.saveNoteBook,
@@ -31,8 +31,17 @@ function saveNoteBook(noteBook) {
 			fincayra.noteBook = fincayra.noteBooks[data.uuid];
 			if (type == "PUT") fincayra.topic = undefined;
 		},
+		error: function(data) {
+			$log("returned error from notebook save", data);
+			e = JSON.parse(data.responseText).error;
+			$log("Error:", e);
+		},
 		dataType: 'json'
 	});
+	
+	if (e) throw e;
+	
+	return fincayra.noteBook;
 }
 
 function saveTopic(topic) {
@@ -254,22 +263,36 @@ function NoteBookView() {
 	this.deleteButton.click(this.deleteClick);
 	
 	this.okClick = function() {
-		if (fincayra.noteBook) {
-			var noteBook = {};
-			$.extend(noteBook,fincayra.noteBook);
-			noteBook.name = $this.nameInput.val();
-			saveNoteBook(noteBook);
-			$('#' + noteBook.uuid).text(fincayra.noteBook.name);
-			$this.name.html(fincayra.noteBook.name);
-			$this.nameDisplay.show();
-			$this.nameForm.hide();
-		} else {
-			var noteBook = {name:$this.nameInput.val(),owner:fincayra.user};
-			saveNoteBook(noteBook);
-			$.extend(noteBook,fincayra.noteBook);
-			getNoteBooks();
-			fincayra.noteBookView.displayNoteBook(noteBook);
+		var topic;
+		try {
+			if (fincayra.noteBook) {
+				var noteBook = {};
+				$.extend(noteBook,fincayra.noteBook);
+				noteBook.name = $this.nameInput.val();
+				saveNoteBook(noteBook);
+				$('#' + noteBook.uuid).text(fincayra.noteBook.name);
+				$this.name.html(fincayra.noteBook.name);
+				$this.nameDisplay.show();
+				$this.nameForm.hide();
+			} else {
+				var noteBook = {name:$this.nameInput.val(),owner:fincayra.user};
+				saveNoteBook(noteBook);
+				$.extend(noteBook,fincayra.noteBook);
+				getNoteBooks();
+				fincayra.noteBookView.displayNoteBook(noteBook);
+			}
+		} catch (error) {
+			$log("Caught exception while saving notebook", error);
+			var title;
+			if (error && error.violations && error.violations.name) title = error.violations.name;
+			$this.nameInput.attr('title',title);
+			$this.nameInput.tipsy({
+				trigger:'focus',
+				gravity:'s'
+			});
+			$this.nameInput.select().focus();
 		}
+
 		return false;
 	};
 	
@@ -412,7 +435,6 @@ function TopicView() {
 				$.extend(topic,fincayra.topic);
 				topic.name = $this.nameInput.val();
 					saveTopic(topic);
-					//$('#' + topic.uuid).html(fincayra.topic.name);
 					$this.name.text(fincayra.topic.name);
 					$this.nameDisplay.show();
 					$this.nameForm.hide();

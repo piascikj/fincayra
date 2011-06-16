@@ -114,6 +114,18 @@ var $log = function() {
 	* WARN
 */
 $log.Level = {
+		ALL : "ALL",
+		DEBUG : "DEBUG",
+		ERROR : "ERROR",
+		FATAL : "FATAL",
+		INFO : "INFO",
+		OFF : "OFF",
+		TRACE : "TRACE",
+		TRACE_INT : "TRACE_INT",
+		WARN : "WARN"
+}
+
+$log.JLevel =  {
 		ALL : org.apache.log4j.Level.ALL,
 		DEBUG : org.apache.log4j.Level.DEBUG,
 		ERROR : org.apache.log4j.Level.ERROR,
@@ -146,7 +158,7 @@ var $setLogLevel = function(config) {
 	} else {
 		logger = org.apache.log4j.Logger.getLogger(config.logger);
 	}
-	logger.setLevel(config.level);
+	logger.setLevel($log.JLevel[config.level]);
 };
 
 /*

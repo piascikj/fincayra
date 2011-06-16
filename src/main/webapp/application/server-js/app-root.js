@@ -40,7 +40,8 @@ var Role = {
 
 function AuthRequiredException(msg) {
 	this.message = "You must sign in to see this page.";
-	this.extend(new Exception(msg));
+	this.extend(new Error(msg || this.message));
+	this.statusCode = 401;
 }
 
 //Define some model objects
@@ -166,7 +167,10 @@ Request.prototype.checkPersistentKey = function() {
 		var persistentKey = this.$getCookie("persistent");
 		if (persistentKey) {
 			var users = new User({persistentKey:persistentKey}).findByProperty("persistentKey");
-			if (users.length == 1) this.$getAuthSession().user = users[0];this.forwardToDefault();
+			if (users.length == 1) {
+				this.$getAuthSession().user = users[0];
+				this.forwardToDefault();
+			}
 		}
 	}
 }
@@ -182,10 +186,14 @@ Request.prototype.requireAuth = function() {
 	this.checkPersistentKey();
 
 	if(!this.$getSession().user) {
-		//set the destination so we can take them there after login
-		this.$getSession().destination = this.$getRequestURL();
-		var redirectTo = $app().secureUrl + "login";
-		this.$redirect(redirectTo);
+		if (this.$isAPI()) {
+			throw new AuthRequiredException();
+		} else {
+			//set the destination so we can take them there after login
+			this.$getSession().destination = this.$getRequestURL();
+			var redirectTo = $app().secureUrl + "login";
+			this.$redirect(redirectTo);
+		}
 	}
 };
 

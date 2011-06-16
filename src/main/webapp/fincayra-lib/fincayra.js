@@ -30,6 +30,7 @@ fincayra.config = {
 	preInitDb:function(){},
 	onRequest:function(){},
 	dev:true,
+	rootLogLevel: $log.Level.DEBUG,
 	fileCache:false,
 	allowAPIAccess:function(){return true;},
 	url:"http://localhost:8080/",
@@ -63,6 +64,8 @@ function $config(config) {
 load("../application/config/app-config.js");
 
 $log().debug("Using Config:{}", JSON.stringify($config(), function(key, val) { return key == "password" ? "*****":val;}, "   "));
+
+$setLogLevel({level:$config().rootLogLevel});
 
 
 //Set some system properties that are needed for xml config files
@@ -101,8 +104,6 @@ $hide([$config().mailSender.templateDir]);
 $log().info("Initializing MailManager");
 $app().getMailManager().init();
 $log().info("Done Initializing MailManager");
-
-if ($config().dev) $setLogLevel({level:$log.Level.DEBUG});
 
 load("db/store.js");
 
