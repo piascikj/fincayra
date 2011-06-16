@@ -176,7 +176,7 @@ Request.prototype.checkPersistentKey = function() {
 }
 
 Request.prototype.forwardToDefault = function() {
-	this.$redirect("/notebooks/");
+	this.$redirect($app().url + "notebooks/");
 }
 
 //This function will redirect to login if user is not authenticated

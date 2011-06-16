@@ -170,7 +170,7 @@ text-align:left;
 width:140px;
 }
 
-.stylized input.text {
+.stylized input[type=text], .stylized input[type=password] {
 float:left;
 font-size:12px;
 padding:0 2px;

@@ -21,7 +21,8 @@
 	var result = null;
 	
 	//First check if we have a user
-	var users = user.findByProperty("resetString");
+	var users = [];
+	if (user.resetString) users = user.findByProperty("resetString");
 	if (users.length < 1) users = [$getSession().user];
 	if (users.length < 1) $redirect($app().url);
 	user = users[0];

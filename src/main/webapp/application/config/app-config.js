@@ -44,7 +44,7 @@ $config({
 		
 		name:"Fincayra",
 		
-		//rootLogLevel:$log.Level.INFO,
+		rootLogLevel:$log.Level.INFO,
 		
 		persistentLoginDuration: 60*60*24*30, //Seconds to stay logged in
 		
