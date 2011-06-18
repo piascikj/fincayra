@@ -367,7 +367,8 @@ function NoteBookView() {
 						update: function(e, ui) {
 							//ui.item.closest('ul').find('.tip').tipsy(true).enable();
 						},
-						axis:"y"
+						axis:"y",
+						handle:"span"
 					});
 					//add the new topic link to the content
 					ui.newContent.prepend('<p><a href="#" title="Add a Topic to this NoteBook." class="tip new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
@@ -597,6 +598,7 @@ function initEditor() {
 	fincayra.markDownEditor.live("dblclick", closeEntry);
 	fincayra.editor = $('#entry_editor');
 	fincayra.editor.detach();
+	
 }
 	
 function init() {

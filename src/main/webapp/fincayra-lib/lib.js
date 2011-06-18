@@ -19,6 +19,35 @@ function $init() {
 	$app().mergeEngine.init();
 };
 
+//for deep extend
+function $extend(object, oSuper) { 
+	for (sProperty in oSuper) {
+		if (typeof object[sProperty] == "object") {
+			extend(object[sProperty],oSuper[sProperty]);
+		} else {
+			object[sProperty] = oSuper[sProperty]; 
+		}
+	}
+	
+	return object;
+};
+
+/*
+ * Function: $getInstance
+ * 
+ * Get an object instance by name
+ * 
+ * Parameters:
+ * 		type - A string with the name of the type to instantiate
+ * 
+ * Returns:
+ * 
+ * An object instance 
+ */
+$getInstance = function(type, params) {
+	return eval("new " + type + "(params);");
+};
+
 function $setProperty(key, value) {
 	java.lang.System.setProperty(key, value);
 }
@@ -1188,30 +1217,20 @@ Request.prototype.$headCSS = function(path) {
 	>});
 	
 	Parameters:
-		actions - an object containing a mapping of action names to functions
+		actions - an object containing a mapping of action names to functions. [defaultAction] function will fire if no match is found.
 */
 Request.prototype.$api = function(actions) {
+	this.$isAPI(true);
 	var action = this.$getExtraPath().split("/")[0];
 	if (actions[action] != undefined) {
-		this.$isAPI(true);
 		actions[action]();
+	} else if (actions.defaultAction != undefined) {
+		actions.defaultAction();
+	} else {
+		var e = new Error("Action not found in api.");
+		e.statusCode = 404;
+		throw e;
 	}
-};
-
-/*
- * Function: $getInstance
- * 
- * Get an object instance by name
- * 
- * Parameters:
- * 		type - A string with the name of the type to instantiate
- * 
- * Returns:
- * 
- * An object instance 
- */
-Request.prototype.$getInstance = function(type, params) {
-	return eval("new " + type + "(params);");
 };
 
 /*

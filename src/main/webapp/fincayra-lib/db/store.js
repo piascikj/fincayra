@@ -50,6 +50,22 @@ var Type = {
 };
 
 /*
+	Enum: Index
+	Specifies whether and how a field should be indexed.  Mapped directly to LUCENE.
+	
+	ANALYZED - Index the tokens produced by running the field's value through an Analyzer.
+	ANALYZED_NO_NORMS - Default: Index the tokens produced by running the field's value through an Analyzer, and also separately disable the storing of norms.
+	NO - Do not index the field value.
+	NOT_ANALYZED - Index the field's value without using an Analyzer, so it can be searched.
+*/
+var Index = {
+	ANALYZED:"ANALYZED",
+	ANALYZED_NO_NORMS:"ANALYZED_NO_NORMS",
+	NO:"NO",
+	NOT_ANALYZED:"NOT_ANALYZED"
+}
+
+/*
 	Class: UnableToDeleteObjectError
 	This Exception is thrown when an object can't be deleted
 	
@@ -279,35 +295,6 @@ ObjectManager.instance;
 */
 function $om() {return ObjectManager.instance;}
 
-
-/*
-	Class: APIAccessException
-	This Exception is thrown when the user is not allowed access to the api.
-	
-	Extends: 
-	<Exception>
-	
-	Parameters:
-		e - The wrapped error
-*/ 
-function APIAccessException(e) {
-	this.extend(e || {});
-	this.name="CustomClassException";
-}
-APIAccessException.extend(Error);
-
-/*
-	Class: APIAccessHandler
-	Extend this class and overide it's methods for allowing or dissallowing access to api functions
-*/
-function APIAccessHandler() {}
-
-APIAccessHandler.prototype.onPut = function(storables, session) {}
-APIAccessHandler.prototype.onPost = function(storables, session) {}
-APIAccessHandler.prototype.onGet = function(storables, session) {}
-APIAccessHandler.prototype.onDelete = function(storables, session) {}
-
- 
 /*
 	Class: Storable
 	The super class of all persistent objects.  You create a storable by extending the Storable object like this.
@@ -320,11 +307,6 @@ APIAccessHandler.prototype.onDelete = function(storables, session) {}
 		this.extend(new Storable(clone));
 	} 
 	new User().define({
-		_api:{
-			accessHandler : new APIAccessHandler() //Put your own access handler class here to allow/disallow access on each api call
-		},
-		
-		_model:{
 			name:{
 				pattern:/^([a-zA-Z .'-_]){1,40}$/,
 				error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
@@ -353,7 +335,6 @@ APIAccessHandler.prototype.onDelete = function(storables, session) {}
 			},
 			
 			active:{type:Type.Boolean}
-		}
 	});
 		
 	(end)
@@ -380,8 +361,8 @@ function Storable(clone) {
 		classDef - The classDef object has one property for each of the classes properties.
 			Each property contains the following attributes.
 			
-			* rel - The type of relationship.  See <Relationship>.  This is for properties that are complex types only.  If the type is in <Type>, we do not need to specify this.
-			* type - The Type of the property value.  Default is String, or you can use a custom type, but see <Type> for other valid values.
+			* rel - (Optional) Default is <Relationship>.ownsA.  This is for properties that are complex types only.  If the type is in <Type>, we do not need to specify this.
+			* type - (Optional) The Type of the property value.  Default is String, or you can use a custom type, but see <Type> for other valid values.
 				If a custom type is used, just specify the function name.  For example if specifying the type in the previous example use...
 				>{type:MyObject}
 			* unique - (Optional) true if property is unique for all records of this type. Default is false.  If this is set to true, this property can be used as a lookup key in <findByProperty>
@@ -389,19 +370,17 @@ function Storable(clone) {
 			* required - (Optional) true if the property is required.  Default is false.
 			* pattern - (Optional) A regualr expression to validate against when <validate> is called
 			* error - (Optional) An error message for failed validation
+			* search - (Optional) An object  containing text search configuration information
+				* store - (Optional) boolean - Default is true. Specifies whether and how a field should be stored.
+				* index - (Optional) enum - Default is <Index>.ANALYZED_NO_NORMS.  Specifies whether and how a field should be indexed.
 */
 Storable.prototype.define = function(classDef) {
 	var apiOpt;
-	//for backward compatability we will check for the _model attribute, but use the parm if it's not there
-	if (classDef.hasOwnProperty("_model")) {
-		if (classDef.hasOwnProperty("_api")) apiOpt = classDef._api;
-		//TODO look for the APIAccessHandler 
-		classDef = classDef._model;
-	}
 	
 	classDef.uuid = {
 		required: true,
-		unique: true
+		unique: true,
+		search: {}
 	};
 	
 	//Extend the classdef if it already exists
@@ -435,6 +414,17 @@ Storable.prototype.define = function(classDef) {
 		
 		if (!propSpecs.hasOwnProperty("index")) {
 			propSpecs.index = false;
+		}
+		
+		//These are for search
+		if (propSpecs.hasOwnProperty("search")) {
+			if (!propSpecs.search.hasOwnProperty("store")) {
+				propSpecs.search.store = true;
+			}
+
+			if (!propSpecs.search.hasOwnProperty("index")) {
+				propSpecs.search.index = Index.ANALYZED_NO_NORMS;
+			}
 		}
 
 	}}

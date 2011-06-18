@@ -48,6 +48,11 @@
 			<artifactId>orientdb-server</artifactId>
 			<version>${orientDB-version}</version>
 		</dependency>		
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>3.2.0</version>
+		</dependency>		
 		  <!-- Java Content Repository API -->
 		<dependency>
 		  <groupId>javax.jcr</groupId>

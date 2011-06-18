@@ -12,127 +12,135 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
- (function() {
-	$isAPI(true);
-	$log().debug("IN api.js");
-	var htmlRegex = /\.[hH][tT][mM][lL]$/;
-	var params = $getPageParams(true);
-	var info = {
-		requestURI:$getRequestURI(),
-		extraPath:$getExtraPath(),
-		currentPage:$getCurrentPage(),
-		classDefs:$om().classDefs,
-		constructors:$om().constructors,
-		htmlRequest:(new String($getRequestURI())).match(htmlRegex) != null,
-		requestObject:params,
-		method:$getMethod()
-	};
+$api({
+	defaultAction : function() {
+		$log().debug("IN api.js");
+		var htmlRegex = /\.[hH][tT][mM][lL]$/;
+		var params = $getPageParams(true);
+		var info = {
+			requestURI:$getRequestURI(),
+			extraPath:$getExtraPath(),
+			currentPage:$getCurrentPage(),
+			classDefs:$om().classDefs,
+			constructors:$om().constructors,
+			htmlRequest:(new String($getRequestURI())).match(htmlRegex) != null,
+			requestObject:params,
+			method:$getMethod()
+		};
 
-	if (info.htmlRequest) info.extraPath = info.extraPath.replace(htmlRegex, "");
-	var pathAry = info.extraPath.split("/");
-	var result;
-	
-	//Check for Objects
-	if (pathAry.length > 0) {
-		var objName = pathAry[0];
-		info.objName = objName;
+		if (info.htmlRequest) info.extraPath = info.extraPath.replace(htmlRegex, "");
+		var pathAry = info.extraPath.split("/");
+		var result;
 		
-		$config().allowAPIAccess(info);
-		
-		if (info.classDefs[objName] == undefined) {
-			info.validObject = false;
-		} else {
-			info.validObject = true;
-
-			var id = (pathAry.length > 1)?pathAry[1]:undefined;
-			info.objectId = id; 
+		//Check for Objects
+		if (pathAry.length > 0) {
+			var objName = pathAry[0];
+			info.objName = objName;
 			
-			var method = info.method;
-			//Now check for method
-			if (Methods.GET == method) {
-				var object = $getInstance(objName);
-				//Get the object requested
-				if (info.objectId != undefined) {
-					object.id = info.objectId;
-					result = object.findById();
-					if (result == null ) throw new ObjectNotFoundError();
-				} else if (params.qry != undefined) {
-					var offset = params.offset || 0;
-					var limit = params.limit || 200;
-					if (limit > 200) limit = 200;					
-					
-					result = $om().search(object, params.qry, offset, limit);
-				} else {
-					var offset = params.offset || 0;
-					var limit = params.limit || 200;
-					if (limit > 200) limit = 200;
-					
-					result = $om().getAll(object,offset,limit);
-				}
-			} else if (Methods.PUT == method) {
-				ro = info.requestObject;
-				if (ro instanceof Array) {
-					result = [];
-					var tmp = "uuid = '{}'";
-					var qry = "";
-					$om().txn(function(db) {
-						ro.each(function(o,i) {
-							var object = $getInstance(objName,o);
-							object = object.save(db);
-							qry += tmp.tokenize(object.uuid);
-							if (i < ro.length-1) qry += " or ";
-						});
-					});
-					result = $getInstance(objName).search(qry + " order by @rid");
-				} else {
-					//First instantiate the object
-					var object = $getInstance(objName,ro);
-					object = object.save();
-					result = object.findByProperty("uuid")[0];
-				}
-				
-			} else if (Methods.POST == method) {
-				ro = info.requestObject;
-				if (ro instanceof Array) {
-					result = [];
-					var tmp = "uuid = '{}'";
-					var qry = "";
-					$om().txn(function(db) {
-						ro.each(function(o,i) {
-							var object = $getInstance(objName,o);
-							object = object.findById(db).extend(object);
-							object = object.save(db);
-							qry += tmp.tokenize(object.uuid);
-							if (i < ro.length-1) qry += " or ";
-						});
-					});
-					result = $getInstance(objName).search(qry + " order by @rid");
-				} else {
-					//First instantiate the object
-					var object = $getInstance(objName,ro);
-					object = object.findById().extend(object);
-					result = object.save();
-				}
-			} else if (Methods.DELETE == method) {
-				//TODO if objectId contains commas delete a series of objects
-				var object = $getInstance(objName,{id:info.objectId});
-				$log().debug("Preparing to delete object:{}", object.json());
-				result = object.remove();
-			}
+			$config().beforeAPI(info);
+			
+			if (info.classDefs[objName] == undefined) {
+				info.validObject = false;
+			} else {
+				info.validObject = true;
 
+				var id = (pathAry.length > 1)?pathAry[1]:undefined;
+				info.objectId = id; 
+				
+				var method = info.method;
+				//Now check for method
+				if (Methods.GET == method) {
+					var object = $getInstance(objName);
+					//Get the object requested
+					if (info.objectId != undefined) {
+						object.id = info.objectId;
+						result = object.findById();
+						if (result == null ) throw new ObjectNotFoundError();
+					} else if (params.qry != undefined) {
+						var offset = params.offset || 0;
+						var limit = params.limit || 200;
+						if (limit > 200) limit = 200;					
+						
+						result = $om().search(object, params.qry, offset, limit);
+					} else {
+						var offset = params.offset || 0;
+						var limit = params.limit || 200;
+						if (limit > 200) limit = 200;
+						
+						result = $om().getAll(object,offset,limit);
+					}
+				} else if (Methods.PUT == method) {
+					ro = info.requestObject;
+					if (ro instanceof Array) {
+						result = [];
+						var tmp = "uuid = '{}'";
+						var qry = "";
+						$om().txn(function(db) {
+							ro.each(function(o,i) {
+								var object = $getInstance(objName,o);
+								object = object.save(db);
+								qry += tmp.tokenize(object.uuid);
+								if (i < ro.length-1) qry += " or ";
+							});
+						});
+						result = $getInstance(objName).search(qry + " order by @rid");
+					} else {
+						//First instantiate the object
+						var object = $getInstance(objName,ro);
+						object = object.save();
+						result = object.findByProperty("uuid")[0];
+					}
+					
+				} else if (Methods.POST == method) {
+					ro = info.requestObject;
+					if (ro instanceof Array) {
+						result = [];
+						var tmp = "uuid = '{}'";
+						var qry = "";
+						$om().txn(function(db) {
+							ro.each(function(o,i) {
+								var object = $getInstance(objName,o);
+								object = object.findById(db).extend(object);
+								object = object.save(db);
+								qry += tmp.tokenize(object.uuid);
+								if (i < ro.length-1) qry += " or ";
+							});
+						});
+						result = $getInstance(objName).search(qry + " order by @rid");
+					} else {
+						//First instantiate the object
+						var object = $getInstance(objName,ro);
+						object = object.findById().extend(object);
+						result = object.save();
+					}
+				} else if (Methods.DELETE == method) {
+					//TODO if objectId contains commas delete a series of objects
+					var object = $getInstance(objName,{id:info.objectId});
+					$log().debug("Preparing to delete object:{}", object.json());
+					result = object.remove();
+				}
+
+			}
 		}
+		$log().debug("info:{}".tokenize(info));
+		$log().debug("result:\n{}".tokenize(JSON.stringify(result, null, "   ")));
+		//Show the default
+		if (result == undefined) result = info;
+
+		$config().afterAPI(result);
+
+		if (info.htmlRequest) {
+			$("#json").appendText(JSON.stringify(result, null, "   "));
+		} else {
+			//TODO need to set global replacer
+			$j(result)
+		}
+	},
+	
+	search : function() {
 	}
-	$log().debug("info:{}".tokenize(info));
-	$log().debug("result:\n{}".tokenize(JSON.stringify(result, null, "   ")));
-	//Show the default
-	if (result == undefined) result = info;
-	if (info.htmlRequest) {
-		$("#json").appendText(JSON.stringify(result, null, "   "));
-	} else {
-		//TODO need to set global replacer
-		$j(result)
-	}
-})();
+});
+
 
 /*
 {"name":"test1","email":"test1@test.com"}

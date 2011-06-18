@@ -12,18 +12,6 @@ $log().debug("User home:{}",$getProperty("user.home"));
 //Hide the config folder
 $hide(["config"]);
 
-function extend(object, oSuper) { 
-	for (sProperty in oSuper) {
-		if (typeof object[sProperty] == "object") {
-			extend(object[sProperty],oSuper[sProperty]);
-		} else {
-			object[sProperty] = oSuper[sProperty]; 
-		}
-	}
-	
-	return object;
-};
-
 fincayra.config = {
 	preInit:function(){},
 	postInit:function(){},
@@ -31,13 +19,16 @@ fincayra.config = {
 	onRequest:function(){},
 	dev:true,
 	rootLogLevel: $log.Level.DEBUG,
-	fileCache:false,
-	allowAPIAccess:function(){return true;},
+	fileCache:false,//Cache html and javascript on the server for faster serving
+	beforeAPI:function(){return true;}, //Runs Prior to API calls
+	afterAPI:function(){return true;}, //Runs After API calls
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
 	name:"Fincayra",
 	errorPage:"/error",
 	store:"db/orientDB-store.js",
+	search:"search/lucene-search.js",
+	indexOnStartUp:true,
 	expose:["css","images","js"],
 	mailSender: {
 		host:"smtp.gmail.com",
@@ -54,74 +45,78 @@ fincayra.config = {
 
 function $config(config) {
 	if (config != undefined) {
-		fincayra.config = extend(fincayra.config,config);
+		fincayra.config = $extend(fincayra.config, config);
 	}
 	
 	return fincayra.config;
 }
 
-//Include the application config overides
-load("../application/config/app-config.js");
+(function() {
+	//Include the application config overides
+	load("../application/config/app-config.js");
 
-$log().debug("Using Config:{}", JSON.stringify($config(), function(key, val) { return key == "password" ? "*****":val;}, "   "));
+	$log().debug("Using Config:{}", JSON.stringify($config(), function(key, val) { return key == "password" ? "*****":val;}, "   "));
 
-$setLogLevel({level:$config().rootLogLevel});
+	$setLogLevel({level:$config().rootLogLevel});
 
 
-//Set some system properties that are needed for xml config files
-$setProperty("fincayra.home", $app().getRootDir());
-$log().info("fincayra.home={}", $app().getRootDir());
+	//Set some system properties that are needed for xml config files
+	$setProperty("fincayra.home", $app().getRootDir());
+	$log().info("fincayra.home={}", $app().getRootDir());
 
-//Run the pre init callback
-$log().info("Running config.preInit");
-$config().preInit();
+	//Run the pre init callback
+	$log().info("Running config.preInit");
+	$config().preInit();
 
-//Set the FileCache
-FileCache.enable($config().fileCache);
+	//Set the FileCache
+	FileCache.enable($config().fileCache);
 
-//Configure the main app
-$app().setUrl($config().url);
-$app().setSecureUrl($config().secureUrl);
-$app().setName($config().name);
+	//Configure the main app
+	$app().setUrl($config().url);
+	$app().setSecureUrl($config().secureUrl);
+	$app().setName($config().name);
 
-var mailSender = new org.springframework.mail.javamail.JavaMailSenderImpl();
-mailSender.setHost($config().mailSender.host);
-mailSender.setPort($config().mailSender.port);
-mailSender.setUsername($config().mailSender.userName);
-mailSender.setPassword($config().mailSender.password);
-var props = new java.util.Properties();
-props.setProperty("mail.smtp.auth", $config().mailSender.auth);
-props.setProperty("mail.smtp.starttls.enable", $config().mailSender.starttls);
-props.setProperty("mail.smtp.timeout", $config().mailSender.timeout);
-mailSender.setJavaMailProperties(props);
+	var mailSender = new org.springframework.mail.javamail.JavaMailSenderImpl();
+	mailSender.setHost($config().mailSender.host);
+	mailSender.setPort($config().mailSender.port);
+	mailSender.setUsername($config().mailSender.userName);
+	mailSender.setPassword($config().mailSender.password);
+	var props = new java.util.Properties();
+	props.setProperty("mail.smtp.auth", $config().mailSender.auth);
+	props.setProperty("mail.smtp.starttls.enable", $config().mailSender.starttls);
+	props.setProperty("mail.smtp.timeout", $config().mailSender.timeout);
+	mailSender.setJavaMailProperties(props);
 
-var mailManager = new  org.innobuilt.fincayra.mail.MailManager();
-mailManager.setMailSender(mailSender);
+	var mailManager = new  org.innobuilt.fincayra.mail.MailManager();
+	mailManager.setMailSender(mailSender);
 
-$app().setMailManager(mailManager);
-$hide([$config().mailSender.templateDir]);
+	$app().setMailManager(mailManager);
+	$hide([$config().mailSender.templateDir]);
 
-$log().info("Initializing MailManager");
-$app().getMailManager().init();
-$log().info("Done Initializing MailManager");
+	$log().info("Initializing MailManager");
+	$app().getMailManager().init();
+	$log().info("Done Initializing MailManager");
 
-load("db/store.js");
+	load("db/store.js");
 
-//Set the $load function to load from the server-js dir for application convenience
-(function() { var _l = $l; $l = $load = function(file) { _l("../application/server-js/" + file);};})();
+	//Set the $load function to load from the server-js dir for application convenience
+	(function() { var _l = $l; $l = $load = function(file) { _l("../application/server-js/" + file);};})();
 
-//Expose some paths to the client (default is ["css","images","js"])
-$expose($config().expose);
+	//Expose some paths to the client (default is ["css","images","js"])
+	$expose($config().expose);
 
-load($config().store);
+	load($config().store);
 
-$config().preInitDb();
+	$config().preInitDb();
 
-//Now we register the storables in the persistenceManager
-$om().initDb();
-$log().debug(JSON.stringify($om().classDefs, null, "   "));
+	//Now we register the storables in the persistenceManager
+	$om().initDb();
+	$log().debug(JSON.stringify($om().classDefs, null, "   "));
 
-//Run the post init callback
-$log().info("Running config.postInit");
-$config().postInit();
+	//Now we initialize search
+	load($config().search);
 
+	//Run the post init callback
+	$log().info("Running config.postInit");
+	$config().postInit();
+})();

@@ -2,6 +2,7 @@
 
 function NoteBook(clone) {
 	this.createDate = new Date();
+	this.isSearch = false;
 	this.extend(new Storable(clone));
 };
 
@@ -9,7 +10,8 @@ new NoteBook().define({
 	name:{
 		index:true,
 		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
-		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%"
+		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%",
+		search:{}
 	},
 	
 	owner:{
@@ -25,6 +27,10 @@ new NoteBook().define({
 	
 	topics:{
 		rel: Relationship.ownsMany
+	},
+	
+	isSearch:{
+		type:Type.Boolean
 	}
 });
 
@@ -64,7 +70,8 @@ new Topic().define({
 	name:{
 		index:true,
 		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
-		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%"
+		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%",
+		search:{}
 	},
 	
 	noteBook:{
@@ -80,7 +87,13 @@ new Topic().define({
 
 	entries:{
 		rel: Relationship.ownsMany
-	}
+	},
+	
+	//This is for search topics
+	searchString:{
+		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
+		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%"
+	},
 });
 
 function Entry(clone) {
@@ -117,7 +130,10 @@ function Entry(clone) {
 
 new Entry().define({
 	text:{
-		index: true
+		search:{
+			store:false,
+			index:Index.ANALYZED
+		}
 	},
 	
 	topic:{
@@ -139,7 +155,10 @@ function Task(clone) {
 
 new Task().define({
 	text:{
-		index: true
+		search: {
+			store:false,
+			index:Index.ANALYZED
+		}
 	},
 	
 	entry:{
