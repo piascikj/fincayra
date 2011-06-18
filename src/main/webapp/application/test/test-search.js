@@ -25,6 +25,11 @@ var lucenePackages = new JavaImporter(
 
 var objects = [
 	{
+		id:"0",
+		name:"doc0",
+		text:"this is doc0"
+	},
+	{
 		id:"1",
 		name:"doc1",
 		text:"this is doc1"
@@ -139,7 +144,7 @@ with (lucenePackages) {
 			hits.each(function(hit) {
 				var doc = searcher.doc(hit.doc);
 				var id = doc.get("id");
-				out.results[id] = objects[new Number(id) -1];
+				out.results[id] = objects[new Number(id)];
 			});
 			
 			searcher.close();

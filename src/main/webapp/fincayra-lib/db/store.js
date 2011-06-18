@@ -380,7 +380,9 @@ Storable.prototype.define = function(classDef) {
 	classDef.uuid = {
 		required: true,
 		unique: true,
-		search: {}
+		search: {
+			index:Index.NO
+		}
 	};
 	
 	//Extend the classdef if it already exists

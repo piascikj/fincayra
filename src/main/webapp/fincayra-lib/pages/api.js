@@ -130,14 +130,17 @@ $api({
 		$config().afterAPI(result);
 
 		if (info.htmlRequest) {
+			$isAPI(false);
 			$("#json").appendText(JSON.stringify(result, null, "   "));
 		} else {
 			//TODO need to set global replacer
-			$j(result)
+			$j(result);
 		}
 	},
 	
 	search : function() {
+		var params = $getPageParams(true);
+		$j($sm().search(params));
 	}
 });
 

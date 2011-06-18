@@ -653,6 +653,7 @@ function Request(scope) {
 	this.sessionMgr = new SessionManager(scope);
 	this.isAPI = false;
 	this.scope = scope;
+	//TODO, need a better way to handle copying these functions to scope
 }
 
 /*
@@ -665,6 +666,7 @@ function Request(scope) {
 Request.prototype.$isAPI = function(api) {
 	if (api != undefined) {
 		this.isAPI = api;
+		this.scope.isAPI = api;
 	}
 	return this.isAPI;
 }
