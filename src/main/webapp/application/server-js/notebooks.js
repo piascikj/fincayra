@@ -36,6 +36,7 @@ new NoteBook().define({
 
 function Topic(clone) {
 	this.createDate = new Date();
+	this.isSearch = false;
 	this.extend(new Storable(clone));
 	this.onRemove = function(db) {
 		var self = this.findById(db);
@@ -132,7 +133,8 @@ new Entry().define({
 	text:{
 		search:{
 			store:false,
-			index:Index.ANALYZED
+			index:Index.ANALYZED,
+			termVector:TermVector.YES
 		}
 	},
 	
@@ -157,7 +159,8 @@ new Task().define({
 	text:{
 		search: {
 			store:false,
-			index:Index.ANALYZED
+			index:Index.ANALYZED,
+			termVector:TermVector.YES
 		}
 	},
 	

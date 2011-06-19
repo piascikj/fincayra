@@ -66,6 +66,24 @@ var Index = {
 }
 
 /*
+	Enum: TermVector
+	Specifies whether and how a field should have term vectors.
+	
+	NO - Do not store term vectors.
+	WITH_OFFSETS - Store the term vector + Token offset information
+	WITH_POSITIONS - Store the term vector + token position information
+	WITH_POSITIONS_OFFSETS - Store the term vector + Token position and offset information
+	YES - Store the term vectors of each document. 
+*/
+var TermVector = {
+	NO:"NO",
+	WITH_OFFSETS:"WITH_OFFSETS",
+	WITH_POSITIONS:"WITH_POSITIONS",
+	WITH_POSITIONS_OFFSETS:"WITH_POSITIONS_OFFSETS",
+	YES:"YES"
+}
+
+/*
 	Class: UnableToDeleteObjectError
 	This Exception is thrown when an object can't be deleted
 	
@@ -238,6 +256,11 @@ ObjectManager.prototype.initDb = function() {
 */
 ObjectManager.prototype.classDefs = {};
 
+/*
+	Prop: searchables
+	The Storable objects that are searchable
+*/
+ObjectManager.prototype.searchables = {};
 
 /*
 	Func: addStorable
@@ -372,10 +395,11 @@ function Storable(clone) {
 			* error - (Optional) An error message for failed validation
 			* search - (Optional) An object  containing text search configuration information
 				* store - (Optional) boolean - Default is true. Specifies whether and how a field should be stored.
-				* index - (Optional) enum - Default is <Index>.ANALYZED_NO_NORMS.  Specifies whether and how a field should be indexed.
+				* index - (Optional) Default is <Index>.ANALYZED.  Specifies whether and how a field should be indexed.
+				* termVector - (Optional) Default is <TermVector>.NO.  Specifies whether and how a field should have term vectors.
 */
 Storable.prototype.define = function(classDef) {
-	var apiOpt;
+	var apiOpt, type = $type(this);
 	
 	classDef.uuid = {
 		required: true,
@@ -386,8 +410,8 @@ Storable.prototype.define = function(classDef) {
 	};
 	
 	//Extend the classdef if it already exists
-	if ($om().getClassDef($type(this))) {
-		classDef.extend($om().getClassDef($type(this)));
+	if ($om().getClassDef(type)) {
+		classDef.extend($om().getClassDef(type));
 	}
 	
 	for (prop in classDef) {if (classDef.hasOwnProperty(prop) && typeof classDef[prop] != 'function') {
@@ -420,12 +444,17 @@ Storable.prototype.define = function(classDef) {
 		
 		//These are for search
 		if (propSpecs.hasOwnProperty("search")) {
+			$om().searchables[type] = true;
 			if (!propSpecs.search.hasOwnProperty("store")) {
 				propSpecs.search.store = true;
 			}
 
 			if (!propSpecs.search.hasOwnProperty("index")) {
-				propSpecs.search.index = Index.ANALYZED_NO_NORMS;
+				propSpecs.search.index = Index.ANALYZED;
+			}
+
+			if (!propSpecs.search.hasOwnProperty("termVector")) {
+				propSpecs.search.termVector = TermVector.NO;
 			}
 		}
 
@@ -504,7 +533,14 @@ Storable.prototype.save = function(txnContext) {
 		$log().debug("Generating uuid...");
 		this.uuid = $rootScope().uuid();
 	}
-	return $om().save(this, txnContext);
+	var obj = $om().save(this, txnContext);
+	
+	if ($om().searchables[$type(this)]) {
+		$log().debug("Upadating index for object:{}", this.json());
+		$sm().update(obj);
+	}
+	
+	return obj;
 };
 
 /*
@@ -523,7 +559,11 @@ Storable.prototype.onSave = function() {
 	boolean - true if successful
 */
 Storable.prototype.remove = function(txnContext) {
-	return $om().remove(this, txnContext);
+	
+	var obj = $om().remove(this, txnContext);
+	$sm().remove(obj);
+	
+	return obj;
 };
 
 /*

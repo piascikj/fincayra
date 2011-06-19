@@ -115,6 +115,7 @@ function $config(config) {
 
 	//Now we initialize search
 	load($config().search);
+	$log().debug("$om().searchables={}", JSON.stringify($om().searchables, null, "   "));
 
 	//Run the post init callback
 	$log().info("Running config.postInit");

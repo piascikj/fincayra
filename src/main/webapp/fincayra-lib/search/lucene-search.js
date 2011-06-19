@@ -31,22 +31,27 @@ with (Lucene.Packages) {
 	Lucene.Index.NO=Field.Index.NO;
 	Lucene.Index.NOT_ANALYZED=Field.Index.NOT_ANALYZED;
 }
+
+Lucene.TermVector = {};
+with (Lucene.Packages) {
+	Lucene.TermVector.NO = Field.TermVector.NO;
+	Lucene.TermVector.WITH_OFFSETS = Field.TermVector.WITH_OFFSETS;
+	Lucene.TermVector.WITH_POSITIONS = Field.TermVector.WITH_POSITIONS;
+	Lucene.TermVector.WITH_POSITIONS_OFFSETS = Field.TermVector.WITH_POSITIONS_OFFSETS;
+	Lucene.TermVector.YES = Field.TermVector.YES;
+}
 	
 function SearchManager() {
 	var $this = this;
-	
 	$this.init = function() {
 		with (Lucene.Packages) {
 			$this.directory = dir  = NIOFSDirectory.open(new java.io.File("fincayra-index"));
 			$this.version = Version.LUCENE_32;
 			$this.analyzer = new StandardAnalyzer($this.version);
-			$this.indexWriterConfig = new IndexWriterConfig($this.version, $this.analyzer);
-
+			$this.createWriterConfig = new IndexWriterConfig($this.version, $this.analyzer);
+			$this.createWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+			
 			if ($config().indexOnStartUp) {
-				$this.indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-				// Add new documents to an existing index:
-				//iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-
 				// Optional: for better indexing performance, if you
 				// are indexing many documents, increase the RAM
 				// buffer.  But if you do this, increase the max heap
@@ -54,7 +59,7 @@ function SearchManager() {
 				//
 				// iwc.setRAMBufferSizeMB(256.0);
 
-				var writer = new IndexWriter($this.directory, $this.indexWriterConfig);
+				var writer = new IndexWriter($this.directory, $this.createWriterConfig);
 
 				var classDefs = $om().classDefs;
 				
@@ -80,6 +85,33 @@ function SearchManager() {
 		}
 	}
 	
+	$this.update = function(obj) {
+		with (Lucene.Packages) {
+			var updateWriterConfig = new IndexWriterConfig($this.version, $this.analyzer);
+			updateWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+
+			var writer = new IndexWriter($this.directory, updateWriterConfig);
+
+			var doc = $this.getDoc(obj);
+			writer.updateDocument(new Term("id", obj.id), doc);
+
+			writer.close();
+		}
+	};
+	
+	$this.remove = function(obj) {
+		with (Lucene.Packages) {
+			var updateWriterConfig = new IndexWriterConfig($this.version, $this.analyzer);
+			updateWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+
+			var writer = new IndexWriter($this.directory, updateWriterConfig);
+
+			writer.deleteDocuments(new Term("id", obj.id));
+
+			writer.close();
+		}
+	};
+	
 	$this.getDoc = function(obj) {
 		var clazz = $type(obj);
 		var classDef = $om().getClassDef(clazz);
@@ -88,13 +120,11 @@ function SearchManager() {
 			var doc = new Document();
 			
 			//Add the id field
-			var idField = new Field("id", obj.id, Field.Store.YES, Lucene.Index.NO);
-			idField.setOmitTermFreqAndPositions(true);
+			var idField = new Field("id", obj.id, Field.Store.YES, Lucene.Index.NOT_ANALYZED, Field.TermVector.NO);
 			doc.add(idField);
 			
 			//Add the clazz field
-			var clazzField = new Field("clazz", clazz, Field.Store.YES, Lucene.Index.NOT_ANALYZED);
-			clazzField.setOmitTermFreqAndPositions(true);
+			var clazzField = new Field("clazz", clazz, Field.Store.YES, Lucene.Index.ANALYZED, Field.TermVector.NO);
 			doc.add(clazzField);
 			
 			for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
@@ -102,13 +132,22 @@ function SearchManager() {
 				if (propDef.search) {
 					var store = propDef.search.store?Field.Store.YES:Field.Store.NO;
 					var index = Lucene.Index[propDef.search.index];
-					$log().debug("{}.{} store={} index={}:{}",[clazz, prop, store, propDef.search.index, index]);
+					var termVector = Lucene.TermVector[propDef.search.termVector];
+					
+					$log().debug("{}.{} store={} index={}:{} termVector:{}:{}",[clazz, prop, store, propDef.search.index, index, propDef.search.termVector, termVector]);
 					
 					//Add the field to the doc
-					var field = new Field(prop, obj[prop], store, index);
-					//TODO need to make this configurable
-					field.setOmitTermFreqAndPositions(true);
-					doc.add(field);
+					if (Type[propDef.type]) {
+						if (propDef.rel == Relationship.ownsMany) {
+							obj[prop].each(function(val) {
+								var field = new Field(prop, val, store, index, termVector);
+								doc.add(field);
+							});
+						} else {
+							var field = new Field(prop, obj[prop], store, index, termVector);
+							doc.add(field);
+						}
+					}
 
 					//TODO need to make allowance for numeric and multiValue fields
 				}
@@ -122,6 +161,8 @@ function SearchManager() {
 	
 	$this.search = function(options) {
 		var defaults = {
+			defaultField:"clazz", //This is just a placeholder since we know the field is stored
+			storable:undefined,
 			qry:"a*",
 			offset: 0,
 			limit: 250
@@ -129,19 +170,18 @@ function SearchManager() {
 		
 		options = defaults.extend(options);
 		with (Lucene.Packages) {
+			var analyzer = $this.analyzer;
 			var searcher = new IndexSearcher($this.directory);
-			var parser = new QueryParser($this.version, "text", $this.analyzer);
+			var parser = new QueryParser($this.version, options.defaultField, analyzer);
+			if (options.storable != undefined) options.qry = options.qry + " AND clazz:" + $type(options.storable);
 			var query = parser.parse(options.qry);
 			var end = options.offset + options.limit;
-			 // Collect enough docs to show 5 pages
-			//TopDocs results = searcher.search(query, 5 * hitsPerPage);
 			var results = searcher.search(query, end);
-			//ScoreDoc[] hits = results.scoreDocs;
 			var hits = results.scoreDocs;
 			
 			var out = [];
 			$log().debug("hits={}, offest={}", [hits.length, options.offset]);
-			for (i = options.offset-1<0?0:options.offset-1;i < end && i < hits.length;i++) {
+			for (i = options.offset;i < end && i < hits.length;i++) {
 				
 				var hit = hits[i];
 				var doc = searcher.doc(hit.doc);

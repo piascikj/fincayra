@@ -140,6 +140,8 @@ $api({
 	
 	search : function() {
 		var params = $getPageParams(true);
+		var clazz = $getExtraPath().split("/")[1];
+		params.storable = (clazz == undefined)?undefined:$getInstance(clazz);
 		$j($sm().search(params));
 	}
 });
