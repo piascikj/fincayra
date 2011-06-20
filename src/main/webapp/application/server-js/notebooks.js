@@ -36,7 +36,6 @@ new NoteBook().define({
 
 function Topic(clone) {
 	this.createDate = new Date();
-	this.isSearch = false;
 	this.extend(new Storable(clone));
 	this.onRemove = function(db) {
 		var self = this.findById(db);
@@ -88,13 +87,7 @@ new Topic().define({
 
 	entries:{
 		rel: Relationship.ownsMany
-	},
-	
-	//This is for search topics
-	searchString:{
-		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
-		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%"
-	},
+	}
 });
 
 function Entry(clone) {

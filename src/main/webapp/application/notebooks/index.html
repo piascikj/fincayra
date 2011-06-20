@@ -11,6 +11,7 @@
 <script type="text/javascript" src="/js/showdown.js"></script>
 <script type="text/javascript" src="/js/jquery.toc-1.1.1.js"></script>
 <script type="text/javascript" src="/js/jquery.tipsy.js"></script>
+<script type="text/javascript" src="/js/jquery.defaultvalue.js"></script>
 <script type="text/javascript" src="/js/notebook-app.js"></script>
 </head>
 <body>
@@ -76,10 +77,17 @@
 			</div>
 		</div>
 		<div class="ui-layout-west">
-			<div class="controls stylized thin level1 ui-layout-header">
-				<p>
-				<a href="#" id="new_notebook" class="tip new-link" title="Add a new NoteBook to your collection."><span id="entry_add" class="ui-icon ui-icon-note icon-button"></span>Create a new NoteBook...</a>
-				</p>
+			<div class="ui-layout-header">
+				<div class="stylized thin level1 ui-layout-header">
+					<p>
+					<a href="#" id="new_notebook" class="tip new-link" title="Add a new NoteBook to your collection."><span class="ui-icon ui-icon-note icon-button"></span>Create a new NoteBook...</a>
+					</p>
+				</div>
+				<div class="stylized thin level1 ui-layout-header">
+					<form id="search_form">
+						<input placeholder="Search Entries..." type="text" class="text tip" title="Search Entries..." name="search_entries" id="search_entries" autocomplete="off"/>
+					</form>				
+				</div>
 			</div>
 			<div id="notebook_list" class="ui-layout-content">
 			</div>

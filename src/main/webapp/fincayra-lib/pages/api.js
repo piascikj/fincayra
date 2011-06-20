@@ -37,7 +37,7 @@ $api({
 			var objName = pathAry[0];
 			info.objName = objName;
 			
-			$config().beforeAPI(info);
+			$config().beforeAPI({clazz:objName});
 			
 			if (info.classDefs[objName] == undefined) {
 				info.validObject = false;
@@ -141,8 +141,15 @@ $api({
 	search : function() {
 		var params = $getPageParams(true);
 		var clazz = $getExtraPath().split("/")[1];
+
+		$config().beforeAPI({clazz:clazz});
+
 		params.storable = (clazz == undefined)?undefined:$getInstance(clazz);
-		$j($sm().search(params));
+		var result = $sm().search(params);
+		
+		$config().afterAPI(result);
+		
+		$j(result);
 	}
 });
 

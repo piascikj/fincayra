@@ -398,6 +398,7 @@ function NoteBookView() {
 		fincayra.noteBook = noteBook;
 		fincayra.topic = undefined;
 		fincayra.entry = undefined;
+		$this.list.accordion("activate",false);
 		$this.list.accordion("activate",$("#" + noteBook.uuid).parent());
 	};
 
@@ -473,11 +474,11 @@ function TopicView() {
 		if (fincayra.topic) {
 			$this.name.text(fincayra.topic.name);
 			$this.nameDisplay.show();
-			$this.nameInput.val(fincayra.noteBook.name);
+			$this.nameInput.val(fincayra.topic.name);
 			$this.nameForm.hide();
 		} else {
-			$this.hideTopic();
-			fincayra.topicView.displayTopic(getFirstTopic());
+			$this.nameForm.hide();
+			$this.displayLastTopic();
 		}
 
 		return false;
@@ -516,13 +517,26 @@ function TopicView() {
 		getEntries();
 		fincayra.layout.initContent("center",true);
 		return fincayra.topic;
-	}
+	};
 
 	this.hideTopic = function() {
 		this.nameBox.hide();
 		$('#entries').html('');
 		$('#entry_editor').detach();
-	}
+	};
+
+	this.displayLastTopic = function() {
+		//show the lastTopic
+		$.getJSON(fincayra.getLastTopic,function(data) {
+			var topic = data.topic;
+			if (topic) {
+				//$log("Display last topic: ", topic);
+				fincayra.noteBookView.displayNoteBook(topic.noteBook);
+				$this.displayTopic(topic);
+			}
+		});
+	};
+	
 }
 
 function EntryView() {
@@ -639,6 +653,13 @@ function init() {
 		$(this).submit(function() {return false;});
 	});
 	
+	$(" [placeholder] ").defaultValue();
+	
+	$("#search_form").submit(function() {
+		alert("search");
+		return false;
+	});
+	
 	
 	//store the editor and detach it
 	initEditor();
@@ -659,15 +680,7 @@ function init() {
 		}
 	},fincayra.autoSaveIncrement);
 
-	//show the lastTopic
-	$.getJSON(fincayra.getLastTopic,function(data) {
-		var topic = data.topic;
-		if (topic) {
-			//$log("Display last topic: ", topic);
-			fincayra.noteBookView.displayNoteBook(topic.noteBook);
-			fincayra.topicView.displayTopic(topic);
-		}
-	});
+	fincayra.topicView.displayLastTopic();
 }
 
 function editEntry(el) {
