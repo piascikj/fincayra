@@ -214,6 +214,7 @@ function NoteBookView() {
 	this.nameForm =	$('#notebook_name_form');
 	this.nameInput = $('#notebook_name_edit');
 	this.noteBookContainer = $('#notebook_container');
+	this.appHeader = $('#notebooks_app_header');
 	
 	this.newButton = $('#new_notebook');
 	this.deleteButton = $('#notebook_delete');
@@ -400,9 +401,6 @@ function NoteBookView() {
 		fincayra.noteBook = noteBook;
 		fincayra.topic = undefined;
 		fincayra.entry = undefined;
-		//TODO this is a wierd hack
-		//$this.list.accordion("activate",false);
-		//$this.list.accordion("activate",false);
 		$this.list.accordion("activate",$("#" + noteBook.uuid).parent());
 	};
 
@@ -554,6 +552,18 @@ function EntryView() {
 	
 	$this.searchResults.find('.ui-icon').button();
 	
+	$('#search_results_toggle').click(function() {
+		if($this.searchEntries.is(':hidden')) {
+			$this.searchEntries.show("fade");
+			$(this).removeClass("ui-icon-triangle-1-s");
+			$(this).addClass("ui-icon-triangle-1-n");
+		} else {
+			$this.searchEntries.hide("fade");
+			$(this).removeClass("ui-icon-triangle-1-n");
+			$(this).addClass("ui-icon-triangle-1-s");			
+		}
+	});
+	
 	//Search form
 	$this.searchForm.submit(function() {
 		var qry = $this.searchField.val();
@@ -563,7 +573,7 @@ function EntryView() {
 			url: fincayra.searchEntries.tokenize(qry),
 			success: function(data) {
 				$this.searchResultsCount.html(data.length + " entries found.");
-				$this.searchResults.show();
+				$this.searchResults.show("fade");
 				
 				if (data.length > 0) {
 					$.each(data,function(i, entry) {
@@ -577,12 +587,12 @@ function EntryView() {
 							if (entry.topic.noteBook.uuid != fincayra.noteBook.uuid) fincayra.noteBookView.displayNoteBook(entry.topic.noteBook);
 							fincayra.topicView.displayTopic(entry.topic, false);
 							fincayra.noteBookView.noteBookContainer.animate({
-								scrollTop: $('#' + entry.uuid).offset().top - $('#notebooks_app_header').outerHeight()*2
+								scrollTop: $('#' + entry.uuid).offset().top - fincayra.noteBookView.appHeader.outerHeight()*2
 							}, 100);
 							return false;
 						});
 					});
-					$this.searchEntries.show("slide",{direction:"up"},500);
+					$this.searchEntries.show();
 					$this.searchEntries.find('a').first().focus();
 				}
 			},

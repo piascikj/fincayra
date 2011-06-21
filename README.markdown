@@ -5,7 +5,7 @@ If you are a web developer, chances are you are forced to.  Then why not use it 
 
 This is possible because fincayra uses an awesome project called [jsoup](http://jsoup.org/) and exposes the current page through the [$()](http://fincayra.googlecode.com/svn/trunk/docs/js/files/root-js.html#Request.$) function.  There are some minor differences between jsoup and jQuery of course, but it's close enough, and very powerful.
 
-Fincayra also has a built-in persistence framework that uses [JBoss ModeShape](http://www.jboss.org/modeshape) as it's object-store but if you have your own DB go ahead and use it.
+Fincayra also has built-in persistence and search!
 
 Check out the [API Docs here!](http://piascikj.github.com/fincayra/docs/js/)
 
