@@ -4,7 +4,7 @@
 	<groupId>org.innobuilt</groupId>
 	<artifactId>fincayra</artifactId>
 	<packaging>war</packaging>
-	<version>0.2</version>
+	<version>0.3</version>
 	<name>fincayra</name>
 	<url>http://maven.apache.org</url>
 	<repositories>
