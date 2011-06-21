@@ -653,6 +653,7 @@ function Request(scope) {
 	this.sessionMgr = new SessionManager(scope);
 	this.isAPI = false;
 	this.scope = scope;
+	this.request = this;
 	//TODO, need a better way to handle copying these functions to scope
 }
 

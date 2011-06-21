@@ -213,6 +213,7 @@ function NoteBookView() {
 	this.nameDisplay = $('#notebook_name_display');
 	this.nameForm =	$('#notebook_name_form');
 	this.nameInput = $('#notebook_name_edit');
+	this.noteBookContainer = $('#notebook_container');
 	
 	this.newButton = $('#new_notebook');
 	this.deleteButton = $('#notebook_delete');
@@ -306,6 +307,7 @@ function NoteBookView() {
 			$this.nameForm.hide();
 		} else {
 			$this.nameBox.hide();
+			fincayra.topicView.displayLastTopic(true);
 		}
 		return false;
 	};
@@ -384,7 +386,7 @@ function NoteBookView() {
 						return false;
 					});
 					
-					fincayra.topicView.displayTopic(getFirstTopic());
+					fincayra.topicView.displayTopic(getFirstTopic(), true);
 					//ui.newContent.find('.topic-link').first().click();
 				}
 
@@ -398,7 +400,9 @@ function NoteBookView() {
 		fincayra.noteBook = noteBook;
 		fincayra.topic = undefined;
 		fincayra.entry = undefined;
-		$this.list.accordion("activate",false);
+		//TODO this is a wierd hack
+		//$this.list.accordion("activate",false);
+		//$this.list.accordion("activate",false);
 		$this.list.accordion("activate",$("#" + noteBook.uuid).parent());
 	};
 
@@ -462,7 +466,7 @@ function TopicView() {
 		if (ok) {
 			getNoteBooks();
 			fincayra.noteBookView.displayNoteBook(topic.noteBook);
-			fincayra.topicView.displayTopic(topic);
+			fincayra.topicView.displayTopic(topic, true);
 		}
 
 		return false;
@@ -478,6 +482,7 @@ function TopicView() {
 			$this.nameForm.hide();
 		} else {
 			$this.nameForm.hide();
+			//fincayra.noteBookView.list.accordion("activate",false);
 			$this.displayLastTopic();
 		}
 
@@ -497,7 +502,7 @@ function TopicView() {
 					uuid = fincayra.noteBook.uuid;
 					getNoteBooks();
 					$this.nameBox.hide();
-					$('#notebook_list').accordion("activate",$("#" + uuid).parent());
+					fincayra.noteBookView.list.accordion("activate",$("#" + uuid).parent());
 				},
 				dataType: 'json'
 			});
@@ -506,8 +511,8 @@ function TopicView() {
 	
 	this.deleteButton.click(this.deleteClick);
 
-	this.displayTopic = function(topic) {
-		$.getJSON(fincayra.setLastTopic.tokenize(topic.id));
+	this.displayTopic = function(topic, setLastTopic) {
+		if (setLastTopic) $.getJSON(fincayra.setLastTopic.tokenize(topic.id));
 		fincayra.topic = topic;
 		this.nameBox.show();
 		this.name.text(fincayra.topic.name);
@@ -525,14 +530,14 @@ function TopicView() {
 		$('#entry_editor').detach();
 	};
 
-	this.displayLastTopic = function() {
+	this.displayLastTopic = function(activateNoteBook) {
 		//show the lastTopic
 		$.getJSON(fincayra.getLastTopic,function(data) {
 			var topic = data.topic;
 			if (topic) {
 				//$log("Display last topic: ", topic);
-				fincayra.noteBookView.displayNoteBook(topic.noteBook);
-				$this.displayTopic(topic);
+				if (activateNoteBook) fincayra.noteBookView.displayNoteBook(topic.noteBook);
+				$this.displayTopic(topic, false);
 			}
 		});
 	};
@@ -541,6 +546,57 @@ function TopicView() {
 
 function EntryView() {
 	var $this = this;
+	$this.searchResults = $('#search_results');
+	$this.searchResultsCount = $('#search_results_count');
+	$this.searchEntries = $('#search_entries');
+	$this.searchField = $("#search_field");
+	$this.searchForm = $("#search_form");
+	
+	$this.searchResults.find('.ui-icon').button();
+	
+	//Search form
+	$this.searchForm.submit(function() {
+		var qry = $this.searchField.val();
+		$this.searchEntries.html("");
+		$.ajax({
+			type: "GET",
+			url: fincayra.searchEntries.tokenize(qry),
+			success: function(data) {
+				$this.searchResultsCount.html(data.length + " entries found.");
+				$this.searchResults.show();
+				
+				if (data.length > 0) {
+					$.each(data,function(i, entry) {
+						var entryDesc = fincayra.truncate(entry.text.split("\n")[0],30,"...");
+						var entryItem = $('<li><a href="#" class="search_entry_link">{}</a></li>'.tokenize(entryDesc));
+						var entryLink = entryItem.find('a');
+						entryLink.data("entry", entry);
+						$this.searchEntries.append(entryItem);
+						entryLink.click(function() {
+							var entry = $(this).data("entry");
+							if (entry.topic.noteBook.uuid != fincayra.noteBook.uuid) fincayra.noteBookView.displayNoteBook(entry.topic.noteBook);
+							fincayra.topicView.displayTopic(entry.topic, false);
+							fincayra.noteBookView.noteBookContainer.animate({
+								scrollTop: $('#' + entry.uuid).offset().top - $('#notebooks_app_header').outerHeight()*2
+							}, 100);
+							return false;
+						});
+					});
+					$this.searchEntries.show("slide",{direction:"up"},500);
+					$this.searchEntries.find('a').first().focus();
+				}
+			},
+			error: function(data) {
+				$log("returned error from search", data);
+				e = JSON.parse(data.responseText).error;
+				$log("Error:", e);
+			},			
+			dataType: 'json'
+		});		
+		//alert("search");
+		return false;
+	});	
+	
 }
 
 function getTopics(uuid) {
@@ -653,13 +709,8 @@ function init() {
 		$(this).submit(function() {return false;});
 	});
 	
+	//Display default Values in fields
 	$(" [placeholder] ").defaultValue();
-	
-	$("#search_form").submit(function() {
-		alert("search");
-		return false;
-	});
-	
 	
 	//store the editor and detach it
 	initEditor();
@@ -673,14 +724,14 @@ function init() {
 			$log("Running autosave interval function");
 			if (fincayra.entry && fincayra.edited) { 
 				$log("Auto svaing entry.");
-				saveEntry()
+				saveEntry();
 			}
 		} catch (e) {
 			$log("Caught exception during autosave interval", e);
 		}
 	},fincayra.autoSaveIncrement);
 
-	fincayra.topicView.displayLastTopic();
+	fincayra.topicView.displayLastTopic(true);
 }
 
 function editEntry(el) {
@@ -710,7 +761,7 @@ try {
 		//bind click to all topics, now and in future
 		$('.topic-link').live('click',function() {
 			uuid = $(this).closest('li').attr("id");
-			fincayra.topicView.displayTopic(fincayra.topics[uuid]);
+			fincayra.topicView.displayTopic(fincayra.topics[uuid], true);
 			return false;
 		});
 		

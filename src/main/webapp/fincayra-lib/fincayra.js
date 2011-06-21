@@ -17,9 +17,9 @@ fincayra.config = {
 	postInit:function(){},
 	preInitDb:function(){},
 	onRequest:function(){},
-	dev:true,
-	rootLogLevel: $log.Level.DEBUG,
-	fileCache:false,//Cache html and javascript on the server for faster serving
+	dev:true,//Set root log level and file cache to $log.Level.DEBUG and false 
+	rootLogLevel: $log.Level.DEBUG,//Set the root log level.  Overides dev settings
+	fileCache:false,//Cache html and javascript on the server for faster serving.  Overides dev settings
 	beforeAPI:function(){return true;}, //Runs Prior to API calls
 	afterAPI:function(){return true;}, //Runs After API calls
 	url:"http://localhost:8080/",

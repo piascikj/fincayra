@@ -39,6 +39,7 @@
 		getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
 		saveEntry : "/api/Entry",
 		deleteEntry : "/api/Entry/{}",
+		searchEntries : "/api/search/Entry?defaultField=text&qry={}",
 		noteBooks : {},
 		topics : {},
 		entries : {},

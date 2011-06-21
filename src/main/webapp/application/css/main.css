@@ -251,6 +251,20 @@ border-radius: 4px;
 	margin-right: 5px;
 }
 
+.thin-grow {
+	min-height: 30px;
+	margin: 10px;
+}
+
+.thin-grow input.text{
+	margin: 5px 5px 5px 10px;
+	height: 20px;
+}
+
+.thin-grow h4  {
+	margin: 5px 5px 5px 10px;
+}
+
 .container ul {
 	color:blue; 
 	cursor:pointer;
@@ -272,6 +286,15 @@ border-radius: 4px;
 
 #notebook_list span.ui-icon {
 	float: left;
+}
+
+#search_results ul {
+	padding: 0 0 0 10px;
+}
+
+#search_results a {
+	color: #666;
+	font-size:12px;
 }
 
 .icon-button {
