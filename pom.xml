@@ -27,8 +27,6 @@
 		</repository> 		
 	</repositories>
 	<properties>
-		<!--<modeshape-version>2.4.0.Final</modeshape-version>-->
-		<modeshape-version>2.5.0.Beta2</modeshape-version>
 		<orientDB-version>1.0rc1</orientDB-version>
 	</properties>
 	<dependencies>
@@ -53,42 +51,6 @@
 			<artifactId>lucene-core</artifactId>
 			<version>3.2.0</version>
 		</dependency>		
-		  <!-- Java Content Repository API -->
-		<dependency>
-		  <groupId>javax.jcr</groupId>
-		  <artifactId>jcr</artifactId>
-		  <version>2.0</version>
-		</dependency>
-       	<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-jcr</artifactId>
-			<version>${modeshape-version}</version>
-		</dependency>
-       	<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-web-jcr</artifactId>
-			<version>${modeshape-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-clustering</artifactId>
-			<version>${modeshape-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.modeshape</groupId>
-			<artifactId>modeshape-connector-infinispan</artifactId>
-			<version>${modeshape-version}</version>
-		</dependency>
-		<dependency>
-		  <groupId>org.modeshape</groupId>
-		  <artifactId>modeshape-connector-store-jpa</artifactId>
-		  <version>2.4.0.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.0.0</version>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

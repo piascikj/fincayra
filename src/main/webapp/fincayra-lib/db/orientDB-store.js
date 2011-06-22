@@ -68,7 +68,7 @@ function OrientDBObjectManager() {
 					
 					var classDef = this.classDefs[clazz];
 					for(propName in classDef) {
-						if (classDef[propName] != undefined && classDef.hasOwnProperty(propName)) {
+						if (classDef[propName] != undefined && classDef.hasOwnProperty(propName) && typeof classDef[propName] !='function' ) {
 							var property = classDef[propName];
 							var oProperty;
 							if (oClass.existsProperty(propName)) {

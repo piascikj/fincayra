@@ -510,6 +510,7 @@ function TopicView() {
 	this.deleteButton.click(this.deleteClick);
 
 	this.displayTopic = function(topic, setLastTopic) {
+		if (topic == undefined) return;
 		if (setLastTopic) $.getJSON(fincayra.setLastTopic.tokenize(topic.id));
 		fincayra.topic = topic;
 		this.nameBox.show();
@@ -630,7 +631,11 @@ function getTopic(id) {
 }
 
 function getFirstTopic() {
-	return fincayra.topics[fincayra.noteBook.topics[0]];
+	if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
+		return fincayra.topics[fincayra.noteBook.topics[0]];
+	} else {
+		return undefined;
+	}
 }
 
 function confirmDelete(title, message, okCallback) {

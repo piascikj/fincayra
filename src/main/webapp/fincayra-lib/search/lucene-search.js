@@ -72,6 +72,7 @@ function SearchManager() {
 					
 					allObjects.each(function(obj) {
 						var doc = $this.getDoc(obj);
+						$log().debug("adding object to index:{}", obj.json());
 						writer.addDocument(doc);
 
 					});
@@ -93,7 +94,7 @@ function SearchManager() {
 			var writer = new IndexWriter($this.directory, updateWriterConfig);
 
 			var doc = $this.getDoc(obj);
-			writer.updateDocument(new Term("id", obj.id), doc);
+			writer.updateDocument(new Term("uuid", obj.uuid), doc);
 
 			writer.close();
 		}
@@ -106,7 +107,7 @@ function SearchManager() {
 
 			var writer = new IndexWriter($this.directory, updateWriterConfig);
 
-			writer.deleteDocuments(new Term("id", obj.id));
+			writer.deleteDocuments(new Term("uuid", obj.uuid));
 
 			writer.close();
 		}
@@ -185,13 +186,13 @@ function SearchManager() {
 				
 				var hit = hits[i];
 				var doc = searcher.doc(hit.doc);
-				var id = doc.get("id");
+				var uuid = doc.get("uuid");
 				var clazz = doc.get("clazz");
 				
 				var obj = $getInstance(clazz);
-				obj.id = id;
+				obj.uuid = uuid;
 				
-				out.push(obj.findById());
+				out.push(obj.findByProperty("uuid")[0]);
 			}
 			
 			searcher.close();

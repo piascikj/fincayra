@@ -9,7 +9,6 @@ import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
 import org.apache.commons.vfs.impl.DefaultFileMonitor;
 import org.innobuilt.fincayra.mail.MailManager;
-import org.innobuilt.fincayra.persistence.PersistenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /*   Copyright 2010 Jesse Piascik
@@ -34,7 +33,6 @@ public class FincayraApplication {
 	private String bundleDir = null;
 	private MergeEngine mergeEngine = new MergeEngine();
 	private MailManager mailManager = null;
-	private PersistenceManager persistenceManager = new PersistenceManager();
 	private String url = "http://localhost:8080/fincayra/";
 	private String secureUrl;
 	private String name;
@@ -126,10 +124,6 @@ public class FincayraApplication {
 
 	public String getBundleDir() {
 		return bundleDir;
-	}
-
-	public PersistenceManager getPersistenceManager() {
-		return persistenceManager;
 	}
 	
 	public void hidePath(String path) {
