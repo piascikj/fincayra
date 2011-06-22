@@ -405,7 +405,7 @@ Storable.prototype.define = function(classDef) {
 		required: true,
 		unique: true,
 		search: {
-			index:Index.NO
+			index:Index.NOT_ANALYZED
 		}
 	};
 	
