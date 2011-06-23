@@ -47,7 +47,7 @@ function SearchManager() {
 		with (Lucene.Packages) {
 			$this.directory = dir  = NIOFSDirectory.open(new java.io.File("fincayra-index"));
 			$this.version = Version.LUCENE_32;
-			$this.analyzer = new StandardAnalyzer($this.version);
+			$this.analyzer = new KeywordAnalyzer();
 			$this.createWriterConfig = new IndexWriterConfig($this.version, $this.analyzer);
 			$this.createWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 			
@@ -72,13 +72,6 @@ function SearchManager() {
 					
 					allObjects.each(function(obj) {
 						var doc = $this.getDoc(obj);
-						if ($log().isDebugEnabled()) {
-							$log().debug("Adding Doc:", doc.toString());
-							doc.getFields().toArray().each(function(field) {
-								$log().debug(field.name() + " = " + field.stringValue());
-							});
-						}
-
 						$log().debug("adding object to index:{}", obj.json());
 						writer.addDocument(doc);
 
@@ -113,7 +106,11 @@ function SearchManager() {
 			updateWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
 			var writer = new IndexWriter($this.directory, updateWriterConfig);
-
+			var query = new TermQuery(new Term("uuid", obj.uuid));
+			var searcher = new IndexSearcher($this.directory);
+			
+			var hits = searcher.search(query, 100).scoreDocs;
+			$log().debug("Found " + hits.length + " documents to delete with uuid:" + obj.uuid);
 			writer.deleteDocuments(new Term("uuid", obj.uuid));
 
 			writer.close();
@@ -124,6 +121,7 @@ function SearchManager() {
 		prefix = prefix || "";
 		var clazz = $type(obj);
 		var classDef = $om().getClassDef(clazz);
+		$log().debug("Adding fields to document for object type:{}", clazz);
 		with (Lucene.Packages) {
 			for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
 				var propDef = classDef[prop];
@@ -178,6 +176,14 @@ function SearchManager() {
 			doc.add(clazzField);
 			
 			$this.addFields(undefined, obj, doc);
+			
+			if ($log().isDebugEnabled()) {
+				$log().debug("Adding Doc:", doc.toString());
+				doc.getFields().toArray().each(function(field) {
+					$log().debug(field.name() + " = " + field.stringValue());
+				});
+			}
+
 
 			return doc;
 
@@ -224,7 +230,7 @@ function SearchManager() {
 				var obj = $getInstance(clazz);
 				obj.uuid = uuid;
 				
-				out.push(obj.findByProperty("uuid")[0]);
+				out.push(obj.findByUUId());
 			}
 			
 			searcher.close();

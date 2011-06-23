@@ -106,7 +106,8 @@ User.prototype.toJSON = function(key) {
 new User().define({
 	name:{
 		pattern:/^([a-zA-Z .'-_]){1,40}$/,
-		error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_"
+		error:"Name is a required field and can't be over 40 characters in length and may contain letters, numbers, spaces and .'-_",
+		search:{}
 	},
 	
 	email:{

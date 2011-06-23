@@ -537,7 +537,7 @@ Storable.prototype.save = function(txnContext) {
 		$log().debug("Generating uuid...");
 		this.uuid = $rootScope().uuid();
 	}
-	var obj = $om().save(this, txnContext);
+	var obj = $om().save(this, txnContext).findByUUId();
 	
 	if ($om().searchables[$type(this)]) {
 		$log().debug("Upadating index for object:{}", this.json());
@@ -563,7 +563,6 @@ Storable.prototype.onSave = function() {
 	boolean - true if successful
 */
 Storable.prototype.remove = function(txnContext) {
-	
 	var obj = $om().remove(this, txnContext);
 	$sm().remove(obj);
 	
@@ -624,6 +623,17 @@ Storable.prototype.search = function(qry, offset, limit, txnContext) {
 */
 Storable.prototype.findById = function(s) {
 	return $om().findById(this, this.id,s);
+};
+
+/*
+	Func: findByUUId
+	Find an object by it's uuid.  An uuid is set when the object is saved.  The uuid to search on should be set in the object itself.
+	
+	Returns:
+	The matching object.
+*/
+Storable.prototype.findByUUId = function(s) {
+	return this.findByProperty("uuid", undefined, undefined, undefined, s)[0];
 };
 
 Storable.prototype.json = function(replacer, space) {

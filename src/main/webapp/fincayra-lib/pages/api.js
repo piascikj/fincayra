@@ -88,8 +88,7 @@ $api({
 					} else {
 						//First instantiate the object
 						var object = $getInstance(objName,ro);
-						object = object.save();
-						result = object.findByProperty("uuid")[0];
+						result = object.save();
 					}
 					
 				} else if (Methods.POST == method) {
