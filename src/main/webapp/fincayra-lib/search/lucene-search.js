@@ -113,6 +113,48 @@ function SearchManager() {
 		}
 	};
 	
+	$this.addFields = function(prefix, obj, doc) {
+		prefix = prefix || "";
+		var clazz = $type(obj);
+		var classDef = $om().getClassDef(clazz);
+		with (Lucene.Packages) {
+			for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
+				var propDef = classDef[prop];
+				if (propDef.search) {
+					var fieldName = prefix + prop;
+					var store = propDef.search.store?Field.Store.YES:Field.Store.NO;
+					var index = Lucene.Index[propDef.search.index];
+					var termVector = Lucene.TermVector[propDef.search.termVector];
+					
+					$log().debug("{}.{} store={} index={}:{} termVector:{}:{}",[clazz, prop, store, propDef.search.index, index, propDef.search.termVector, termVector]);
+					
+					//Add the field to the doc
+					if (Type[propDef.type]) {
+						if (propDef.rel == Relationship.ownsMany) {
+							obj[prop].each(function(val) {
+								var field = new Field(fieldName, val, store, index, termVector);
+								doc.add(field);
+							});
+						} else {
+							var field = new Field(fieldName, obj[prop], store, index, termVector);
+							doc.add(field);
+						}
+					} else {
+						if (propDef.rel == Relationship.ownsMany || propDef.rel == Relationship.hasMany) {
+							obj[prop].each(function(val) {
+								$this.addFields(fieldName + ".", val, doc);
+							});
+						} else {
+							$this.addFields(fieldName + ".", obj[prop], doc);
+						}
+					}
+
+					//TODO need to make allowance for numeric fields
+				}
+			}}
+		}
+	};
+	
 	$this.getDoc = function(obj) {
 		var clazz = $type(obj);
 		var classDef = $om().getClassDef(clazz);
@@ -128,6 +170,8 @@ function SearchManager() {
 			var clazzField = new Field("clazz", clazz, Field.Store.YES, Lucene.Index.ANALYZED, Field.TermVector.NO);
 			doc.add(clazzField);
 			
+			$this.addFields(undefined, obj, doc);
+			/*
 			for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
 				var propDef = classDef[prop];
 				if (propDef.search) {
@@ -153,12 +197,14 @@ function SearchManager() {
 					//TODO need to make allowance for numeric and multiValue fields
 				}
 			}}
+			*/
 
 		return doc;
 
 		}
 		
 	}
+
 	
 	$this.search = function(options) {
 		var defaults = {
@@ -188,7 +234,12 @@ function SearchManager() {
 				var doc = searcher.doc(hit.doc);
 				var uuid = doc.get("uuid");
 				var clazz = doc.get("clazz");
-				
+				if ($log().isDebugEnabled()) {
+					$log().debug("Found Doc:", doc.toString());
+					doc.getFields().toArray().each(function(field) {
+						$log().debug(field.name() + " = " + field.stringValue());
+					});
+				}
 				var obj = $getInstance(clazz);
 				obj.uuid = uuid;
 				

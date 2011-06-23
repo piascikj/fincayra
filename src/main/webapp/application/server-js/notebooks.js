@@ -17,7 +17,8 @@ new NoteBook().define({
 	owner:{
 		rel: Relationship.hasA,
 		required: true,
-		type: User
+		type: User,
+		search:{}
 	},
 	
 	createDate:{
@@ -77,7 +78,8 @@ new Topic().define({
 	noteBook:{
 		rel: Relationship.hasA,
 		required: true,
-		type: NoteBook
+		type: NoteBook,
+		search:{}
 	},
 	
 	createDate:{
@@ -134,7 +136,8 @@ new Entry().define({
 	topic:{
 		rel: Relationship.hasA,
 		required: true,
-		type: Topic
+		type: Topic,
+		search:{}
 	},
 	
 	createDate:{

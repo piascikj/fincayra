@@ -288,6 +288,11 @@ border-radius: 4px;
 	float: left;
 }
 
+#search_entries {
+	max-height: 100px;
+	overflow: auto;
+}
+
 #search_results ul {
 	padding: 0 0 0 10px;
 }
