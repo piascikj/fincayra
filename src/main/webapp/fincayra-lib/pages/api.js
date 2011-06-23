@@ -17,6 +17,7 @@ $api({
 		$log().debug("IN api.js");
 		var htmlRegex = /\.[hH][tT][mM][lL]$/;
 		var params = $getPageParams(true);
+		$log().debug("params:{}",JSON.stringify(params));
 		var info = {
 			requestURI:$getRequestURI(),
 			extraPath:$getExtraPath(),
@@ -40,7 +41,7 @@ $api({
 			$config().beforeAPI({clazz:objName});
 			
 			if (info.classDefs[objName] == undefined) {
-				info.validObject = false;
+				throw new NotStorableException(undefined, objName + " is not a valid object type.");
 			} else {
 				info.validObject = true;
 
@@ -124,16 +125,14 @@ $api({
 		}
 		$log().debug("info:{}".tokenize(info));
 		$log().debug("result:\n{}".tokenize(JSON.stringify(result, null, "   ")));
-		//Show the default
-		if (result == undefined) result = info;
-
+		
 		$config().afterAPI(result);
 
 		if (info.htmlRequest) {
 			$isAPI(false);
 			$("#json").appendText(JSON.stringify(result, null, "   "));
 		} else {
-			//TODO need to set global replacer
+			//Return the result
 			$j(result);
 		}
 	},
@@ -142,14 +141,18 @@ $api({
 		var params = $getPageParams(true);
 		var clazz = $getExtraPath().split("/")[1];
 
-		$config().beforeAPI({clazz:clazz});
+		if ($om().classDefs[clazz] == undefined) {
+			throw new NotStorableException(undefined, clazz + " is not a valid object type.");
+		} else {
+			$config().beforeAPI({clazz:clazz});
 
-		params.storable = (clazz == undefined)?undefined:$getInstance(clazz);
-		var result = $sm().search(params);
-		
-		$config().afterAPI(result);
-		
-		$j(result);
+			params.storable = (clazz == undefined)?undefined:$getInstance(clazz);
+			$log().debug("params:{}",JSON.stringify(params));
+			var result = $sm().search(params);
+			$config().afterAPI(result);
+			
+			$j(result);
+		}
 	}
 });
 

@@ -156,12 +156,16 @@ SessionUnavailableException.extend(Error);
 	
 	Parameters:
 		e - The wrapped error
-*/ 
-function NotStorableException(e) {
-	this.extend(e || {});
-	this.name="NotStorableException";
+*/
+function NotStorableException(e, message) {
+	this.extend(e);
+    this.name = "NotStorableException";
+    this.stack = this.stack ? this.stack : (new Error()).stack;
+    this.message = (message) ? message : this.name;
+    if (this.message == this.name && e != undefined) this.message = e.message;
 }
-NotStorableException.extend(Error);
+NotStorableException.prototype = new Error();
+
 /*
 	Class: UniqueValueConstraintException
 	This Exception is thrown when the PersistenceManager encounters a unique value constraint violation

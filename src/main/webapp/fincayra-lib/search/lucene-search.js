@@ -72,6 +72,13 @@ function SearchManager() {
 					
 					allObjects.each(function(obj) {
 						var doc = $this.getDoc(obj);
+						if ($log().isDebugEnabled()) {
+							$log().debug("Adding Doc:", doc.toString());
+							doc.getFields().toArray().each(function(field) {
+								$log().debug(field.name() + " = " + field.stringValue());
+							});
+						}
+
 						$log().debug("adding object to index:{}", obj.json());
 						writer.addDocument(doc);
 
@@ -171,35 +178,8 @@ function SearchManager() {
 			doc.add(clazzField);
 			
 			$this.addFields(undefined, obj, doc);
-			/*
-			for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
-				var propDef = classDef[prop];
-				if (propDef.search) {
-					var store = propDef.search.store?Field.Store.YES:Field.Store.NO;
-					var index = Lucene.Index[propDef.search.index];
-					var termVector = Lucene.TermVector[propDef.search.termVector];
-					
-					$log().debug("{}.{} store={} index={}:{} termVector:{}:{}",[clazz, prop, store, propDef.search.index, index, propDef.search.termVector, termVector]);
-					
-					//Add the field to the doc
-					if (Type[propDef.type]) {
-						if (propDef.rel == Relationship.ownsMany) {
-							obj[prop].each(function(val) {
-								var field = new Field(prop, val, store, index, termVector);
-								doc.add(field);
-							});
-						} else {
-							var field = new Field(prop, obj[prop], store, index, termVector);
-							doc.add(field);
-						}
-					}
 
-					//TODO need to make allowance for numeric and multiValue fields
-				}
-			}}
-			*/
-
-		return doc;
+			return doc;
 
 		}
 		
@@ -223,6 +203,7 @@ function SearchManager() {
 			if (options.storable != undefined) options.qry = options.qry + " AND clazz:" + $type(options.storable);
 			var query = parser.parse(options.qry);
 			var end = options.offset + options.limit;
+			$log().debug("qry={}",options.qry);
 			var results = searcher.search(query, end);
 			var hits = results.scoreDocs;
 			
