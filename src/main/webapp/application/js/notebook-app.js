@@ -569,6 +569,7 @@ function EntryView() {
 	$this.searchForm.submit(function() {
 		var qry = $this.searchField.val();
 		$this.searchEntries.html("");
+		$this.searchResultsCount.html("");
 		$.ajax({
 			type: "GET",
 			url: fincayra.searchEntries.tokenize(qry),

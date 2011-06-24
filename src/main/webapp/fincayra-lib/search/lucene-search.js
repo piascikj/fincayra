@@ -47,10 +47,17 @@ function SearchManager() {
 		with (Lucene.Packages) {
 			$this.directory = dir  = NIOFSDirectory.open(new java.io.File("fincayra-index"));
 			$this.version = Version.LUCENE_32;
-			$this.analyzer = new KeywordAnalyzer();
+			$this.analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer($this.version));
+			
+			var classDefs = $om().classDefs;
+			for (clazz in classDefs) {if (classDefs.hasOwnProperty(clazz)) {
+				//Set up the analyzers per field for uuid fields
+				$this.addAnalyzers(undefined, clazz);
+			}}
+
 			$this.createWriterConfig = new IndexWriterConfig($this.version, $this.analyzer);
 			$this.createWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-			
+
 			if ($config().indexOnStartUp) {
 				// Optional: for better indexing performance, if you
 				// are indexing many documents, increase the RAM
@@ -61,10 +68,7 @@ function SearchManager() {
 
 				var writer = new IndexWriter($this.directory, $this.createWriterConfig);
 
-				var classDefs = $om().classDefs;
-				
 				for (clazz in classDefs) {if (classDefs.hasOwnProperty(clazz)) {
-					var classDef = classDefs[clazz];
 					var instance = $getInstance(clazz);
 					//$log().debug("const:{}", instance.constructor);
 					var allObjects = $om().getAll(instance);
@@ -84,8 +88,31 @@ function SearchManager() {
 		
 		
 		}
-	}
+	};
 	
+	$this.addAnalyzers = function(prefix, clazz) {
+		prefix = prefix || "";
+		var classDef = $om().getClassDef(clazz);
+		$log().debug("Adding analyzers for object type:{}", clazz);
+		with (Lucene.Packages) {
+			for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
+				var propDef = classDef[prop];
+				if (propDef.search) {
+					var fieldName = prefix + prop;
+					if (Type[propDef.type] != undefined) {
+						if (prop == "uuid") {
+							$log().debug("Adding Keyword analyzer for field:{}", fieldName);
+							$this.analyzer.addAnalyzer(fieldName, new KeywordAnalyzer());
+						}
+					} else {
+						$this.addAnalyzers(fieldName + ".", propDef.type);
+					}
+				}
+			}}
+		}
+	
+	};
+
 	$this.update = function(obj) {
 		with (Lucene.Packages) {
 			var updateWriterConfig = new IndexWriterConfig($this.version, $this.analyzer);
