@@ -14,16 +14,14 @@
  */
 (function() {
 	
-	//populate the user from the params
-	var params = $getPageParams();
-	var user = $getSession().user;
-	var error = null;
-
 	//Extend the Simple template - it only needs a title
 	Templates.simple({
 		requireAuth : true,
 		title : "NoteBooks"
 	});
+	var params = $getPageParams();
+	var error = null;
+	var user = $getSession().user;
 	
 	var pageVars = {
 		dev : $config().dev,

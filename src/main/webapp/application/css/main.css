@@ -446,3 +446,16 @@ border-radius: 4px;
 .help-toc ul {
 	padding-left: 10px;
 }
+#spinner {
+	background-color:#075385;
+	border-color:#075385;
+	border-top:none;
+	padding: 0;
+	margin: 0;
+}
+
+#spinner p {
+	color: white;
+	padding:  0 5px 10px 5px;
+	font-weight: bold;
+}

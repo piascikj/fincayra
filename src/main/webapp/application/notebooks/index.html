@@ -12,6 +12,7 @@
 <script type="text/javascript" src="/js/jquery.toc-1.1.1.js"></script>
 <script type="text/javascript" src="/js/jquery.tipsy.js"></script>
 <script type="text/javascript" src="/js/jquery.defaultvalue.js"></script>
+<script type="text/javascript" src="/js/jquery.hotkeys.js"></script>
 <script type="text/javascript" src="/js/notebook-app.js"></script>
 </head>
 <body>
@@ -33,6 +34,7 @@
 		</div>
 	  ]]>
 	</script>
+	<div id="spinner" style="display:none; position:absolute;" class="stylized thin"><div><p>Sending Request...</p></div></div>
 	<div id="dialog_confirm" title="Delete Item" style="display:none;">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 0 10px 0;"></span><span id="confirm_message">This item will be permanently deleted and cannot be recovered. Are you sure?</span></p>
 	</div>
@@ -58,6 +60,7 @@
 						<span id="topic_name" title="Click to edit"></span>
 						<span id="topic_expand" class="ui-icon ui-icon-plus icon-button" title="Expand all Entries"></span>
 						<span id="topic_collapse" class="ui-icon ui-icon-minus icon-button" title="Collapse all Entries"></span>
+						<span id="topic_toc" class="ui-icon ui-icon-bookmark icon-button" title="Toggle Table of Contents for all Entries"></span>
 						<span id="new_entry" class="ui-icon ui-icon-document icon-button" title="Add an Entry"></span>
 						<span id="markdown_help" class="ui-icon ui-icon-help icon-button" title="Toggle Markdown Help"></span>
 						<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>

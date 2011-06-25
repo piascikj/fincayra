@@ -15,6 +15,12 @@ Methods = {
 	DELETE: "DELETE"
 }
 
+function ForbiddenException(msg) {
+	this.message = "This request is forbidden";
+	this.extend(new Error(msg || this.message));
+	this.statusCode = 403;
+}
+
 function $init() {
 	$app().mergeEngine.init();
 };
@@ -651,8 +657,8 @@ String.prototype.isLike = function(str) {
 */
 function Request(scope) { 
 	this.sessionMgr = new SessionManager(scope);
-	this.isAPI = false;
 	this.scope = scope;
+	this.scope.isAPI = false;
 	this.request = this;
 	//TODO, need a better way to handle copying these functions to scope
 }
@@ -667,7 +673,7 @@ function Request(scope) {
 Request.prototype.$isAPI = function(api) {
 	if (api != undefined) {
 		this.isAPI = api;
-		this.scope.isAPI = api;
+		//this.scope.isAPI = api;
 	}
 	return this.isAPI;
 }

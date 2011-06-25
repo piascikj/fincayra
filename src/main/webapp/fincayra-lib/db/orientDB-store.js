@@ -51,7 +51,7 @@ function OrientDBObjectManager() {
 				this.server.startup(conf);
 			}
 			
-			db = this.openDB();
+			var db = this.openDB();
 			
 			for (clazz in this.classDefs) {
 				if (this.classDefs.hasOwnProperty(clazz)) {

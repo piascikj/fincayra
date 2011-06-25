@@ -38,7 +38,7 @@ $api({
 			var objName = pathAry[0];
 			info.objName = objName;
 			
-			$config().beforeAPI({clazz:objName});
+			$config().beforeAPI($requestScope(),objName);
 			
 			if (info.classDefs[objName] == undefined) {
 				throw new NotStorableException(undefined, objName + " is not a valid object type.");
@@ -125,7 +125,7 @@ $api({
 		$log().debug("info:{}".tokenize(info));
 		$log().debug("result:\n{}".tokenize(JSON.stringify(result, null, "   ")));
 		
-		$config().afterAPI(result);
+		$config().afterAPI($requestScope(),result);
 
 		if (info.htmlRequest) {
 			$isAPI(false);
@@ -137,18 +137,18 @@ $api({
 	},
 	
 	search : function() {
-		var params = $getPageParams(true);
 		var clazz = $getExtraPath().split("/")[1];
 
 		if ($om().classDefs[clazz] == undefined) {
 			throw new NotStorableException(undefined, clazz + " is not a valid object type.");
 		} else {
-			$config().beforeAPI({clazz:clazz});
-
+			$config().beforeAPI($requestScope(),clazz);
+			var params = $getPageParams(true);
+			
 			params.storable = (clazz == undefined)?undefined:$getInstance(clazz);
 			$log().debug("params:{}",JSON.stringify(params));
 			var result = $sm().search(params);
-			$config().afterAPI(result);
+			$config().afterAPI($requestScope(), result);
 			
 			$j(result);
 		}
@@ -156,14 +156,3 @@ $api({
 });
 
 
-/*
-{"name":"test1","email":"test1@test.com"}
-{"text":"post1","user":{"id":"myId"}}
-
-SELECT * from [fincayra:User] as user where user.active=cast('true' as boolean)
-SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra:Post]
-select * from [fincayra:Post] as post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.name='test1'
-SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra:Post] AS post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.name='test1'
-SELECT post.[jcr:uuid], post.text, post.user FROM [fincayra:Post] AS post JOIN [fincayra:User] AS u ON post.user=u.[jcr:uuid] WHERE u.email='test1@test.com'
-SELECT * FROM [fincayra.Post] AS post JOIN [fincayra.User] AS u ON [u].[jcr:uuid]=[post].[user]
-*/

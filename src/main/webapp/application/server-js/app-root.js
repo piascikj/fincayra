@@ -23,11 +23,11 @@
 
 //--------------------------------------------------------------------------------------------
 //Hide dev if not reloading root scope dyanmically
-/*
-if (!$app().reloadRootScope) {
+
+if (!$config().dev) {
 	$hide(["dev"]);
 }
-*/
+
 
 //Create the encryptor
 var encryptor = new org.jasypt.util.password.StrongPasswordEncryptor();

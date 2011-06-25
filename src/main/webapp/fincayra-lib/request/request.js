@@ -45,6 +45,9 @@ try {
 	if ($isAPI()) {
 		//If the error has a statusCode, then use it
 		$setStatus(e.statusCode || 400);
+		if ($config().dev == false || $config().dev == undefined) {
+			e.extend({fileName:undefined, lineNumber:undefined, rhinoException:undefined});
+		}
 		$j({error:e});
 	} else {
 		$f($getErrorPage());

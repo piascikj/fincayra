@@ -42,7 +42,26 @@ $config({
 			req.Templates = new DefaultTemplates(req);
 		},
 		
+		beforeAPI : function(request, clazz) {
+			request.requireAuth();
+			var user = request.$getSession().user;
+			var params = request.$getPageParams();
+
+			//Check if it's search
+			if (request.$getExtraPath().split("/")[0] == "search") {
+				if (clazz == "Entry") {
+					request.$setPageParams({qry: params.qry + " AND topic.noteBook.owner.uuid:" + user.uuid});
+				} else {
+					throw new ForbiddenException();
+				}
+			}
+		},
+		
 		name:"Fincayra",
+		
+		//dev: false,
+		
+		//indexOnStartUp:false,
 		
 		//rootLogLevel:$log.Level.INFO,
 		
