@@ -90,10 +90,8 @@ function parseMD(text) {
 function getEntries() {
 	var entries = $('#entries');
 	entries.html('');
-	toggleSpinner("show");
 	fincayra.entry = undefined;
 	$.ajax({
-		async:true,
 		type: "GET",
 		url: fincayra.getEntries.tokenize(fincayra.topic.uuid),
 		success: function(data) {
@@ -126,7 +124,6 @@ function getEntries() {
 			});
 
 			highlight();
-			toggleSpinner("hide");
 			fincayra.layout.initContent("center",true);
 		}
 	});
@@ -655,8 +652,8 @@ function EntryView() {
 		}
 	});
 	
-	$this.searchField.keyup(function() {
-		$this.searchResults.hide();
+	$this.searchField.keyup(function(e) {
+		if (e.keyCode != 13) $this.searchResults.hide();
 	});
 	
 	//Search form
