@@ -349,58 +349,64 @@ function NoteBookView() {
 			active:false,
 			header:'h3',
 			changestart:function(event, ui) {
-				var uuid = ui.newHeader.find('a').attr('id');
-				fincayra.noteBook = fincayra.noteBooks[uuid];
-				if (fincayra.noteBook) {
-					$('#entries').html('');
-					fincayra.topicView.hideTopic();
-					$this.nameForm.hide();
-					$this.nameBox.show();
-					$this.name.text(fincayra.noteBook.name);
-					$this.nameDisplay.show();
-					
-					var topicItems = [];
-					var topics = getTopics(uuid);
-					var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="tip ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
-					
-					if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
-						//If there is a custom sort we use it
-						$.each(fincayra.noteBook.topics, function(key, val) {
-							topicItems.push(topicTmpl.tokenize(val,fincayra.topics[val].name));
-						});
-					} else {
-						//If not we sort alphabetically
-						$.each(topics, function(key, val) {
-							topicItems.push(topicTmpl.tokenize(val.uuid,val.name));
-						});
-					}
-					
-					//Add the topics to the content
-					ui.newContent.html('<ul>' + topicItems.join('') + '</ul>');
-					ui.newContent.find('ul').sortable({
-						start: function(e, ui) {
-							ui.item.find('.tip').tipsy(true).hide();
-							//ui.item.closest('ul').find('.tip').tipsy(true).disable();
-						},
-						//Save the new sort order when a topic is moved
-						stop: function(e, ui) {
-							fincayra.noteBook.topics = ui.item.closest('ul').sortable( "toArray" );
-							saveNoteBook(fincayra.noteBook);
-							//ui.item.closest('ul').find('.tip').tipsy(true).enable();
-						},
+				toggleSpinner("show");
+				//setting a timer to allow spinner to show
+				setTimeout(function() {
+					var uuid = ui.newHeader.find('a').attr('id');
+					fincayra.noteBook = fincayra.noteBooks[uuid];
+					if (fincayra.noteBook) {
+						$('#entries').html('');
+						fincayra.topicView.hideTopic();
+						$this.nameForm.hide();
+						$this.nameBox.show();
+						$this.name.text(fincayra.noteBook.name);
+						$this.nameDisplay.show();
 						
-						update: function(e, ui) {
-							//ui.item.closest('ul').find('.tip').tipsy(true).enable();
-						},
-						axis:"y",
-						handle:"span"
-					});
-					//add the new topic link to the content
-					ui.newContent.prepend('<p><a href="#" title="Add a Topic to this NoteBook." class="tip new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
-					
-					fincayra.topicView.displayTopic(getFirstTopic(), true);
-					//ui.newContent.find('.topic-link').first().click();
-				}
+						var topicItems = [];
+						var topics = getTopics(uuid);
+						var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="tip ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
+						
+						if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
+							//If there is a custom sort we use it
+							$.each(fincayra.noteBook.topics, function(key, val) {
+								topicItems.push(topicTmpl.tokenize(val,fincayra.topics[val].name));
+							});
+						} else {
+							//If not we sort alphabetically
+							$.each(topics, function(key, val) {
+								topicItems.push(topicTmpl.tokenize(val.uuid,val.name));
+							});
+						}
+						
+						//Add the topics to the content
+						ui.newContent.html('<ul>' + topicItems.join('') + '</ul>');
+						ui.newContent.find('ul').sortable({
+							start: function(e, ui) {
+								ui.item.find('.tip').tipsy(true).hide();
+								//ui.item.closest('ul').find('.tip').tipsy(true).disable();
+							},
+							//Save the new sort order when a topic is moved
+							stop: function(e, ui) {
+								fincayra.noteBook.topics = ui.item.closest('ul').sortable( "toArray" );
+								saveNoteBook(fincayra.noteBook);
+								//ui.item.closest('ul').find('.tip').tipsy(true).enable();
+							},
+							
+							update: function(e, ui) {
+								//ui.item.closest('ul').find('.tip').tipsy(true).enable();
+							},
+							axis:"y",
+							handle:"span"
+						});
+						//add the new topic link to the content
+						ui.newContent.prepend('<p><a href="#" title="Add a Topic to this NoteBook." class="tip new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
+						
+						fincayra.topicView.displayTopic(getFirstTopic(), true);
+						//ui.newContent.find('.topic-link').first().click();
+					}
+					toggleSpinner("hide");
+
+				}, 200);
 
 			},
 			autoHeight: false,
