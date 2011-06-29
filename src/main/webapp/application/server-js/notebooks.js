@@ -39,14 +39,14 @@ function Topic(clone) {
 	this.createDate = new Date();
 	this.extend(new Storable(clone));
 	this.onRemove = function(db) {
-		var self = this.findById(db);
-		var noteBook = self.noteBook.findById(db);
+		var self = this;
+		var noteBook = self.noteBook;
 		if (noteBook.topics && noteBook.topics.length > 0) {
-			noteBook.topics = [];
-			var topics = self.findByProperty("noteBook");
-			topics.each(function(topic) {
-				if (!self.equals(topic)) noteBook.topics.push(topic.uuid);
-			});
+			var allTopics = noteBook.topics.join("|");
+			allTopics = allTopics.replace(self.uuid, "");
+			allTopics = allTopics.replace("||", "|");
+			noteBook.topics = allTopics.split("|");
+
 			noteBook.save(db);
 		}
 	};
@@ -96,14 +96,15 @@ function Entry(clone) {
 	this.createDate = new Date();
 	this.extend(new Storable(clone));
 	this.onRemove = function(db) {
-		var self = this.findById(db);
-		var topic = self.topic.findById(db);
+		var self = this;
+		var topic = self.topic;
 		if (topic.entries && topic.entries.length > 0) {
-			topic.entries = [];
-			var entries = self.findByProperty("topic");
-			entries.each(function(entry) {
-				if (!self.equals(entry)) topic.entries.push(entry.uuid);
-			});
+			var allEntries = topic.entries.join("|");
+			allEntries = allEntries.replace(self.uuid, "");
+			allEntries = allEntries.replace("||", "|");
+			
+			topic.entries = allEntries.split("|");
+			
 			topic.save(db);
 		}
 	};

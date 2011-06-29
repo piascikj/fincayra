@@ -19,34 +19,35 @@
 		requireAuth : true,
 		title : "NoteBooks"
 	});
-	var params = $getPageParams();
-	var error = null;
 	var user = $getSession().user;
 	
-	var pageVars = {
-		dev : $config().dev,
-		getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
-		saveNoteBook : "/api/NoteBook",
-		deleteNoteBook : "/api/NoteBook/{}",
-		getTopics : "/api/Topic?qry=noteBook.uuid = '{}' order by name",
-		saveTopic : "/api/Topic",
-		getTopic : "/api/Topic/{}",
-		deleteTopic : "/api/Topic/{}",
-		getLastTopic : "/notebooks/api/topic/getLastTopic",
-		setLastTopic : "/notebooks/api/topic/setLastTopic/{}",
-		getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
-		saveEntry : "/api/Entry",
-		deleteEntry : "/api/Entry/{}",
-		searchEntries : "/api/search/Entry?defaultField=text&qry={}",
-		noteBooks : {},
-		topics : {},
-		entries : {},
-		autoSaveIncrement : 1000*20 //save once every twenty seconds
-	};
-	
-	//Load the notebooks to the page so no ajax call is needed to get them
-	new NoteBook({owner:{id:user.id}}).findByProperty("owner").each(function(val) {pageVars.noteBooks[val.uuid]=val});
-	
-	$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
-
+	if (user) {
+		var params = $getPageParams();
+		var error = null;
+		var pageVars = {
+			dev : $config().dev,
+			getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
+			saveNoteBook : "/api/NoteBook",
+			deleteNoteBook : "/api/NoteBook/{}",
+			getTopics : "/api/Topic?qry=noteBook.uuid = '{}' order by name",
+			saveTopic : "/api/Topic",
+			getTopic : "/api/Topic/{}",
+			deleteTopic : "/api/Topic/{}",
+			getLastTopic : "/notebooks/api/topic/getLastTopic",
+			setLastTopic : "/notebooks/api/topic/setLastTopic/{}",
+			getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
+			saveEntry : "/api/Entry",
+			deleteEntry : "/api/Entry/{}",
+			searchEntries : "/api/search/Entry?defaultField=text&qry={}",
+			noteBooks : {},
+			topics : {},
+			entries : {},
+			autoSaveIncrement : 1000*20 //save once every twenty seconds
+		};
+		
+		//Load the notebooks to the page so no ajax call is needed to get them
+		new NoteBook({owner:{id:user.id}}).findByProperty("owner").each(function(val) {pageVars.noteBooks[val.uuid]=val});
+		
+		$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
+	}
 })();

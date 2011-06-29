@@ -257,7 +257,7 @@ function OrientDBObjectManager() {
 								var propDoc = manager.saveObject(db, manager.cast(obj[prop],propType), true);
 								doc.field(prop, propDoc);
 							} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-								var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);;
+								var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);
 								obj[prop].each(function(val, i) {
 									$log().debug("SETTING hasMany or ownsMany PROPERTY " + prop + "|" + propType);
 									var propDoc = manager.saveObject(db, manager.cast(val,propType), true);
@@ -410,6 +410,53 @@ function OrientDBObjectManager() {
 			return objects;
 		};
 		
+		this.searchSelective = function(opts) {
+			var defaults = {
+				//storable:undefined, 
+				//qry:undefined, 
+				//offset:undefined,
+				//limit:undefined,
+				//deebee:undefined,
+				//fields:undefined
+			};
+			opts = opts.extend(defaults);
+			
+			if(!manager.isStorable(opts.storable)) throw new NotStorableException();
+			var type = $type(opts.storable);
+			var db;
+			var results;
+			var objectsTmp = [], objects;
+			try {
+				db = opts.deebee || manager.openDB();
+				with(orientDB.packages) {
+					$log().debug("FIND TYPE: " + type + " WHERE " + opts.qry);
+					var query = OrientDBHelper.createQuery("select from " + type + " where " + opts.qry);
+					if (opts.limit) query.setLimit(opts.limit);
+					if (opts.offset)	query.setBeginRange(new ORecordId(opts.offset));
+					results = db.query(query);
+				}
+				
+				//loop the results and get the objects
+				results.toArray().each(function(doc) {
+					objectsTmp.push(finder.getObject(type, doc));
+				});
+				
+				if (opts.offset != undefined && opts.limit != undefined && objectsTmp.length > 0) {
+					objects = {
+						results: objectsTmp,
+						nextOffset: manager.nextOffset(objectsTmp[objectsTmp.length - 1].id),
+						limit: opts.limit
+					};
+				} else {
+					objects = objectsTmp;
+				}
+				
+			} finally {
+				if (opts.deebee == undefined) db.close();
+			}
+			return objects;
+		};
+
 		this.getAll = function(storable, offset, limit, deebee) {
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
@@ -535,7 +582,7 @@ function OrientDBObjectManager() {
 				if (results.size() > 0) {
 					obj = storable.findById(deebee);
 					doc = results.get(0);
-					storable.onRemove(db);
+					obj.onRemove(db);
 					//since delete is a key word we have to do it this way
 					doc["delete"]();
 				}
