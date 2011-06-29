@@ -312,6 +312,9 @@ border-radius: 4px;
 	background: #B7C9F1;
 	border-color: #D4D4D4;
 }
+.selected {
+	background-color: #BFBFBF;
+}
 
 .entries {
 	height:auto;

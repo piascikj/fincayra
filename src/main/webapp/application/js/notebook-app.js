@@ -48,7 +48,7 @@ function getFirstTopic() {
 	}
 }
 
-function confirmDelete(title, message, okCallback) {
+function confirmDelete(title, message, okCallback, cancelCallback) {
 	var confirm = $("#dialog_confirm").attr("title", title);
 	$("#confirm_message").html(message);
 	confirm.dialog({
@@ -63,6 +63,9 @@ function confirmDelete(title, message, okCallback) {
 				$( this ).dialog( "destroy" );
 			},
 			Cancel: function() {
+				if (cancelCallback != undefined) {
+					cancelCallback();
+				}
 				$( this ).dialog( "close" );
 				$( this ).dialog( "destroy" );
 			}
@@ -106,7 +109,10 @@ function bindLiveHandlers() {
 	$('#new_entry').live('click',fincayra.entryView.newEntry);
 	$(document).bind('keydown', 'Ctrl+e', fincayra.entryView.newEntry);
 	
-	$('.entry_delete').live("click", function() {
+	$('.entry_delete').live("click", function(e) {
+		e.preventDefault();
+		var header = $(this).closest('.entry-header');
+		header.toggleClass("selected", true);
 		var el = $(this).parents(".entry");
 		var entry = el.data("object");
 		confirmDelete("Delete Entry", 'Do you realy want to delete this Entry?',
@@ -121,7 +127,12 @@ function bindLiveHandlers() {
 				},
 				dataType: 'json'
 			});
-		});		
+			header.toggleClass("selected", false);	
+		},
+		function() {
+			header.toggleClass("selected", false);	
+		});
+		e.stopPropigation();
 	});
 
 	
@@ -940,6 +951,12 @@ function EntryView() {
 	this.searchResults.find('.ui-icon').button();
 	
 	this.entry = undefined;
+	
+	$('.entry-header').live("mousedown",function() {
+		$(this).toggleClass("selected", true);
+	}).live("mouseup", function() {
+		$(this).toggleClass("selected", false);
+	});;
 	
 	$('#search_results_toggle').click(function() {
 		if($this.searchEntries.is(':hidden')) {
