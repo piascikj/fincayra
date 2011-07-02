@@ -26,6 +26,8 @@
 		var error = null;
 		var pageVars = {
 			dev : $config().dev,
+			defaultError : "Something went wrong.",
+			mail : "/notebooks/api/mail",
 			getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
 			saveNoteBook : "/api/NoteBook",
 			deleteNoteBook : "/api/NoteBook/{}",

@@ -645,6 +645,19 @@ String.prototype.isLike = function(str) {
 	return this.match(myRE) != null;
 }
 
+String.prototype.truncate = function(len, suffix, replaceCR) {
+	var text = this.toString();
+	if (replaceCR) {
+		text = text.replace(/\n/g, replaceCR)
+	}
+	if (text != null && text != undefined && text.length > len) {
+		text = text.substring(0, len-suffix.length);
+		text = text.replace(/^(.*) \w*$/, "$1") + suffix;
+	}
+	
+	return text;
+};
+
 
 /*
 	class: Request
@@ -1501,6 +1514,7 @@ Request.prototype.$sendMail = function(path, data) {
 	this.$d(el);
 	
 };
+
 
 function FincayraSession(){};
 

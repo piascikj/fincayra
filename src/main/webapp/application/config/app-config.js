@@ -57,7 +57,7 @@ $config({
 			}
 		},
 		
-		name:"Fincayra",
+		name:"Fincayraa",
 		
 		//dev: false,
 		
@@ -70,6 +70,11 @@ $config({
 		resetPasswordTokenTimeout: 1000*60*10 //timeout in miliseconds,
 				
 	});
+
+	var etcConfig = "/etc/fincayra/app-config.js";
+	if ((new java.io.File(etcConfig)).exists()) {
+		$l(etcConfig);
+	}
 
 	var userConfig = $getProperty("user.home") + "/.fincayra/app-config.js";
 	if ((new java.io.File(userConfig)).exists()) {

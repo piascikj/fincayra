@@ -126,8 +126,8 @@ div.fieldHelp {
 
 /* ----------- stylized ----------- */
 .stylized{
-border:solid 2px #b7ddf2;
-background:#ebf4fb;
+border:solid 2px #30A6F4
+background:#90CFF9;
 -moz-border-radius: 4px;
 -webkit-border-radius: 4px;
 border-radius: 4px;
@@ -390,16 +390,7 @@ border-radius: 4px;
 }
 
 .entry-toc ul {
-	padding-left: 15px;
-	list-style-type: disc;
-}
-
-.entry-toc ul ul {
-	list-style-type: circle;
-}
-
-.entry-toc ul ul ul{
-	list-style-type: square;
+	padding-left: 10px;
 }
 
 .date {

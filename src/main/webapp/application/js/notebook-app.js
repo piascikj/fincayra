@@ -170,6 +170,33 @@ function bindLiveHandlers() {
 		el.printElement({printMode:'iframe'});
 	});
 	
+	$('.entry_email').live("click", function() {
+		var el = $(this).closest(".entry");
+		var req = {
+			subject: el.find(".entry-title").html(), 
+			html: el.find(".entry-body").html()
+		};
+		
+		$.ajax({
+			type: "POST",
+			url: fincayra.mail,
+			data: JSON.stringify(req),
+			success: function(data) {
+				toggleSpinner("show","Mail sent!");
+				setTimeout(toggleSpinner, 500);
+			},
+			error: function(data) {
+				$log("returned error from notebook save", data);
+				e = JSON.parse(data.responseText).error;
+				$log("Error:", e);
+			},
+			dataType: 'json'
+		});
+		
+		if (e) throw e;
+		
+	});	
+	
 	$('.entry_toc').live("click", function() {
 		var entry = $(this).closest(".entry");
 		toggleTOC(entry);
@@ -833,7 +860,7 @@ function TopicView() {
 	this.topicCollapse = function() {
 		$('.entry-body').each(function() {
 			if ($(this).is(':visible'))
-				$(this).hide("slide",{direction:"up"},500);
+				$(this).hide("slide",{direction:"up"},100);
 		});
 		$('.entry_collapse').each(function() {$(this).hide();});
 		$('.entry_expand').each(function() {$(this).show();});

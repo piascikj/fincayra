@@ -411,6 +411,7 @@ function OrientDBObjectManager() {
 		};
 		
 		this.searchSelective = function(opts) {
+			//TODO allow the caller to defined fields that will be returned
 			var defaults = {
 				//storable:undefined, 
 				//qry:undefined, 
