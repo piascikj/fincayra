@@ -28,6 +28,7 @@
 			dev : $config().dev,
 			defaultError : "Something went wrong.",
 			mail : "/notebooks/api/mail",
+			treeData : "/notebooks/api/treedata",
 			getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
 			saveNoteBook : "/api/NoteBook",
 			deleteNoteBook : "/api/NoteBook/{}",

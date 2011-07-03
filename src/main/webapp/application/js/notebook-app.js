@@ -6,7 +6,8 @@ function toggleSpinner(action, msg) {
 	
 	var header = fincayra.header, spinner = fincayra.spinner, spinnerP = fincayra.spinnerP;
 	
-	spinnerP.html(msg || "Sending Request...");
+	if (action != "hide" && spinner.is(":hidden")) spinnerP.html(msg || "Sending Request...");
+	
 	var top = header.offset().top + header.outerHeight() - 4;
 	var left = (header.offset().left + header.outerWidth())/2;
 	left = left - (spinner.outerWidth()/2);
@@ -15,11 +16,91 @@ function toggleSpinner(action, msg) {
 	if (action == "show") {
 		spinner.css({display:"block"});
 	} else if (action == "hide") {
-		spinner.css({display:"none"});
+		spinner.hide("fade",500);
 	} else {
 		spinner.toggle();
 	}
 }
+
+function organizeNoteBooks() {
+	var treeData;
+	$.getJSON(fincayra.treeData,function(data) {
+		treeData = data;
+	});
+	
+	$log(JSON.stringify(treeData, null, "   "));
+	
+	var tree = $("#organize_noteBooks");
+	
+	tree.dialog({
+		modal:true,
+		title:"Organize NoteBooks"
+	});
+	tree.jstree({
+		json_data : {
+			data : treeData
+		},
+		themes : {
+			theme : "apple",
+			url : "/js/jstree/themes/apple/style.css"
+		},
+		crrm : {
+			move : {
+				check_move : function(m) {
+					var movedObj = m.o.data("object");
+					movedObj.type = m.o.data("type");
+					var newParent = m.np.data("object");
+					newParent.type = m.np.data("type");
+					var oldParent = m.op.data("object");
+					oldParent.type = m.op.data("type");
+					
+					$log("attempting to move {}:{} from {}:{} to {}:{}".tokenize(movedObj.type, movedObj.id, oldParent.type, oldParent.id, newParent.type, newParent.id));
+
+					switch (movedObj.type) {
+						case "NoteBook":
+							if (newParent.type == "root") return true;
+							break;
+						case "Topic":
+							if (newParent.type == "NoteBook") return true;
+							break;
+						case "Entry":
+							if (newParent.type == "Topic") return true;
+							break;
+						default:
+							return false;
+					}  
+
+					return false;
+				}
+			}
+		},
+		plugins : ["json_data", "themes", "dnd", "crrm"]
+	}).bind("move_node.jstree", function(e, data) {
+		var m = data.rslt;
+		var movedObj = m.o.data("object");
+		movedObj.type = m.o.data("type");
+		var newParent = m.np.data("object");
+		newParent.type = m.np.data("type");
+		var oldParent = m.op.data("object");
+		oldParent.type = m.op.data("type");
+		
+		$log("moving {}:{} from {}:{} to {}:{}".tokenize(movedObj.type, movedObj.id, oldParent.type, oldParent.id, newParent.type, newParent.id));
+	});
+	/*
+	.bind("before.jstree", function(e, data) {
+		$log("before.jstree");
+		if (data.rslt && data.rslt.o) {
+			$log(data.rslt.o.data("id"));
+		}
+		
+		if (data.rslt && data.rslt.r) {
+			$log(data.rslt.r.data("id"));
+		}
+	});
+	*/
+	
+}
+
 function getTopics(uuid) {
 	var topics = [];
 	fincayra.topics = {};
@@ -183,7 +264,7 @@ function bindLiveHandlers() {
 			data: JSON.stringify(req),
 			success: function(data) {
 				toggleSpinner("show","Mail sent!");
-				setTimeout(toggleSpinner, 500);
+				setTimeout(function(){toggleSpinner("hide")}, 1000);
 			},
 			error: function(data) {
 				$log("returned error from notebook save", data);

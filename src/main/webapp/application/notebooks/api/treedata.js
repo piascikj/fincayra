@@ -13,6 +13,45 @@
  *   limitations under the License.
  */
 (function() {
+	
+var classes = "";
+
+function getTopicNode(topic) {
+	return {			
+		data : topic.name,
+		attr : {"class":classes},
+		metadata : {
+			"object" : topic,
+			type : $type(topic)
+		},
+		children : getEntries(topic.uuid)
+	};
+}
+
+function getEntryNode(entry) {
+	entry.text = entry.text.replace(/\n.*/g, "").truncate(40,"...","   ");
+	return {			
+		data : entry.text,
+		attr : {"class":classes},
+		metadata : {
+			"object" : entry,
+			type : $type(entry)
+		}
+	};
+}
+
+function getNoteBookNode(noteBook) {
+	return {
+		data : noteBook.name,
+		attr : {"class":classes},
+		metadata : {
+			"object" : noteBook,
+			type : $type(noteBook)
+		},
+		children : getTopics(noteBook.uuid)
+	};
+}
+
 function getTopics(uuid) {
 	var user = $getSession().user;
 	var topics = {}
@@ -20,15 +59,7 @@ function getTopics(uuid) {
 	
 	new Topic().search("noteBook.owner.uuid = '{}' and noteBook.uuid = '{}'".tokenize(user.uuid,uuid)).each(function(topic) {
 		topics[topic.uuid] = topic;
-		nodes.push({			
-			data : topic.name,
-			metadata : {
-				id : topic.id,
-				uuid : topic.uuid,
-				type : $type(topic)
-			},
-			children : getEntries(topic.uuid)
-		});
+		nodes.push(getTopicNode(topic));
 	});
 	
 	var sorted = new NoteBook({uuid:uuid}).findByUUId().topics;
@@ -37,15 +68,7 @@ function getTopics(uuid) {
 		nodes = [];
 		sorted.each(function(uuid) {
 			var topic = topics[uuid];
-			nodes.push({			
-				data : topic.name,
-				metadata : {
-					id : topic.id,
-					uuid : topic.uuid,
-					type : $type(topic)
-				},
-				children : getEntries(topic.uuid)
-			});				
+			nodes.push(getTopicNode(topic));				
 		});
 	}
 	return nodes;
@@ -58,14 +81,7 @@ function getEntries(uuid) {
 	
 	new Entry().search("topic.noteBook.owner.uuid = '{}' and topic.uuid = '{}'".tokenize(user.uuid,uuid)).each(function(entry) {
 		entries[entry.uuid] = entry;
-		nodes.push({			
-			data : entry.text.truncate(20,"...","  "),
-			metadata : {
-				id : entry.id,
-				uuid : entry.uuid,
-				type : $type(entry)
-			}
-		});
+		nodes.push(getEntryNode(entry));
 	});
 	
 	var topic = new Topic({uuid:uuid}).findByUUId();
@@ -77,14 +93,7 @@ function getEntries(uuid) {
 			var entry = entries[uuid];
 			if (entry == undefined) throw new Error("{} - {} with entry {} was not found".tokenize(topic.noteBook.name,topic.name, uuid));
 			
-			nodes.push({			
-				data : entry.text.truncate(20,"...","  "),
-				metadata : {
-					id : entry.id,
-					uuid : entry.uuid,
-					type : $type(entry)
-				}
-			});				
+			nodes.push(getEntryNode(entry));				
 		});
 	}
 	return nodes;
@@ -98,66 +107,20 @@ $api({
 		var tree = {
 			data : "NoteBooks",
 			state : "open",
-			children : []
+			children : [],
+			metadata: {
+				object : {},
+				type : "root"
+			}
 		};
 		
 		new NoteBook({owner:user}).findByProperty("owner").each(function(noteBook) {
-			tree.children.push({
-				data : noteBook.name,
-				metadata : {
-					id : noteBook.id,
-					uuid : noteBook.uuid,
-					type : $type(noteBook)
-				},
-				children : getTopics(noteBook.uuid)
-			});
+			tree.children.push(getNoteBookNode(noteBook));
 		});
 		
 		$j(tree);
 		
-	},
-	
-	getTopics : function() {
-		requireAuth();
-		
-		var user = $getSession().user;
-		var uuid = $getPageParams().uuid;
-		var topics = {}
-		var nodes = [];
-		
-		new Topic().search("noteBook.owner.uuid = '{}' and noteBook.uuid = '{}'".tokenize(user.uuid,uuid)).each(function(topic) {
-			topics[topic.uuid] = topic;
-			nodes.push({			
-				data : topic.name,
-				metadata : {
-					id : topic.id,
-					uuid : topic.uuid,
-					type : $type(topic)
-				}
-			});
-		});
-		
-		var sorted = new NoteBook({uuid:uuid}).findByUUId().topics;
-		
-		if (sorted && sorted.length > 0) {
-			nodes = [];
-			sorted.each(function(uuid) {
-				var topic = topics[uuid];
-				nodes.push({			
-					data : topic.name,
-					metadata : {
-						id : topic.id,
-						uuid : topic.uuid,
-						type : $type(topic)
-					}
-				});				
-			});
-		}
-		
-		$j(nodes);
-		
 	}
-
 });
 })();
 
