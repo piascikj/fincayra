@@ -32,9 +32,23 @@ function organizeNoteBooks() {
 	
 	var tree = $("#organize_noteBooks");
 	
+	var getType = function(obj) {
+		return obj.data("type");
+	}
+	
+	var getObject = function(obj) {
+		return obj.data("object");
+	}
+	
+	var getChildren = function(obj) {
+		
+	}
+	
 	tree.dialog({
 		modal:true,
-		title:"Organize NoteBooks"
+		title:"Organize NoteBooks",
+		width: 400,
+		height: 300
 	});
 	tree.jstree({
 		json_data : {
@@ -47,18 +61,20 @@ function organizeNoteBooks() {
 		crrm : {
 			move : {
 				check_move : function(m) {
-					var movedObj = m.o.data("object");
-					movedObj.type = m.o.data("type");
-					var newParent = m.np.data("object");
-					newParent.type = m.np.data("type");
-					var oldParent = m.op.data("object");
-					oldParent.type = m.op.data("type");
+					var movedObj = getObject(m.o);
+					movedObj.type = getType(m.o);
+					var newParent = getObject(m.np);
+					newParent.type = getType(m.np);
+					var oldParent = getObject(m.op);
+					oldParent.type = getType(m.op);
 					
 					$log("attempting to move {}:{} from {}:{} to {}:{}".tokenize(movedObj.type, movedObj.id, oldParent.type, oldParent.id, newParent.type, newParent.id));
 
 					switch (movedObj.type) {
 						case "NoteBook":
-							if (newParent.type == "root") return true;
+							return false
+							//TODO allow reordering of notebooks
+							//if (newParent.type == "root") return true;
 							break;
 						case "Topic":
 							if (newParent.type == "NoteBook") return true;
@@ -77,14 +93,41 @@ function organizeNoteBooks() {
 		plugins : ["json_data", "themes", "dnd", "crrm"]
 	}).bind("move_node.jstree", function(e, data) {
 		var m = data.rslt;
-		var movedObj = m.o.data("object");
-		movedObj.type = m.o.data("type");
-		var newParent = m.np.data("object");
-		newParent.type = m.np.data("type");
-		var oldParent = m.op.data("object");
-		oldParent.type = m.op.data("type");
+		var movedObj = getObject(m.o);
+		movedObj.type = getType(m.o);
+		var newParent = getObject(m.np);
+		newParent.type = getType(m.np);
+		var oldParent = getObject(m.op);
+		oldParent.type = getType(m.op);
+		var position = m.cp;
 		
 		$log("moving {}:{} from {}:{} to {}:{}".tokenize(movedObj.type, movedObj.id, oldParent.type, oldParent.id, newParent.type, newParent.id));
+		
+		switch (movedObj.type) {
+			case "NoteBook":
+				//TODO allow reordering of Notebooks
+				break;
+			case "Topic":
+				//TODO if notebook changed, change the notebook field of the moved topic
+				//TODO save the Topics in the old notebook
+				//TODO save the Topics in the new notebook
+				$.ajax({
+					type: "POST",
+					data: JSON.stringify({uuid:movedObj.uuid,newParent:newParent.uuid, position:position}),
+					url: fincayra.moveTopic,
+					success: function(data) {
+						
+					},
+					dataType: 'json'
+				});
+
+				break;
+			case "Entry":
+				//TODO if topic changed, change the topic field of the moved entry
+				//TODO save the Entries in the old topic
+				//TODO save the Entries in the new topic
+				break;
+		}  
 	});
 	/*
 	.bind("before.jstree", function(e, data) {

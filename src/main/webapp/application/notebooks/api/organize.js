@@ -100,7 +100,7 @@ function getEntries(uuid) {
 }
 	
 $api({
-	defaultAction : function() {
+	treedata : function() {
 		requireAuth();
 		
 		var user = $getSession().user;
@@ -120,6 +120,70 @@ $api({
 		
 		$j(tree);
 		
+	},
+	
+	/*
+		Func: moveTopic
+		Move a topic to a different position or a different notebook
+		
+		params:
+		newParent - The uuid of the NoteBook the topic is moving to
+		position - The position the topic should be in.
+		uuid - The uuid of the topic to move
+	*/
+	moveTopic : function() {
+		requireAuth();
+		var user = $getSession().user;
+		var p = $getPageParams(true);
+		if (p.newParent == undefined || p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
+		
+		var newNoteBook = new NoteBook({uuid:p.newParent}).findByUUId();
+		var topic = new Topic({uuid:p.uuid}).findByUUId();
+		
+		if (newNoteBook == undefined || topic == undefined) throw new Error("Object not found");
+		
+		var sorted = newNoteBook.topics;
+		var placeholder = "PLACEHOLDER";
+		
+		if (sorted == undefined || sorted.length < 1) {
+			var topics = new Topic({noteBook:{id:newNoteBook.id}}).findByProperty("noteBook");
+			sorted = [];
+			topics.each(function(topic, i) {
+				sorted.push(topic.uuid);
+			});
+		}
+		
+		if (sorted && sorted.length > 0) {
+			//Add the topic to the list
+			var joinSorted = sorted.join("|");
+			$log().debug("joinSorted:{}", joinSorted);
+			joinSorted = joinSorted.replace(topic.uuid, placeholder);
+			dirtySorted = joinSorted.split("|");
+			dirtySorted.splice(p.position,0,topic.uuid);
+			//remove the placeholder
+			dirtyJoinSorted = dirtySorted.join("|");
+			$log().debug("dirtyJoinSorted:{}", dirtyJoinSorted);
+			joinSorted = dirtyJoinSorted.replace(placeholder, "").replace("||","|").replace(/^\|/,"").replace(/\|$/,"");
+			$log().debug("joinSorted:{}", joinSorted);
+			newNoteBook.topics = joinSorted.split("|");
+			newNoteBook.save();
+		} 
+		
+		if (!newNoteBook.equals(topic.noteBook)) {
+			//TODO remove the topic from the old NoteBook
+			//set the newNoteBook
+			topic.noteBook = newNoteBook;
+			topic.save();
+		}
+	},
+	
+	moveEntry : function() {
+		requireAuth();
+		var user = $getSession().user;
+		var p = $getPageParams(true);
+		if (p.oldParent == undefined || p.newParent == undefined || p.position == undefined) throw new Error("Invalid params");
+		
+		//TODO if moving to a position higher than current, subtract 1
 	}
 });
 })();
