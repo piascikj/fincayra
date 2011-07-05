@@ -48,7 +48,11 @@ function organizeNoteBooks() {
 		modal:true,
 		title:"Organize NoteBooks",
 		width: 400,
-		height: 300
+		height: 300,
+		close: function() {
+			getNoteBooks();
+			fincayra.topicView.getLastTopic(true);
+		}
 	});
 	tree.jstree({
 		json_data : {
@@ -358,7 +362,7 @@ function bindLiveHandlers() {
 }	
 function init() {
 	//Tipsy for icon-button
-	$(".icon-button").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
+	//$(".icon-button").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	
 	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	
