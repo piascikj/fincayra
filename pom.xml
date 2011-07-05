@@ -85,7 +85,7 @@
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<!--<version>1.5.2</version>-->
-			<version>1.6.1-SNAPSHOT</version>
+			<version>1.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
