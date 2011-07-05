@@ -549,6 +549,17 @@ Array.prototype.each = function(callback,end) {
 	}
 };
 
+Array.prototype.removeString = function(val) {
+	var ary = this;
+	return ary.join("|").replace(val, "").replace("||","|").replace(/^\|/,"").replace(/\|$/,"").split("|");
+}
+
+Array.prototype.replaceString = function(cur, repl) {
+	var ary = this;
+	return ary.join("|").replace(cur, repl).split("|");
+}
+
+
 /*
   Class: Object
   

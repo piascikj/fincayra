@@ -126,6 +126,16 @@ function organizeNoteBooks() {
 				//TODO if topic changed, change the topic field of the moved entry
 				//TODO save the Entries in the old topic
 				//TODO save the Entries in the new topic
+				$.ajax({
+					type: "POST",
+					data: JSON.stringify({uuid:movedObj.uuid,newParent:newParent.uuid, position:position}),
+					url: fincayra.moveEntry,
+					success: function(data) {
+						
+					},
+					dataType: 'json'
+				});
+
 				break;
 		}  
 	});

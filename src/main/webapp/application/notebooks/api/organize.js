@@ -148,42 +148,92 @@ $api({
 		if (sorted == undefined || sorted.length < 1) {
 			var topics = new Topic({noteBook:{id:newNoteBook.id}}).findByProperty("noteBook");
 			sorted = [];
-			topics.each(function(topic, i) {
-				sorted.push(topic.uuid);
+			topics.each(function(t, i) {
+				sorted.push(t.uuid);
 			});
 		}
 		
 		if (sorted && sorted.length > 0) {
 			//Add the topic to the list
-			var joinSorted = sorted.join("|");
-			$log().debug("joinSorted:{}", joinSorted);
-			joinSorted = joinSorted.replace(topic.uuid, placeholder);
-			dirtySorted = joinSorted.split("|");
+			dirtySorted = sorted.replaceString(topic.uuid, placeholder);
+			$log().debug("dirtySorted:{}", JSON.stringify(dirtySorted));
 			dirtySorted.splice(p.position,0,topic.uuid);
+			$log().debug("dirtySorted after splice:{}", JSON.stringify(dirtySorted));
 			//remove the placeholder
-			dirtyJoinSorted = dirtySorted.join("|");
-			$log().debug("dirtyJoinSorted:{}", dirtyJoinSorted);
-			joinSorted = dirtyJoinSorted.replace(placeholder, "").replace("||","|").replace(/^\|/,"").replace(/\|$/,"");
-			$log().debug("joinSorted:{}", joinSorted);
-			newNoteBook.topics = joinSorted.split("|");
+			newNoteBook.topics = dirtySorted.removeString(placeholder);
+			$log().debug("topics:{}", JSON.stringify(newNoteBook.topics));
 			newNoteBook.save();
 		} 
 		
 		if (!newNoteBook.equals(topic.noteBook)) {
 			//TODO remove the topic from the old NoteBook
+			var oldNoteBook = topic.noteBook;
+			if (oldNoteBook.topics && oldNoteBook.topics.length > 0) {
+				oldNoteBook.topics = oldNoteBook.topics.removeString(topic.uuid);
+				oldNoteBook.save();
+			}
+			
 			//set the newNoteBook
 			topic.noteBook = newNoteBook;
 			topic.save();
 		}
 	},
 	
+	/*
+		Func: moveEntry
+		Move an entry to a different position or a different topic
+		
+		params:
+		newParent - The uuid of the topic the entry is moving to
+		position - The position the entry should be in.
+		uuid - The uuid of the entry to move
+	*/
 	moveEntry : function() {
 		requireAuth();
 		var user = $getSession().user;
 		var p = $getPageParams(true);
-		if (p.oldParent == undefined || p.newParent == undefined || p.position == undefined) throw new Error("Invalid params");
+		if (p.newParent == undefined || p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
 		
-		//TODO if moving to a position higher than current, subtract 1
+		var newTopic = new Topic({uuid:p.newParent}).findByUUId();
+		var entry = new Entry({uuid:p.uuid}).findByUUId();
+		
+		if (newTopic == undefined || entry == undefined) throw new Error("Object not found");
+		
+		var sorted = newTopic.entries;
+		var placeholder = "PLACEHOLDER";
+		
+		if (sorted == undefined || sorted.length < 1) {
+			var entries = new Entry({topic:{id:newTopic.id}}).findByProperty("topic");
+			sorted = [];
+			entries.each(function(t, i) {
+				sorted.push(t.uuid);
+			});
+		}
+		
+		if (sorted && sorted.length > 0) {
+			//Add the entry to the list
+			dirtySorted = sorted.replaceString(entry.uuid, placeholder);
+			$log().debug("dirtySorted:{}", JSON.stringify(dirtySorted));
+			dirtySorted.splice(p.position,0,entry.uuid);
+			$log().debug("dirtySorted after splice:{}", JSON.stringify(dirtySorted));
+			//remove the placeholder
+			newTopic.entries = dirtySorted.removeString(placeholder);
+			$log().debug("entries:{}", JSON.stringify(newTopic.entries));
+			newTopic.save();
+		} 
+		
+		if (!newTopic.equals(entry.topic)) {
+			//TODO remove the entry from the old Topic
+			var oldTopic = entry.topic;
+			if (oldTopic.entries && oldTopic.entries.length > 0) {
+				oldTopic.entries = oldTopic.entries.removeString(entry.uuid);
+				oldTopic.save();
+			}
+			
+			//set the newTopic
+			entry.topic = newTopic;
+			entry.save();
+		}
 	}
 });
 })();

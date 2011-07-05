@@ -42,11 +42,7 @@ function Topic(clone) {
 		var self = this;
 		var noteBook = self.noteBook;
 		if (noteBook.topics && noteBook.topics.length > 0) {
-			var allTopics = noteBook.topics.join("|");
-			allTopics = allTopics.replace(self.uuid, "");
-			allTopics = allTopics.replace("||", "|");
-			noteBook.topics = allTopics.split("|");
-
+			noteBook.topics = noteBook.topics.removeString(self.uuid);
 			noteBook.save(db);
 		}
 	};
@@ -54,13 +50,8 @@ function Topic(clone) {
 	this.onSave = function(db) {
 		var self = this;		
 		var noteBook = new NoteBook(self.noteBook).findById(db);
-		if (noteBook.topics && noteBook.topics.length > 0) {
-			var topics = self.findByProperty("noteBook");
-			var ok = false;
-			topics.each(function(topic) {
-				if (topic.equals(self)) ok = true;
-			});
-			if (!ok) noteBook.topics.push(self.uuid);
+		if (noteBook.topics && noteBook.topics.length > 0 && noteBook.topics.join("|").indexOf(self.uuid) < 0) {
+			noteBook.topics.push(self.uuid);
 			noteBook.save(db);
 		}
 	
@@ -99,12 +90,7 @@ function Entry(clone) {
 		var self = this;
 		var topic = self.topic;
 		if (topic.entries && topic.entries.length > 0) {
-			var allEntries = topic.entries.join("|");
-			allEntries = allEntries.replace(self.uuid, "");
-			allEntries = allEntries.replace("||", "|");
-			
-			topic.entries = allEntries.split("|");
-			
+			topic.entries = topic.entries.removeString(self.uuid);
 			topic.save(db);
 		}
 	};
@@ -112,16 +98,10 @@ function Entry(clone) {
 	this.onSave = function(db) {
 		var self = this;		
 		var topic = new Topic(self.topic).findById(db);
-		if (topic.entries && topic.entries.length > 0) {
-			var entries = self.findByProperty("topic");
-			var ok = false;
-			entries.each(function(entry) {
-				if (entry.equals(self)) ok = true;
-			});
-			if (!ok) topic.entries.push(self.uuid);
+		if (topic.entries && topic.entries.length > 0 && topic.entries.join("|").indexOf(self.uuid) < 0) {
+			topic.entries.push(self.uuid);
 			topic.save(db);
 		}
-	
 	};
 }
 
