@@ -171,5 +171,7 @@ new Task().define({
 
 //Extend user
 new User().define({
-	lastTopicId : {}
+	lastTopicId : {},
+	noteBooks : {rel: Relationship.ownsMany}
+
 });

@@ -24,9 +24,6 @@ function toggleSpinner(action, msg) {
 
 function organizeNoteBooks() {
 	var treeData;
-	$.getJSON(fincayra.treeData,function(data) {
-		treeData = data;
-	});
 	
 	$log(JSON.stringify(treeData, null, "   "));
 	
@@ -39,16 +36,12 @@ function organizeNoteBooks() {
 	var getObject = function(obj) {
 		return obj.data("object");
 	}
-	
-	var getChildren = function(obj) {
 		
-	}
-	
 	tree.dialog({
 		modal:true,
 		title:"Organize NoteBooks",
-		width: 400,
-		height: 300,
+		width: 450,
+		height: 350,
 		close: function() {
 			getNoteBooks();
 			fincayra.topicView.getLastTopic(true);
@@ -56,7 +49,13 @@ function organizeNoteBooks() {
 	});
 	tree.jstree({
 		json_data : {
-			data : treeData
+			ajax : {
+				async: true,
+				url : fincayra.treeData,
+				data : function(n) {
+					return n;
+				}
+			}
 		},
 		themes : {
 			theme : "apple",
@@ -76,9 +75,9 @@ function organizeNoteBooks() {
 
 					switch (movedObj.type) {
 						case "NoteBook":
-							return false
+							//return false
 							//TODO allow reordering of notebooks
-							//if (newParent.type == "root") return true;
+							if (newParent.type == "root") return true;
 							break;
 						case "Topic":
 							if (newParent.type == "NoteBook") return true;
@@ -109,12 +108,17 @@ function organizeNoteBooks() {
 		
 		switch (movedObj.type) {
 			case "NoteBook":
-				//TODO allow reordering of Notebooks
+				$.ajax({
+					type: "POST",
+					data: JSON.stringify({uuid:movedObj.uuid, position:position}),
+					url: fincayra.moveNoteBook,
+					success: function(data) {
+						
+					},
+					dataType: 'json'
+				});
 				break;
 			case "Topic":
-				//TODO if notebook changed, change the notebook field of the moved topic
-				//TODO save the Topics in the old notebook
-				//TODO save the Topics in the new notebook
 				$.ajax({
 					type: "POST",
 					data: JSON.stringify({uuid:movedObj.uuid,newParent:newParent.uuid, position:position}),
@@ -127,9 +131,6 @@ function organizeNoteBooks() {
 
 				break;
 			case "Entry":
-				//TODO if topic changed, change the topic field of the moved entry
-				//TODO save the Entries in the old topic
-				//TODO save the Entries in the new topic
 				$.ajax({
 					type: "POST",
 					data: JSON.stringify({uuid:movedObj.uuid,newParent:newParent.uuid, position:position}),
@@ -365,6 +366,7 @@ function init() {
 	//$(".icon-button").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	
 	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
+	$(".tip-sw").tipsy({gravity:'sw', live:true, fade:true, delayIn:300});
 	
 	//Set up converter
 	fincayra.showdown = new Showdown.converter();
@@ -454,6 +456,8 @@ function getNoteBooks() {
 	$.getJSON(fincayra.getNoteBooks,function(data) {
 		fincayra.noteBook = undefined;
 		fincayra.noteBooks = {};
+		
+		if (data.results && data.results.length > 0) fincayra.user.noteBooks = data.results[0].owner.noteBooks;
 		
 		$.each(data.results, function(key, val) {
 			fincayra.noteBooks[val.uuid] = val;
@@ -675,11 +679,14 @@ function NoteBookView() {
 	this.appHeader = $('#notebooks_app_header');
 	
 	this.newButton = $('#new_notebook');
+	this.organizeButton = $('#organize_notebooks');
 	this.deleteButton = $('#notebook_delete');
 	this.okButton = $('#notebook_ok');
 	this.cancelButton = $('#notebook_cancel');
 	
 	this.noteBook;  //The notebook to display
+	
+	this.organizeButton.click(organizeNoteBooks);
 	
 	this.newClick = function(event) {
 		fincayra.noteBook = undefined;
@@ -784,8 +791,9 @@ function NoteBookView() {
 	this.displayNoteBooks = function() {
 		//Get the notebook data
 		var items = [];
-		$.each(fincayra.noteBooks, function(key, val) {
-			items.push('<h3><a href="#" id="{}">{}</a></h3><div></div>'.tokenize(key,val.name));
+		$.each(fincayra.user.noteBooks, function(key, uuid) {
+			var noteBook = fincayra.noteBooks[uuid]
+			items.push('<h3><a href="#" id="{}">{}</a></h3><div></div>'.tokenize(uuid,noteBook.name));
 		});
 		
 		
@@ -796,7 +804,6 @@ function NoteBookView() {
 			clearStyle: true,
 			changestart:function(event, ui) {
 				toggleSpinner("show");
-				//alert("HA");
 				//setting a timer to allow spinner to show
 				setTimeout(function() {
 					var uuid = ui.newHeader.find('a').attr('id');

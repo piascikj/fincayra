@@ -21,7 +21,7 @@ function getTopicNode(topic) {
 		data : topic.name,
 		attr : {"class":classes},
 		metadata : {
-			"object" : topic,
+			"object" : {id:topic.id, uuid:topic.uuid, name:topic.name},
 			type : $type(topic)
 		},
 		children : getEntries(topic.uuid)
@@ -34,7 +34,7 @@ function getEntryNode(entry) {
 		data : entry.text,
 		attr : {"class":classes},
 		metadata : {
-			"object" : entry,
+			"object" : {id:entry.id,uuid:entry.uuid,text:entry.text},
 			type : $type(entry)
 		}
 	};
@@ -50,6 +50,31 @@ function getNoteBookNode(noteBook) {
 		},
 		children : getTopics(noteBook.uuid)
 	};
+}
+
+function getNoteBooks() {
+	var user = $getSession().user;
+	var noteBooks = {}
+	var nodes = [];
+	
+	new NoteBook({owner:user}).findByProperty("owner").each(function(noteBook) {
+		noteBooks[noteBook.uuid] = noteBook;
+		nodes.push(getNoteBookNode(noteBook));
+	});
+	
+	user = user.findById();
+	var sorted = user.noteBooks;
+	
+	if (sorted && sorted.length > 1) {
+		nodes = [];
+		sorted.each(function(uuid) {
+			var noteBook = noteBooks[uuid];
+			if (noteBook == undefined) throw new Error("Not found");
+			
+			nodes.push(getNoteBookNode(noteBook));				
+		});
+	}
+	return nodes;
 }
 
 function getTopics(uuid) {
@@ -107,19 +132,57 @@ $api({
 		var tree = {
 			data : "NoteBooks",
 			state : "open",
-			children : [],
+			children : getNoteBooks(),
 			metadata: {
 				object : {},
 				type : "root"
 			}
 		};
 		
-		new NoteBook({owner:user}).findByProperty("owner").each(function(noteBook) {
-			tree.children.push(getNoteBookNode(noteBook));
-		});
-		
 		$j(tree);
 		
+	},
+	
+	/*
+		Func: moveNoteBook
+		Move a NoteBook to a different position
+		
+		params:
+		position - The position the NoteBook should be in.
+		uuid - The uuid of the NoteBook to move
+	*/
+	moveNoteBook : function() {
+		requireAuth();
+		var user = $getSession().user;
+		var p = $getPageParams(true);
+		if (p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
+		
+		var noteBook = new NoteBook({uuid:p.uuid}).findByUUId();
+		
+		if (noteBook == undefined) throw new Error("Object not found");
+		
+		var sorted = user.noteBooks;
+		var placeholder = "PLACEHOLDER";
+		
+		if (sorted == undefined || sorted.length < 1) {
+			var noteBooks = new NoteBook({owner:user}).findByProperty("owner");
+			sorted = [];
+			noteBooks.each(function(t, i) {
+				sorted.push(t.uuid);
+			});
+		}
+		
+		if (sorted && sorted.length > 0) {
+			//Add the noteBook to the list
+			dirtySorted = sorted.replaceString(noteBook.uuid, placeholder);
+			$log().debug("dirtySorted:{}", JSON.stringify(dirtySorted));
+			dirtySorted.splice(p.position,0,noteBook.uuid);
+			$log().debug("dirtySorted after splice:{}", JSON.stringify(dirtySorted));
+			//remove the placeholder
+			user.noteBooks = dirtySorted.removeString(placeholder);
+			$log().debug("noteBooks:{}", JSON.stringify(user.noteBooks));
+			user.save();
+		} 
 	},
 	
 	/*
