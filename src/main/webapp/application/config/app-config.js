@@ -48,7 +48,7 @@ $config({
 			var params = request.$getPageParams();
 
 			//Check if it's search
-			if (request.$getExtraPath().split("/")[0] == "search") {
+			if (request.$apiAction() == "search") {
 				if (clazz == "Entry") {
 					request.$setPageParams({qry: params.qry + " AND topic.noteBook.owner.uuid:" + user.uuid});
 				} else {

@@ -57,10 +57,17 @@ function organizeNoteBooks() {
 				}
 			}
 		},
-		themes : {
-			theme : "apple",
-			url : "/js/jstree/themes/apple/style.css"
+		
+		themeroller : {
+			opened : "ui-icon-minus",
+			closed : "ui-icon-plus"
+			//item : ""
 		},
+		/*
+		themes : {
+			theme : "classic",
+			url : "/js/jstree/themes/classic/style.css"
+		},*/
 		crrm : {
 			move : {
 				check_move : function(m) {
@@ -93,7 +100,7 @@ function organizeNoteBooks() {
 				}
 			}
 		},
-		plugins : ["json_data", "themes", "dnd", "crrm"]
+		plugins : ["json_data", "themeroller", "dnd", "crrm"]
 	}).bind("move_node.jstree", function(e, data) {
 		var m = data.rslt;
 		var movedObj = getObject(m.o);
@@ -113,7 +120,6 @@ function organizeNoteBooks() {
 					data: JSON.stringify({uuid:movedObj.uuid, position:position}),
 					url: fincayra.moveNoteBook,
 					success: function(data) {
-						
 					},
 					dataType: 'json'
 				});
@@ -124,7 +130,6 @@ function organizeNoteBooks() {
 					data: JSON.stringify({uuid:movedObj.uuid,newParent:newParent.uuid, position:position}),
 					url: fincayra.moveTopic,
 					success: function(data) {
-						
 					},
 					dataType: 'json'
 				});
@@ -136,7 +141,6 @@ function organizeNoteBooks() {
 					data: JSON.stringify({uuid:movedObj.uuid,newParent:newParent.uuid, position:position}),
 					url: fincayra.moveEntry,
 					success: function(data) {
-						
 					},
 					dataType: 'json'
 				});
@@ -820,7 +824,7 @@ function NoteBookView() {
 						
 						var topicItems = [];
 						var topics = getTopics(uuid);
-						var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="tip ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
+						var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
 						
 						if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
 							//If there is a custom sort we use it
@@ -835,12 +839,13 @@ function NoteBookView() {
 								topicItems.push(topicTmpl.tokenize(val.uuid,val.name));
 							});
 						}
+						allTopicsHtml = topicItems.join('\n');
 						
 						//Add the topics to the content
 						ui.newContent.html('<ul>' + topicItems.join('') + '</ul>');
 						ui.newContent.find('ul').sortable({
 							start: function(e, ui) {
-								ui.item.find('.tip').tipsy(true).hide();
+								//ui.item.find('.tip').tipsy(true).hide();
 								//ui.item.closest('ul').find('.tip').tipsy(true).disable();
 							},
 							//Save the new sort order when a topic is moved
@@ -853,8 +858,7 @@ function NoteBookView() {
 							update: function(e, ui) {
 								//ui.item.closest('ul').find('.tip').tipsy(true).enable();
 							},
-							axis:"y",
-							handle:"span"
+							axis:"y"
 						});
 						//add the new topic link to the content
 						ui.newContent.prepend('<p><a href="#" title="Add a Topic to this NoteBook." class="tip new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');

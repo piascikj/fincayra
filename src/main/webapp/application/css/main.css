@@ -361,6 +361,11 @@ border-radius: 4px;
 	cursor:default;
 }	
 
+.entry-body ul ul ul{
+	list-style-type: square;
+	cursor:default;
+}	
+
 .entry-body ol {
 	list-style: decimal;
 }
@@ -470,4 +475,9 @@ border-radius: 4px;
 	color: white;
 	padding:  0 5px 10px 5px;
 	font-weight: bold;
+}
+
+#organize_notebooks a {
+	background: none;
+	border: none;
 }

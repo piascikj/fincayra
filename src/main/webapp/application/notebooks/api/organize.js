@@ -15,6 +15,9 @@
 (function() {
 	
 var classes = "";
+var user = $getSession().user;
+var lastTopic;
+
 
 function getTopicNode(topic) {
 	return {			
@@ -24,7 +27,9 @@ function getTopicNode(topic) {
 			"object" : {id:topic.id, uuid:topic.uuid, name:topic.name},
 			type : $type(topic)
 		},
-		children : getEntries(topic.uuid)
+		children : getEntries(topic.uuid),
+		state : (user.lastTopicId == topic.id)?"open":"closed"
+		
 	};
 }
 
@@ -42,18 +47,23 @@ function getEntryNode(entry) {
 
 function getNoteBookNode(noteBook) {
 	return {
-		data : noteBook.name,
+		data : {
+			title : noteBook.name,
+			icon : "ui-icon ui-icon-note"
+		},
 		attr : {"class":classes},
 		metadata : {
 			"object" : noteBook,
 			type : $type(noteBook)
 		},
-		children : getTopics(noteBook.uuid)
+		children : getTopics(noteBook.uuid),
+		state : (noteBook.id == lastTopic.noteBook.id)?"open":"closed"
 	};
 }
 
 function getNoteBooks() {
-	var user = $getSession().user;
+	lastTopic = new Topic({id:user.lastTopicId}).findById();
+	
 	var noteBooks = {}
 	var nodes = [];
 	
@@ -78,7 +88,6 @@ function getNoteBooks() {
 }
 
 function getTopics(uuid) {
-	var user = $getSession().user;
 	var topics = {}
 	var nodes = [];
 	
@@ -100,7 +109,6 @@ function getTopics(uuid) {
 }
 
 function getEntries(uuid) {
-	var user = $getSession().user;
 	var entries = {}
 	var nodes = [];
 	
@@ -127,8 +135,6 @@ function getEntries(uuid) {
 $api({
 	treedata : function() {
 		requireAuth();
-		
-		var user = $getSession().user;
 		var tree = {
 			data : "NoteBooks",
 			state : "open",
@@ -153,7 +159,6 @@ $api({
 	*/
 	moveNoteBook : function() {
 		requireAuth();
-		var user = $getSession().user;
 		var p = $getPageParams(true);
 		if (p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
 		
@@ -196,7 +201,6 @@ $api({
 	*/
 	moveTopic : function() {
 		requireAuth();
-		var user = $getSession().user;
 		var p = $getPageParams(true);
 		if (p.newParent == undefined || p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
 		
@@ -253,7 +257,6 @@ $api({
 	*/
 	moveEntry : function() {
 		requireAuth();
-		var user = $getSession().user;
 		var p = $getPageParams(true);
 		if (p.newParent == undefined || p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
 		

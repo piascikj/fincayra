@@ -23,11 +23,11 @@
 		<div class="entry" id="<%= this.id %>">
 			<div class="entry-header">
 				<span class="entry_expand ui-icon ui-icon-plus icon-button" style="display:none" title="Expand Entry"></span>
-				<span class="entry_collapse ui-icon ui-icon-minus icon-button" title="Collapse Entry"></span>
-				<span class="entry_edit ui-icon ui-icon-pencil icon-button" title="Edit Entry"></span>
-				<span class="entry_toc ui-icon ui-icon-bookmark icon-button" title="Toggle Table of Contents"></span>
-				<span class="entry_print ui-icon ui-icon-print icon-button" title="Print Entry"></span>
-				<span class="entry_email ui-icon ui-icon-mail-closed icon-button" title="Email Entry"></span>
+				<span class="entry_collapse ui-icon ui-icon-minus icon-button tip" title="Collapse Entry"></span>
+				<span class="entry_edit ui-icon ui-icon-pencil icon-button tip" title="Edit Entry"></span>
+				<span class="entry_toc ui-icon ui-icon-bookmark icon-button tip" title="Toggle Table of Contents"></span>
+				<span class="entry_print ui-icon ui-icon-print icon-button tip" title="Print Entry"></span>
+				<span class="entry_email ui-icon ui-icon-mail-closed icon-button tip" title="Email Entry"></span>
 				<span class="entry-title"><%= this.title%></span>
 				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
 				<span class="date">Created: <%= this.date %></span>
@@ -60,12 +60,12 @@
 						<button id="topic_ok">OK</button><button id="topic_cancel">Cancel</button>
 					</form>
 					<p id="topic_name_display" style="display:none;">
-						<span id="topic_name" title="Click to edit"></span>
-						<span id="topic_expand" class="ui-icon ui-icon-plus icon-button" title="Expand all Entries"></span>
-						<span id="topic_collapse" class="ui-icon ui-icon-minus icon-button" title="Collapse all Entries"></span>
-						<span id="topic_toc" class="ui-icon ui-icon-bookmark icon-button" title="Toggle Table of Contents for all Entries"></span>
-						<span id="new_entry" class="ui-icon ui-icon-document icon-button" title="Add an Entry"></span>
-						<span id="markdown_help" class="ui-icon ui-icon-help icon-button" title="Toggle Markdown Help"></span>
+						<span id="topic_name" title="Click to edit" class="tip"></span>
+						<span id="topic_expand" class="ui-icon ui-icon-plus icon-button tip" title="Expand all Entries"></span>
+						<span id="topic_collapse" class="ui-icon ui-icon-minus icon-button tip" title="Collapse all Entries"></span>
+						<span id="topic_toc" class="ui-icon ui-icon-bookmark icon-button tip" title="Toggle Table of Contents for all Entries"></span>
+						<span id="new_entry" class="ui-icon ui-icon-document icon-button tip" title="Add an Entry"></span>
+						<span id="markdown_help" class="ui-icon ui-icon-help icon-button tip" title="Toggle Markdown Help"></span>
 						<span id="topic_delete" class="ui-icon ui-icon-trash icon-button" title="Delete Topic"></span>
 					</p>
 				</div>

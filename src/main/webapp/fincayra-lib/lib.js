@@ -1267,6 +1267,21 @@ Request.prototype.$api = function(actions) {
 };
 
 /*
+	Func: $apiAction
+
+	Parameters:
+		
+		A Number representing the piece of path to get. 0 or undefined returns the action
+		
+	Returns:
+		
+		The api action called
+*/
+Request.prototype.$apiAction = function(piece) {
+	return this.$getExtraPath().split("/")[piece || 0];
+};
+
+/*
 	Func: $requireSSL
 
 		Redirects to the ssl url of the requested page
