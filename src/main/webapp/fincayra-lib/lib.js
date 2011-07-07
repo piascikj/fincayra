@@ -891,6 +891,51 @@ Request.prototype.$getMethod = function() {
 };
 
 /*
+	Func: $isPOST
+	Check if this is a POST request
+	
+	Returns:
+	true if request is <Methods>.POST
+*/
+Request.prototype.$isPOST = function() {
+	return this.$getMethod() == Methods.POST;
+};
+
+/*
+	Func: $isGET
+	Check if this is a GET request
+	
+	Returns:
+	true if request is <Methods>.GET
+*/
+Request.prototype.$isGET = function() {
+	return this.$getMethod() == Methods.GET;
+};
+
+/*
+	Func: $isPUT
+	Check if this is a PUT request
+	
+	Returns:
+	true if request is <Methods>.PUT
+*/
+Request.prototype.$isPUT = function() {
+	return this.$getMethod() == Methods.PUT;
+};
+
+/*
+	Func: $isDELETE
+	Check if this is a DELETE request
+	
+	Returns:
+	true if request is <Methods>.DELETE
+*/
+Request.prototype.$isDELETE = function() {
+	return this.$getMethod() == Methods.DELETE;
+};
+
+
+/*
 	Func: $setStatus
 	Set the HTTP status code of the reponse
 

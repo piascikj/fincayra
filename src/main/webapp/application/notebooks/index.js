@@ -32,7 +32,7 @@
 			moveNoteBook : "/notebooks/api/organize/moveNoteBook",
 			moveTopic : "/notebooks/api/organize/moveTopic",
 			moveEntry : "/notebooks/api/organize/moveEntry",
-			getNoteBooks : "/api/NoteBook?qry=owner.uuid = '{}'".tokenize(user.uuid),
+			getNoteBooks : "/api/NoteBook",
 			saveNoteBook : "/api/NoteBook",
 			deleteNoteBook : "/api/NoteBook/{}",
 			getTopics : "/api/Topic?qry=noteBook.uuid = '{}' order by name",

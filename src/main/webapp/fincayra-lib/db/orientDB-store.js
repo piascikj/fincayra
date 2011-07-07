@@ -501,7 +501,7 @@ function OrientDBObjectManager() {
 				$log().debug("LOOKING FOR PROPERTY:" + prop);
 				if (doc.containsField(prop)) {
 					$log().debug("FOUND PROPERTY:" + prop);
-					if (Type[propType]) {
+					if (Type[propType] != undefined) {
 						//Doesn't matter if the rel is ownsA or hasA, ownsMany or HasMany.  We still use a node property for simple types;
 						if (rel == Relationship.ownsMany || rel == Relationship.hasMany) {
 							$log().debug("GETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + Type[propType]);
@@ -522,6 +522,7 @@ function OrientDBObjectManager() {
 						$log().debug("GETTING ownsA PROPERTY " + prop + "|" + propType);
 						var propDoc = doc.field(prop);
 						if (propDoc != null) obj[prop] = finder.getObject(propType,propDoc);
+						
 					} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
 						$log().debug("GETTING ownsMany or hasMany PROPERTY " + prop + "|" + propType);
 						var propValues = [];

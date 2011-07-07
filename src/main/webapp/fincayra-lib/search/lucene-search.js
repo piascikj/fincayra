@@ -85,9 +85,15 @@ function SearchManager() {
 				writer.close();
 			//End indexOnStartUp
 			}
+			
+			$this.searcher = new IndexSearcher($this.directory);
 		
 		
 		}
+	};
+	
+	$this.destroy = function() {
+		$this.searcher.close();
 	};
 	
 	$this.addAnalyzers = function(prefix, clazz) {
@@ -231,7 +237,7 @@ function SearchManager() {
 		options = defaults.extend(options);
 		with (Lucene.Packages) {
 			var analyzer = $this.analyzer;
-			var searcher = new IndexSearcher($this.directory);
+			var searcher = $this.searcher;
 			var parser = new QueryParser($this.version, options.defaultField, analyzer);
 			if (options.storable != undefined) options.qry = options.qry + " AND clazz:" + $type(options.storable);
 			var query = parser.parse(options.qry);
@@ -259,8 +265,6 @@ function SearchManager() {
 				
 				out.push(obj.findByUUId());
 			}
-			
-			searcher.close();
 			
 		}
 		return out;

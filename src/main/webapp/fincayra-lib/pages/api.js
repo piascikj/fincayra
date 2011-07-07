@@ -38,7 +38,7 @@ $api({
 			var objName = pathAry[0];
 			info.objName = objName;
 			
-			$config().beforeAPI($requestScope(),objName);
+			$config().beforeAPI($requestScope());
 			
 			if (info.classDefs[objName] == undefined) {
 				throw new NotStorableException(undefined, objName + " is not a valid object type.");
@@ -142,7 +142,7 @@ $api({
 		if ($om().classDefs[clazz] == undefined) {
 			throw new NotStorableException(undefined, clazz + " is not a valid object type.");
 		} else {
-			$config().beforeAPI($requestScope(),clazz);
+			$config().beforeAPI($requestScope());
 			var params = $getPageParams(true);
 			
 			params.storable = (clazz == undefined)?undefined:$getInstance(clazz);

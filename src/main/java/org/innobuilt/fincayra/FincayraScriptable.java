@@ -96,9 +96,10 @@ public class FincayraScriptable extends ImporterTopLevel {
 	
 	public static void loadFile(Context cx, Scriptable scope, String jsFile) throws RhinoException, IOException {
 		LOGGER.debug("Loading file: {}", jsFile);
-		
+		Reader reader = null;
 		try {
-			cx.evaluateReader(scope, getReaderForFile(jsFile), jsFile, 1, null);
+			reader = getReaderForFile(jsFile);
+			cx.evaluateReader(scope, reader, jsFile, 1, null);
 		} catch (IOException e) {
 			LOGGER.error("Problem openeing file: {}", jsFile);
 			throw e;
@@ -106,6 +107,8 @@ public class FincayraScriptable extends ImporterTopLevel {
 			// Some form of JavaScript error.
 			LOGGER.error("Evaluator Exception: {}", re.getMessage());
 			throw re;
+		} finally {
+			if (reader != null) reader.close();
 		}
 	}
 	

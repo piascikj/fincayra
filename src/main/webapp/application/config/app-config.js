@@ -43,18 +43,35 @@ $config({
 		},
 		
 		beforeAPI : function(request, clazz) {
+			/*
 			request.requireAuth();
 			var user = request.$getSession().user;
 			var params = request.$getPageParams();
 
 			//Check if it's search
-			if (request.$apiAction() == "search") {
-				if (clazz == "Entry") {
-					request.$setPageParams({qry: params.qry + " AND topic.noteBook.owner.uuid:" + user.uuid});
-				} else {
-					throw new ForbiddenException();
-				}
+			switch (request.$apiAction()) {
+				case "search" :
+					var clazz = request.$apiAction(1);
+					if (clazz == "Entry") {
+						request.$setPageParams({qry: params.qry + " AND topic.noteBook.owner.uuid:" + user.uuid});
+					} else {
+						throw new ForbiddenException();
+					}
+					break;
+				case "Entry" :
+					if (request.$isGET()) request.$setPageParams({qry: "topic.noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
+					
+					break;
+				case "Topic" :
+					if (request.$isGET()) request.$setPageParams({qry: "noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
+					
+					break;
+				case "NoteBook" :
+					if (request.$isGET()) request.$setPageParams({qry: "owner.uuid = '{}'".tokenize(user.uuid,params.qry)});
+					
+					break;
 			}
+			*/
 		},
 		
 		name:"Fincayraa",
