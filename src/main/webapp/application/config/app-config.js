@@ -43,7 +43,8 @@ $config({
 		},
 		
 		beforeAPI : function(request, clazz) {
-			/*
+			//TODO Need a global flag for perf testing
+			
 			request.requireAuth();
 			var user = request.$getSession().user;
 			var params = request.$getPageParams();
@@ -71,7 +72,7 @@ $config({
 					
 					break;
 			}
-			*/
+			
 		},
 		
 		name:"Fincayraa",

@@ -38,6 +38,8 @@ $log().debug(JSON.stringify(orientDB.Type, null, "   "));
 function OrientDBObjectManager() {
 	var manager = this;
 	
+	this.url = "local:fincayra-store";
+	
 	this.server;
 	
 	this.initDb = function() {
@@ -50,6 +52,8 @@ function OrientDBObjectManager() {
 				this.server = OServerMain.create();
 				this.server.startup(conf);
 			}
+			
+			com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().setup(50,1000);
 			
 			var db = this.openDB();
 			
@@ -129,16 +133,17 @@ function OrientDBObjectManager() {
 	};
 	
 	this.destroy = function() {
+		com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().close();
 		this.server.shutdown();
 	};
 	
 	this.openDB = function() {
-		var db = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx("local:fincayra-store");
-		if (!db.exists()) {
-			db = db.create();
-			
+		var dbx = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(this.url);
+		var db = null;
+		if (!dbx.exists()) {
+			db = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(this.url).create();
 		} else {
-			db = db.open("admin", "admin");
+			db = com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().acquire(this.url,"admin", "admin");
 		}
 		
 		return db;
@@ -298,14 +303,13 @@ function OrientDBObjectManager() {
 		return finder.getAll(storable, offset, limit);
 	};
 	
-	var Finder = function() {
-		var finder = this;
-		
+	function Finder() {
 		//Holds the objects created indexed by node identifier
 		//Keeps us from getting in a recursive call
 		this.index = {};
 		
 		this.findById = function(storable, id, deebee) {
+			var finder = this;
 			$log().debug(JSON.stringify(storable, null, "   "));
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var obj,doc,db;
@@ -327,6 +331,7 @@ function OrientDBObjectManager() {
 		};
 		
 		this.findByProperty = function(storable, prop, clause, offset, limit, deebee) {
+			var finder = this;
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
 			var propType = manager.classDefs[type][prop].type;
@@ -366,7 +371,7 @@ function OrientDBObjectManager() {
 					objects.push(finder.getObject(type, doc));
 				});
 			} finally {
-				if (deebee == undefined) db.close();
+				if (deebee == undefined && db != undefined) db.close();
 			}
 			
 			$log().debug("Found objects:" + JSON.stringify(objects, null, "   "));
@@ -374,6 +379,7 @@ function OrientDBObjectManager() {
 		};
 
 		this.search = function(storable, qry, offset, limit, deebee) {
+			var finder = this;
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
 			var db;
@@ -405,12 +411,13 @@ function OrientDBObjectManager() {
 				}
 				
 			} finally {
-				if (deebee == undefined) db.close();
+				if (deebee == undefined && db != undefined) db.close();
 			}
 			return objects;
 		};
 		
 		this.searchSelective = function(opts) {
+			var finder = this;
 			//TODO allow the caller to defined fields that will be returned
 			var defaults = {
 				//storable:undefined, 
@@ -453,12 +460,13 @@ function OrientDBObjectManager() {
 				}
 				
 			} finally {
-				if (opts.deebee == undefined) db.close();
+				if (opts.deebee == undefined && db != undefined) db.close();
 			}
 			return objects;
 		};
 
 		this.getAll = function(storable, offset, limit, deebee) {
+			var finder = this;
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
 			var db;
@@ -481,30 +489,36 @@ function OrientDBObjectManager() {
 					});
 				}
 			} finally {
-				if (deebee == undefined) db.close();
+				if (deebee == undefined && db != undefined) db.close();
 			}
 			return objects;
 		};
 		
 		this.getObject = function(type, doc) {
+			$log().debug("GETTING OBJECT FOR:" + doc.toJSON());
+			var finder = this;
 			var classDef = manager.getClassDef(type);
 			var obj = manager.cast({}, type);
 			obj.id = new String(doc.getIdentity().toString()).replace(/^\#/,"");
+			
+			//If it's in the index, get it there
+			if (finder.index[obj.id]) {return finder.index[obj.id];}
 			//put the object and the id in the index
 			finder.index[obj.id] = obj;
 			
 			//we only load the properties defined in the classDef
-			for (prop in classDef) { if (classDef.hasOwnProperty(prop)) {
-				var propSpec = classDef[prop];
-				var rel = propSpec.rel;
-				var propType = propSpec.type;
+			var prop;
+			for (prop in classDef) { 
 				$log().debug("LOOKING FOR PROPERTY:" + prop);
-				if (doc.containsField(prop)) {
-					$log().debug("FOUND PROPERTY:" + prop);
-					if (Type[propType] != undefined) {
+				if (classDef.hasOwnProperty(prop) && doc.containsField(prop)) {
+					var propSpec = classDef[prop];
+					var rel = propSpec.rel;
+					var propType = propSpec.type;
+					$log().debug("FOUND PROPERTY:({}){} SPEC:{}",[propType, prop, JSON.stringify(propSpec)]);
+					if (Type.hasOwnProperty(propType)) {
 						//Doesn't matter if the rel is ownsA or hasA, ownsMany or HasMany.  We still use a node property for simple types;
 						if (rel == Relationship.ownsMany || rel == Relationship.hasMany) {
-							$log().debug("GETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + Type[propType]);
+							$log().debug("GETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + propType);
 							var field = doc.field(prop, orientDB.Type[propType]);
 							var propValues = [];
 							if (field != null) {
@@ -515,13 +529,13 @@ function OrientDBObjectManager() {
 							}
 							obj[prop] = propValues;
 						} else { 
-							$log().debug("GETTING SIMPLE ownsA or hasA PROPERTY " + prop + "|" + Type[propType]);
+							$log().debug("GETTING SIMPLE ownsA or hasA PROPERTY " + prop + "|" + propType);
 							obj[prop] = finder.getValue(doc.field(prop, orientDB.Type[propType]), propType);
 						}
 					} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
 						$log().debug("GETTING ownsA PROPERTY " + prop + "|" + propType);
 						var propDoc = doc.field(prop);
-						if (propDoc != null) obj[prop] = finder.getObject(propType,propDoc);
+						if (propDoc != null) {obj[prop] = finder.getObject(propType,propDoc);}
 						
 					} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
 						$log().debug("GETTING ownsMany or hasMany PROPERTY " + prop + "|" + propType);
@@ -530,19 +544,22 @@ function OrientDBObjectManager() {
 						if (field != null) {
 							var values = doc.field(prop).toArray();
 							values.each(function(propDoc) {
-								if (propDoc != null) propValues.push(finder.getObject(propType,propDoc));
+								if (propDoc != null) {propValues.push(finder.getObject(propType,propDoc));}
 							});
 						}
 						obj[prop] = propValues;
 					}
-				}				
-				
-			}}
+					
+				} else {
+					$log().debug("{} is not a property.",prop);
+				}
+			}
 			return obj;
 		};
 		
 		//Works for Property and Value
 		this.getValue = function(val, type) {
+			var finder = this;
 			if ($log().isDebugEnabled() && val != null)	$log().debug("Converting Java {} to javascript {}",[val.getClass().getName(), val]);
 			
 			if (val == null) return undefined;
@@ -594,7 +611,7 @@ function OrientDBObjectManager() {
 				}
 				throw e;
 			} finally {
-				if (deebee == undefined) db.close();
+				if (deebee == undefined && db != undefined) db.close();
 			}
 		}
 		
