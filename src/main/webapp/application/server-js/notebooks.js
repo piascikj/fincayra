@@ -6,6 +6,7 @@ function NoteBook(clone) {
 	this.extend(new Storable(clone));
 	
 	this.onRemove = function(db) {
+		$log().debug("Removing NoteBook:{}", this.json());
 		var self = this;
 		var owner = self.owner;
 		if (owner.noteBooks && owner.noteBooks.length > 0) {
@@ -22,7 +23,7 @@ function NoteBook(clone) {
 			owner.noteBooks = [];
 		}
 		
-		if (owner.noteBooks && owner.noteBooks.length > -1 && owner.noteBooks.join("|").indexOf(self.uuid) < 0) {
+		if (owner.noteBooks.join("|").indexOf(self.uuid) < 0) {
 			owner.noteBooks.push(self.uuid);
 			owner.save(db);
 		}

@@ -43,9 +43,7 @@ $config({
 		},
 		
 		
-		beforeAPI : function(request, clazz) {
-			//TODO Need a global flag for perf testing
-			
+		beforeAPI : function(request) {
 			request.requireAuth();
 			var user = request.$getSession().user;
 			var params = request.$getPageParams();
@@ -69,20 +67,31 @@ $config({
 					
 					break;
 				case "Topic" :
+					var id = request.$apiAction(1);
 					if (request.$isGET()) {
 						request.$setPageParams({qry: "noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
 					} else if (request.$isPUT || request.$isPOST) {
 						
+					} else if (request.$isDELETE()) {
+					
 					}
 					
 					break;
 				case "NoteBook" :
 					if (request.$isGET()) {
+						//Only allow getting all notebooks for a user
 						request.$setPageParams({qry: "owner.uuid = '{}'".tokenize(user.uuid,params.qry)});
 					} else if (request.$isPUT || request.$isPOST) {
-						
+						var noteBook = request.$getPageParams(true);
+						if (noteBook.owner && !(noteBook.owner.uuid == user.uuid && noteBook.owner.id == user.id)) {
+							throw new ForbiddenException("You are not allowed to perform this operation");
+						}
 					} else if (request.$isDELETE()) {
-						//TODO need to reload session user on delete
+						var id = request.$apiAction(1);
+						var noteBook = new NoteBook({id:id}).findById();
+						if (noteBook && !(noteBook.owner.uuid == user.uuid && noteBook.owner.id == user.id)) {
+							throw new ForbiddenException("You are not allowed to perform this operation");
+						}
 					}
 					
 					break;
@@ -92,8 +101,28 @@ $config({
 			}
 			
 		},
+
+		afterAPI : function(request, result) {
+			var user = request.$getSession().user;
+
+			switch (request.$apiAction()) {
+				case "NoteBook" :
+					if (request.$isDELETE() || request.$isPOST() || request.$isPUT) {
+						request.$getSession().user = user.findById();
+					}
+					break;
+				case "Topic" :
+					var id = request.$apiAction(1);
+					if (request.$isGET() && id) {
+						if (result.noteBook.owner.id != user.id) {
+							throw new ForbiddenException();
+						}
+					}
+					break;  
+			}
+		},
 		
-		name:"Fincayraa",
+		name:"LeanNotes",
 		
 		//dev: false,
 		

@@ -36,8 +36,9 @@
 			saveNoteBook : "/api/NoteBook",
 			deleteNoteBook : "/api/NoteBook/{}",
 			getTopics : "/api/Topic?qry=noteBook.uuid = '{}' order by name",
-			saveTopic : "/api/Topic",
 			getTopic : "/api/Topic/{}",
+			//I'm here
+			saveTopic : "/api/Topic",
 			deleteTopic : "/api/Topic/{}",
 			getLastTopic : "/notebooks/api/utility/getLastTopic",
 			setLastTopic : "/notebooks/api/utility/setLastTopic/{}",

@@ -152,6 +152,15 @@ $api({
 			
 			$j(result);
 		}
+	},
+	
+	config : function() {
+		if ($config().dev == true || $getSession().isAdmin == true) {
+			$isAPI(false);
+			$("#json").appendText(JSON.stringify($config(), null, "   "));
+		} else {
+			throw new ForbiddenException("Function unavailable");
+		}
 	}
 });
 

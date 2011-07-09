@@ -242,6 +242,14 @@ function initEditor() {
 function bindLiveHandlers() {
 	//event handlers
 	//bind click to all topics, now and in future
+	//TODO these should be in the Views
+	$(document).bind("keydown", "Ctrl+o", function(evt) {
+		organizeNoteBooks();
+		evt.stopPropagation( );  
+		evt.preventDefault( );
+		return false;
+	});
+	
 	$('.topic-link').live('click',function() {
 		uuid = $(this).closest('li').attr("id");
 		fincayra.topicView.displayTopic(true, fincayra.topics[uuid]);
@@ -275,12 +283,12 @@ function bindLiveHandlers() {
 		function() {
 			header.toggleClass("selected", false);	
 		});
-		e.stopPropigation();
+		e.stopPropagation();
 	});
 
 	
 	$('.entry-body a').live('click', function(e) {
-		e.stopPropigation();
+		e.stopPropagation();
 		return true;
 	});
 	
@@ -461,6 +469,7 @@ function getNoteBooks() {
 		fincayra.noteBook = undefined;
 		fincayra.noteBooks = {};
 		
+		//Make sure the local user has the right notebooks
 		if (data.results && data.results.length > 0) fincayra.user.noteBooks = data.results[0].owner.noteBooks;
 		
 		$.each(data.results, function(key, val) {
@@ -861,7 +870,8 @@ function NoteBookView() {
 							axis:"y"
 						});
 						//add the new topic link to the content
-						ui.newContent.prepend('<p><a href="#" title="Add a Topic to this NoteBook." class="tip new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
+						//TODO use a template
+						ui.newContent.prepend('<p><a href="#" title="Add a Topic to this NoteBook. [Ctrl+c]" class="tip new-topic new-link"><span class="ui-icon ui-icon-folder-collapsed icon-button"></span>Create a new Topic...</a></p>');
 						fincayra.topicView.displayTopic(true);
 						$this.noteBook = undefined;
 					} else {
@@ -911,11 +921,14 @@ function TopicView() {
 	this.topic = undefined;
 
 	//Toggle toc for all Entries
-	this.tocButton.live("click", function() {
+	this.toggleTOC = function() {
 		$(".entry").each(function() {
 			toggleTOC($(this));
 		});
-	});
+	};
+	
+	this.tocButton.live("click", $this.toggleTOC);
+	$(document).bind('keydown', 'Ctrl+i', $this.toggleTOC);
 	
 	this.displayTopic = function(setLastTopic, topic) {
 		//First check overide, then search topic, then firstTopic
