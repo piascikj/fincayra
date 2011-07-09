@@ -141,7 +141,7 @@ function OrientDBObjectManager() {
 		var dbx = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(this.url);
 		var db = null;
 		if (!dbx.exists()) {
-			db = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(this.url).create();
+			db = dbx.create();
 		} else {
 			db = com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().acquire(this.url,"admin", "admin");
 		}

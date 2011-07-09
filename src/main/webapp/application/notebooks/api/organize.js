@@ -57,12 +57,12 @@ function getNoteBookNode(noteBook) {
 			type : $type(noteBook)
 		},
 		children : getTopics(noteBook.uuid),
-		state : (noteBook.id == lastTopic.noteBook.id)?"open":"closed"
+		state : (lastTopic && noteBook.id == lastTopic.noteBook.id)?"open":"closed"
 	};
 }
 
 function getNoteBooks() {
-	lastTopic = new Topic({id:user.lastTopicId}).findById();
+	if (user.lastTopicId) lastTopic = new Topic({id:user.lastTopicId}).findById();
 	
 	var noteBooks = {}
 	var nodes = [];

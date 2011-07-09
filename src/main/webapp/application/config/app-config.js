@@ -42,6 +42,7 @@ $config({
 			req.Templates = new DefaultTemplates(req);
 		},
 		
+		
 		beforeAPI : function(request, clazz) {
 			//TODO Need a global flag for perf testing
 			
@@ -60,16 +61,33 @@ $config({
 					}
 					break;
 				case "Entry" :
-					if (request.$isGET()) request.$setPageParams({qry: "topic.noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
+					if (request.$isGET()) {
+						request.$setPageParams({qry: "topic.noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
+					} else if (request.$isPUT || request.$isPOST) {
+						
+					}
 					
 					break;
 				case "Topic" :
-					if (request.$isGET()) request.$setPageParams({qry: "noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
+					if (request.$isGET()) {
+						request.$setPageParams({qry: "noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
+					} else if (request.$isPUT || request.$isPOST) {
+						
+					}
 					
 					break;
 				case "NoteBook" :
-					if (request.$isGET()) request.$setPageParams({qry: "owner.uuid = '{}'".tokenize(user.uuid,params.qry)});
+					if (request.$isGET()) {
+						request.$setPageParams({qry: "owner.uuid = '{}'".tokenize(user.uuid,params.qry)});
+					} else if (request.$isPUT || request.$isPOST) {
+						
+					} else if (request.$isDELETE()) {
+						//TODO need to reload session user on delete
+					}
 					
+					break;
+				default :
+					throw new ForbiddenException();
 					break;
 			}
 			

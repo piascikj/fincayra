@@ -28,8 +28,8 @@ function $init() {
 //for deep extend
 function $extend(object, oSuper) { 
 	for (sProperty in oSuper) {
-		if (typeof object[sProperty] == "object") {
-			extend(object[sProperty],oSuper[sProperty]);
+		if (typeof object[sProperty] === "object" && object[sProperty] !== null) {
+			object[sProperty] = $extend(object[sProperty],oSuper[sProperty]);
 		} else {
 			object[sProperty] = oSuper[sProperty]; 
 		}

@@ -4,6 +4,30 @@ function NoteBook(clone) {
 	this.createDate = new Date();
 	this.isSearch = false;
 	this.extend(new Storable(clone));
+	
+	this.onRemove = function(db) {
+		var self = this;
+		var owner = self.owner;
+		if (owner.noteBooks && owner.noteBooks.length > 0) {
+			owner.noteBooks = owner.noteBooks.removeString(self.uuid);
+			owner.save(db);
+		}
+	};
+		
+	this.onSave = function(db) {
+		var self = this;		
+		var owner = new User(self.owner).findById(db);
+		
+		if (owner.noteBooks == undefined) {
+			owner.noteBooks = [];
+		}
+		
+		if (owner.noteBooks && owner.noteBooks.length > -1 && owner.noteBooks.join("|").indexOf(self.uuid) < 0) {
+			owner.noteBooks.push(self.uuid);
+			owner.save(db);
+		}
+	
+	};	
 };
 
 new NoteBook().define({
