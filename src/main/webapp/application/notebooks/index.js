@@ -37,11 +37,11 @@
 			deleteNoteBook : "/api/NoteBook/{}",
 			getTopics : "/api/Topic?qry=noteBook.uuid = '{}' order by name",
 			getTopic : "/api/Topic/{}",
-			//I'm here
 			saveTopic : "/api/Topic",
 			deleteTopic : "/api/Topic/{}",
 			getLastTopic : "/notebooks/api/utility/getLastTopic",
 			setLastTopic : "/notebooks/api/utility/setLastTopic/{}",
+			//I'm here
 			getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
 			saveEntry : "/api/Entry",
 			deleteEntry : "/api/Entry/{}",

@@ -1061,7 +1061,7 @@ function TopicView() {
 					$this.nameForm.hide();
 					
 			} else {
-				topic = {name:$this.nameInput.val(),owner:fincayra.user,noteBook:fincayra.noteBook};
+				topic = {name:$this.nameInput.val(),noteBook:fincayra.noteBook};
 				topic = saveTopic(topic);
 			}
 		} catch (error) {

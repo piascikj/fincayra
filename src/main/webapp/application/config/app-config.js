@@ -47,15 +47,18 @@ $config({
 			request.requireAuth();
 			var user = request.$getSession().user;
 			var params = request.$getPageParams();
-
+			var eMsg = "You are not allowed to perform this operation";
+			var action = request.$apiAction();
+			
 			//Check if it's search
-			switch (request.$apiAction()) {
+			//TODO Test this with wron user!!!
+			switch (action) {
 				case "search" :
 					var clazz = request.$apiAction(1);
 					if (clazz == "Entry") {
 						request.$setPageParams({qry: params.qry + " AND topic.noteBook.owner.uuid:" + user.uuid});
 					} else {
-						throw new ForbiddenException();
+						throw new ForbiddenException(eMsg);
 					}
 					break;
 				case "Entry" :
@@ -67,13 +70,24 @@ $config({
 					
 					break;
 				case "Topic" :
+					$log().debug("In beforeAPI Topic trying to {}",request.$getMethod());
 					var id = request.$apiAction(1);
 					if (request.$isGET()) {
 						request.$setPageParams({qry: "noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
-					} else if (request.$isPUT || request.$isPOST) {
-						
+					} else if (request.$isPUT() || request.$isPOST()) {
+						//TODO what about multiples???
+						var owner = params.noteBook && params.noteBook.owner;
+						if (owner && !(owner.equals(user))) {
+							throw new ForbiddenException(eMsg);
+						}
 					} else if (request.$isDELETE()) {
-					
+						var id = request.$apiAction(1);
+						$log().debug("TRYING TO DELETE TOPIC:{}",id);
+						var topic = new Topic({id:id}).findById();
+						var owner = topic && topic.noteBook && topic.noteBook.owner;
+						if (owner && !(owner.equals(user))) {
+							throw new ForbiddenException(eMsg);
+						}
 					}
 					
 					break;
@@ -81,15 +95,16 @@ $config({
 					if (request.$isGET()) {
 						//Only allow getting all notebooks for a user
 						request.$setPageParams({qry: "owner.uuid = '{}'".tokenize(user.uuid,params.qry)});
-					} else if (request.$isPUT || request.$isPOST) {
-						var noteBook = request.$getPageParams(true);
-						if (noteBook.owner && !(noteBook.owner.uuid == user.uuid && noteBook.owner.id == user.id)) {
+					} else if (request.$isPUT() || request.$isPOST()) {
+						//TODO what about multiples???
+						var owner = params && params.owner;
+						if (owner && !(owner.equals(user))) {
 							throw new ForbiddenException("You are not allowed to perform this operation");
 						}
 					} else if (request.$isDELETE()) {
 						var id = request.$apiAction(1);
 						var noteBook = new NoteBook({id:id}).findById();
-						if (noteBook && !(noteBook.owner.uuid == user.uuid && noteBook.owner.id == user.id)) {
+						if (noteBook && !(noteBook.owner.equals(user))) {
 							throw new ForbiddenException("You are not allowed to perform this operation");
 						}
 					}
