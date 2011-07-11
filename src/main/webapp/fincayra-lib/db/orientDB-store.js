@@ -63,10 +63,10 @@ function OrientDBObjectManager() {
 					//Check if the class exists if not create it!
 					var oClass;
 					if(schema.existsClass(clazz)) {
-						$log().info("Found persistent type:{}", clazz);
+						$log().debug("Found persistent type:{}", clazz);
 						oClass = schema.getClass(clazz);
 					} else {
-						$log().info("Creating persistent type:{}", clazz);
+						$log().debug("Creating persistent type:{}", clazz);
 						oClass = schema.createClass(clazz);
 					}
 					
@@ -76,10 +76,10 @@ function OrientDBObjectManager() {
 							var property = classDef[propName];
 							var oProperty;
 							if (oClass.existsProperty(propName)) {
-								$log().info("Getting {} property: {}",[clazz, propName]);
+								$log().debug("Getting {} property: {}",[clazz, propName]);
 								oProperty = oClass.getProperty(propName);
 							} else {
-								$log().info("Creating {} property: {}",[clazz, propName]);
+								$log().debug("Creating {} property: {}",[clazz, propName]);
 								var oPropType = orientDB.Type[property.type];
 								var linkedType = undefined;
 

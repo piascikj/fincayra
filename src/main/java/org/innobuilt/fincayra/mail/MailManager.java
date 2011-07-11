@@ -9,11 +9,7 @@ import java.util.Queue;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import org.innobuilt.fincayra.FincayraApplication;
-import org.innobuilt.fincayra.FincayraContext;
-import org.innobuilt.fincayra.MergeEngine;
 import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.ScriptableObject;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;

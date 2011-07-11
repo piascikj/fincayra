@@ -105,17 +105,22 @@ function $config(config) {
 	//Expose some paths to the client (default is ["css","images","js"])
 	$expose($config().expose);
 
+	//Load the store implementation
+	$log().info("Loading the store implimentation config.store.");
 	load($config().store);
 
+	//Run the database preInit function
+	$log().info("Running config.preInitDb");
 	$config().preInitDb();
 
 	//Now we register the storables in the persistenceManager
+	$log().info("Initializing the store implimentation.");
 	$om().initDb();
-	$log().debug(JSON.stringify($om().classDefs, null, "   "));
+	$log().info(JSON.stringify($om().classDefs, null, "   "));
 
 	//Now we initialize search
 	load($config().search);
-	$log().debug("$om().searchables={}", JSON.stringify($om().searchables, null, "   "));
+	$log().info("$om().searchables={}", JSON.stringify($om().searchables, null, "   "));
 
 	//Run the post init callback
 	$log().info("Running config.postInit");

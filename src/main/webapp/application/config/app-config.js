@@ -51,7 +51,7 @@ $config({
 			var action = request.$apiAction();
 			
 			//Check if it's search
-			//TODO Test this with wron user!!!
+			//TODO Test this with wrong user!!!
 			switch (action) {
 				case "search" :
 					var clazz = request.$apiAction(1);
@@ -64,8 +64,20 @@ $config({
 				case "Entry" :
 					if (request.$isGET()) {
 						request.$setPageParams({qry: "topic.noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
-					} else if (request.$isPUT || request.$isPOST) {
-						
+					} else if (request.$isPUT() || request.$isPOST()) {
+						var entries = (params instanceof Array)?params:[params];
+						entries.each(function(entry) {
+							var owner = entry.topic && entry.topic.noteBook && entry.topic.noteBook.owner;
+							if ((owner && !(user.equals(owner))) || owner == undefined) {
+								throw new ForbiddenException(eMsg);
+							}
+						});
+					} else if (request.$isDELETE()) {
+						var id = request.$apiAction(1);
+						var entry = new Entry({id:id}).findById();
+						if (entry && !(entry.topic.noteBook.owner.equals(user))) {
+							throw new ForbiddenException(eMsg);
+						}
 					}
 					
 					break;
@@ -75,17 +87,18 @@ $config({
 					if (request.$isGET()) {
 						request.$setPageParams({qry: "noteBook.owner.uuid = '{}' AND {}".tokenize(user.uuid,params.qry)});
 					} else if (request.$isPUT() || request.$isPOST()) {
-						//TODO what about multiples???
-						var owner = params.noteBook && params.noteBook.owner;
-						if (owner && !(owner.equals(user))) {
-							throw new ForbiddenException(eMsg);
-						}
+						var topics = (params instanceof Array)?params:[params];
+						topics.each(function(topic) {
+							var owner = topic.noteBook && topic.noteBook.owner;
+							if ((owner && !(user.equals(owner))) || owner == undefined) {
+								throw new ForbiddenException(eMsg);
+							}
+						});
 					} else if (request.$isDELETE()) {
 						var id = request.$apiAction(1);
 						$log().debug("TRYING TO DELETE TOPIC:{}",id);
 						var topic = new Topic({id:id}).findById();
-						var owner = topic && topic.noteBook && topic.noteBook.owner;
-						if (owner && !(owner.equals(user))) {
+						if (topic && !(topic.noteBook.owner.equals(user))) {
 							throw new ForbiddenException(eMsg);
 						}
 					}
@@ -96,11 +109,13 @@ $config({
 						//Only allow getting all notebooks for a user
 						request.$setPageParams({qry: "owner.uuid = '{}'".tokenize(user.uuid,params.qry)});
 					} else if (request.$isPUT() || request.$isPOST()) {
-						//TODO what about multiples???
-						var owner = params && params.owner;
-						if (owner && !(owner.equals(user))) {
-							throw new ForbiddenException("You are not allowed to perform this operation");
-						}
+						var noteBooks = (params instanceof Array)?params:[params];
+						noteBooks.each(function(noteBook) {
+							var owner = noteBook.owner;
+							if ((owner && !(user.equals(owner))) || owner == undefined) {
+								throw new ForbiddenException("You are not allowed to perform this operation");
+							}
+						});
 					} else if (request.$isDELETE()) {
 						var id = request.$apiAction(1);
 						var noteBook = new NoteBook({id:id}).findById();
@@ -122,14 +137,27 @@ $config({
 
 			switch (request.$apiAction()) {
 				case "NoteBook" :
+					var id = request.$apiAction(1);
 					if (request.$isDELETE() || request.$isPOST() || request.$isPUT) {
 						request.$getSession().user = user.findById();
+					} else if (request.$isGET() && id) {
+						if (!user.equals(result.owner)) {
+							throw new ForbiddenException();
+						}
 					}
 					break;
+				case "Entry" :
+					var id = request.$apiAction(1);
+					if (request.$isGET() && id) {
+						if (!user.equals(result.topic.noteBook.owner)) {
+							throw new ForbiddenException();
+						}
+					}
+					break;  
 				case "Topic" :
 					var id = request.$apiAction(1);
 					if (request.$isGET() && id) {
-						if (result.noteBook.owner.id != user.id) {
+						if (!user.equals(result.noteBook.owner)) {
 							throw new ForbiddenException();
 						}
 					}
