@@ -540,7 +540,8 @@ function saveTopic(topic) {
 }
 
 function parseMD(text) {
-	return fincayra.showdown.makeHtml(text);
+	var html = fincayra.showdown.makeHtml(text).replace(/<script.*?>([\s\S]*?)<\/.*?script>/ig,"$1").replace(/(href=["|'].*)javascript:.*(["|'].?>)/ig,"$1#$2");
+	return html
 }
 
 function getEntries() {
@@ -617,6 +618,7 @@ function getEntryElement(entry) {
 	} else {
 		jqo.find('.entry-title').html(title);
 	}
+	
 	var html = parseMD(entry.text);
 	jqo.find('.entry-body').html(html);
 	//$log("jqo=" + $("#entry_tmpl").text());
