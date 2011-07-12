@@ -377,6 +377,12 @@ function init() {
 	//Tipsy for icon-button
 	//$(".icon-button").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	
+	setInterval(function() {
+		$.getJSON(fincayra.keepAlive, function(data) {
+			$log(JSON.stringify(data));
+		});
+	}, fincayra.keepAliveIncrement);
+	
 	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	$(".tip-sw").tipsy({gravity:'sw', live:true, fade:true, delayIn:300});
 	

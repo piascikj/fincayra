@@ -22,7 +22,15 @@ function ForbiddenException(msg) {
 }
 
 function $init() {
+	clearSchedule();
 	$app().mergeEngine.init();
+};
+
+function $destroy() {
+	$log().info("Fincayra is shutting down!");
+	if ($om().destroy != undefined) $om().destroy();
+	if ($sm().destroy != undefined) $sm().destroy();
+	clearSchedule();
 };
 
 //for deep extend
@@ -50,17 +58,17 @@ function $extend(object, oSuper) {
  * 
  * An object instance 
  */
-$getInstance = function(type, params) {
+function $getInstance(type, params) {
 	return eval("new " + type + "(params);");
 };
 
 function $setProperty(key, value) {
 	java.lang.System.setProperty(key, value);
-}
+};
 
 function $getProperty(key) {
 	return java.lang.System.getProperty(key);
-}
+};
 
 /*
  * Function: $app
@@ -186,7 +194,7 @@ $log.JLevel =  {
 		Set the root logger to ERROR
 		>$setLogLevel({level:$log.Level.ERROR});
 */
-var $setLogLevel = function(config) {
+function $setLogLevel(config) {
 	var logger;
 	if (!config.logger) {
 		logger = org.apache.log4j.Logger.getRootLogger();
@@ -205,7 +213,7 @@ var $setLogLevel = function(config) {
 	
 		name - The name of the logger or if left undefined, the root log level is returned
 */
-var $getLogLevel = function(name) {
+function $getLogLevel(name) {
 	var logger;
 	if (name == undefined) {
 		logger = org.apache.log4j.Logger.getRootLogger();
@@ -669,6 +677,49 @@ String.prototype.truncate = function(len, suffix, replaceCR) {
 	return text;
 };
 
+//SetTimeout and SetInterval implementation
+var setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+    clearSchedule;
+
+(function () {
+    var timer = new java.util.Timer();
+    var counter = 1; 
+    var ids = {};
+
+    setTimeout = function (fn,delay) {
+        var id = counter++;
+        ids[id] = new JavaAdapter(java.util.TimerTask,{run: fn});
+        timer.schedule(ids[id],delay);
+        return id;
+    }
+
+    clearTimeout = function (id) {
+		$log().info("Removing timer:{}", id);
+        ids[id].cancel();
+        timer.purge();
+        delete ids[id];
+    }
+
+    setInterval = function (fn,delay) {
+        var id = counter++; 
+        ids[id] = new JavaAdapter(java.util.TimerTask,{run: fn});
+        timer.schedule(ids[id],delay,delay);
+        return id;
+    }
+
+    clearInterval = clearTimeout;
+
+	clearSchedule = function() {
+		for (id in ids) {
+			if (ids.hasOwnProperty(id)) {
+				clearTimeout(id);
+			}
+		}
+	}
+})();
 
 /*
 	class: Request

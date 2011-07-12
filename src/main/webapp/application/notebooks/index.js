@@ -48,12 +48,15 @@
 			noteBooks : {},
 			topics : {},
 			entries : {},
-			autoSaveIncrement : 1000*20 //save once every twenty seconds
+			autoSaveIncrement : 1000*20, //save once every twenty seconds
+			keepAlive : "/api/keepAlive",
+			keepAliveIncrement : 1000*60*5 //send keepAlive every 5 minutes
 		};
 		
 		//Load the notebooks to the page so no ajax call is needed to get them
 		new NoteBook({owner:{id:user.id}}).findByProperty("owner").each(function(val) {pageVars.noteBooks[val.uuid]=val});
 		
 		$appendScript('head',"$.extend(true,fincayra,{});".tokenize(JSON.stringify(pageVars)));
+
 	}
 })();

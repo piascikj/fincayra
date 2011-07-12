@@ -161,6 +161,10 @@ $api({
 		} else {
 			throw new ForbiddenException("Function unavailable");
 		}
+	},
+	
+	keepAlive : function() {
+		$j({ok:true});
 	}
 });
 

@@ -59,7 +59,7 @@ public class MergeEngine {
 		Scriptable scope  = cx.newObject(topScope);
 		scope.setPrototype(topScope);
 		scope.setParentScope(null);
-		FincayraScriptable.loadFile(cx, topScope, jsDir + "/destroy.js");
+		cx.evaluateString(topScope, "$destroy();", "destroy", 0, null);
 		Context.exit();		
 	}
 

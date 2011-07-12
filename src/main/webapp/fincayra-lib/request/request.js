@@ -52,6 +52,4 @@ try {
 	} else {
 		$f($getErrorPage());
 	}
-} finally {
-	
 }
