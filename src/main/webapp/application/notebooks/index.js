@@ -48,7 +48,7 @@
 			noteBooks : {},
 			topics : {},
 			entries : {},
-			autoSaveIncrement : 1000*20, //save once every twenty seconds
+			autoSaveIncrement : 1000*60, //save once every minute
 			keepAlive : "/api/keepAlive",
 			keepAliveIncrement : 1000*60*5 //send keepAlive every 5 minutes
 		};

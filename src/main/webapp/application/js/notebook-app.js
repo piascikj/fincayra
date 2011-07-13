@@ -749,8 +749,8 @@ function NoteBookView() {
 				url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
 				success: function(data) {
 					getNoteBooks();
-					//fincayra.topicView.getLastTopic(true);
-					fincayra.topicView.hideTopic();
+					var noteBook = fincayra.noteBooks[fincayra.user.noteBooks[0]];
+					fincayra.noteBookView.displayNoteBook(noteBook);
 				},
 				dataType: 'json'
 			});

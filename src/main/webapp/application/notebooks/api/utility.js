@@ -26,6 +26,16 @@
 			}
 			
 			$j({ok:ok});
+		},
+		
+		fixNoteBooks : function() {
+			requireAuth();
+			var user = $getSession().user;
+			user.fixNoteBooks();
+			user.save();
+			$getSession().user = user;
+			
+			$j({ok:true}); 
 		}
 	});
 

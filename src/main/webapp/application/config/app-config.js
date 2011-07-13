@@ -140,6 +140,11 @@ $config({
 					var id = request.$apiAction(1);
 					if (request.$isDELETE() || request.$isPOST() || request.$isPUT) {
 						request.$getSession().user = user.findById();
+						
+						if (request.$isPUT()) {
+							//We created a new notebook, now add a new topic
+							new Topic({name:"New Topic", noteBook:result}).save();
+						}
 					} else if (request.$isGET() && id) {
 						if (!user.equals(result.owner)) {
 							throw new ForbiddenException();

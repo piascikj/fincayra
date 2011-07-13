@@ -567,6 +567,10 @@ Array.prototype.replaceString = function(cur, repl) {
 	return ary.join("|").replace(cur, repl).split("|");
 }
 
+Array.prototype.stringExists = function(val) {
+	return this.join("|").indexOf(val) > -1;
+}
+
 
 /*
   Class: Object
