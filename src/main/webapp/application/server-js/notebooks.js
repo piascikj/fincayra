@@ -13,6 +13,11 @@ function NoteBook(clone) {
 			owner.noteBooks = owner.noteBooks.removeString(self.uuid);
 			owner.save(db);
 		}
+		
+		var topics = new Topic({noteBook:self}).findByProperty("noteBook");
+		topics.each(function(topic) {
+			topic.remove(db);
+		});
 	};
 		
 	this.onSave = function(db) {
@@ -70,6 +75,11 @@ function Topic(clone) {
 			noteBook.topics = noteBook.topics.removeString(self.uuid);
 			noteBook.save(db);
 		}
+		
+		var entries = new Entry({topic:self}).findByProperty("topic");
+		entries.each(function(entry) {
+			entry.remove(db);
+		});
 	};
 	
 	this.onSave = function(db) {

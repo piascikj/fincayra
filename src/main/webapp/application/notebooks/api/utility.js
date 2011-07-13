@@ -7,7 +7,6 @@
 			var topic;
 			if (s.user.lastTopicId) {
 				topic = new Topic({id:s.user.lastTopicId}).findById();
-				$log().debug(JSON.stringify(topic.getClassDef(), null, "   "));
 			}
 			
 			$j({topic:topic});

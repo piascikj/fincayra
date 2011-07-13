@@ -184,7 +184,7 @@ function getTopic(id) {
 }
 
 function getFirstTopic() {
-	if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
+	if (fincayra.noteBook && fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
 		return fincayra.topics[fincayra.noteBook.topics[0]];
 	} else {
 		return undefined;
@@ -749,6 +749,7 @@ function NoteBookView() {
 				url: fincayra.deleteNoteBook.tokenize(fincayra.noteBook.id),
 				success: function(data) {
 					getNoteBooks();
+					//fincayra.topicView.getLastTopic(true);
 					fincayra.topicView.hideTopic();
 				},
 				dataType: 'json'
