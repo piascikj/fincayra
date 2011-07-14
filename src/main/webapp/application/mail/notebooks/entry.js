@@ -15,7 +15,7 @@
 var helper = context.messageHelper;
 var data = context.messageData;
 
-helper.setTo(data.user.email);
+helper.setTo(data.user.mailTo);
 helper.setSubject(data.subject);
 
 helper.setText(data.html, true);

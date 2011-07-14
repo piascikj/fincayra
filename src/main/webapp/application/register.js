@@ -31,6 +31,7 @@
 			if ($getMethod() == Methods.POST) {
 				
 
+				user.mailTo = user.email;
 				//This is used to prefill form fields if we find a bad value
 
 				var fillForm = function() {

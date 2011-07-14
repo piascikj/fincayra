@@ -25,6 +25,8 @@
 		$("#name").val(user.name);
 		$("#nickname").val(user.nickname);
 		$("#email").val(user.email);
+		var mailTo = user.mailTo || user.email;
+		$("#mailTo").val(mailTo);
 	};
 
 	//Extend the Simple template - it only needs a title
@@ -43,6 +45,7 @@
 				user.name = params.name;
 				user.nickname = params.nickname;
 				user.email = params.email;
+				user.mailTo = params.mailTo;
 				
 				//Validate the user object
 				var result = user.validate();

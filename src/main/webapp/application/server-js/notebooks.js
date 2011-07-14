@@ -42,7 +42,7 @@ new NoteBook().define({
 	name:{
 		index:true,
 		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
-		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%",
+		error:"Name can only contain letters, numbers, spaces and .'-_&/,!@#$?%",
 		search:{}
 	},
 	
@@ -106,7 +106,7 @@ new Topic().define({
 	name:{
 		index:true,
 		pattern:/^([a-zA-Z0-9 .'-_&\/,!@#\$\?%])+$/,
-		error:"Must be letters, numbers, spaces and .'-_&/,!@#$?%",
+		error:"Name can only contain letters, numbers, spaces and .'-_&/,!@#$?%",
 		search:{}
 	},
 	
@@ -221,6 +221,12 @@ new Task().define({
 //Extend user
 new User().define({
 	lastTopicId : {},
+	mailTo : {
+		required: true,
+		pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
+		error:"Email address is not valid",
+		unique:true//this will ensure another object with the same value is not created, unique:false is default
+	}, 
 	noteBooks : {rel: Relationship.ownsMany}
 
 });
@@ -239,7 +245,7 @@ User.prototype.fixNoteBooks = function() {
 		if (noSort.stringExists(uuid)) newSort.push(uuid);
 	});
 	this.noteBooks = newSort;
-}
+};
 	
 	
 	
