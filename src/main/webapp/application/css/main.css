@@ -477,6 +477,11 @@ border-radius: 4px;
 	font-weight: bold;
 }
 
+#spinner a {
+	color: white;
+	text-decoration: none;
+}
+
 #organize_notebooks a {
 	background: none;
 	border: none;

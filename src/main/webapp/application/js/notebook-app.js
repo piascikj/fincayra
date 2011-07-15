@@ -454,6 +454,16 @@ function getTOC(entry) {
 	toc.html("");
 	var entryId = entry.attr("id");
 	toc.toc({context:'#' + entryId + ' > .entry-body'});
+	toc.find('a').each(function() {
+		$(this).click(function() {
+			var topLink = $('<a href="#{}">Back to TOC</a>'.tokenize(entryId)).click( function() {
+				toggleSpinner("hide");
+				return true;
+			});
+			toggleSpinner("show",topLink);
+			return true;
+		});
+	});
 	return toc;
 };
 
