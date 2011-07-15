@@ -43,7 +43,10 @@
 					auth = user.authenticate(password);
 				}
 				
-				if (auth) {
+				//Is this an auth for a single page or for the app
+				if ($getSession().singlePageAuth && $getSession().destination && auth) {
+					$f($getSession().destination);
+				} else if (auth) {
 					$getAuthSession().user = user;
 					if (params.persistent == "y") setPersistentKey(user);
 					//Keep session alive for 1hr
@@ -55,7 +58,7 @@
 			}
 		}
 	});
-
+		
 	if (auth) {
 		
 		//If we just logged in and the request was for a different page, then redirect

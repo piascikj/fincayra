@@ -864,6 +864,7 @@ function NoteBookView() {
 						
 						//Add the topics to the content
 						ui.newContent.html('<ul>' + topicItems.join('') + '</ul>');
+						//Make them sortable
 						ui.newContent.find('ul').sortable({
 							start: function(e, ui) {
 								//ui.item.find('.tip').tipsy(true).hide();
@@ -945,6 +946,7 @@ function TopicView() {
 	
 	this.displayTopic = function(setLastTopic, topic) {
 		closeEntry();
+		toggleSpinner("hide");
 		//First check overide, then search topic, then firstTopic
 		topic = topic || fincayra.topicView.topic || getFirstTopic();
 		if (topic == undefined) return;

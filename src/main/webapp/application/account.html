@@ -1,5 +1,10 @@
 <head>
-
+	<script language="javascript">
+	$(document).ready(function() {
+		//$("input").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
+		$('input[title]').tipsy({trigger: 'focus', gravity: 'w'});
+	});
+	</script>
 </head>
 <body>
 <div id="form_box" class="stylized middleForm">
@@ -7,16 +12,16 @@
 	<form id="user_form" action="account" method="post">
 
 		<label for="email">email</label>
-		<input type="text" name="email" id="email" autocomplete="off"/>
+		<input title="Your login email.  All account activity is sent this address" type="text" name="email" id="email" autocomplete="off"></input>
 
 		<label for="mailTo">mailTo</label>
-		<input type="text" name="mailTo" id="mailTo" autocomplete="off"/>
+		<input title="An email address that entries are sent to." type="text" name="mailTo" id="mailTo" autocomplete="off"/>
 		
 		<label for="nickname">Nickname</label>
-		<input type="text" name="nickname" id="nickname" autocomplete="off"/>
+		<input title="A nickname for the account." type="text" name="nickname" id="nickname" autocomplete="off"/>
 
 		<label for="name">Full Name</label>
-		<input type="text" name="name" id="name" autocomplete="off"/>
+		<input title="Your full name" type="text" name="name" id="name" autocomplete="off"/>
 
 		<label for="password">Password</label>
 		<div class="link"><a href="password">Change password</a></div>
