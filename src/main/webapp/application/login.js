@@ -15,6 +15,7 @@
 (function() {
 	var auth = false;
 	var params = $getPageParams();
+	var session = $getSession();
 
 	Templates.simple({
 		requireSSL : true,	
@@ -22,12 +23,20 @@
 		
 		//runs before the simple template is loaded into the document
 		before : function() {
-			$("#form_box p.title").append("<strong>" + $app().name + "</strong>");
 			$("#forgot").attr("href", $app().url + "forgot");
+			
+			if (session.singlePageAuth) {
+				$('#email').attr("hidden", "true").after('<span class="static-value">{}</span>'.tokenize(session.user.email));
+				$('#password').attr("autocomplete", "off");
+				$("#form_box p.title").html('Please verify your password');
+			} else {
+				$("#form_box p.title").append("<strong>" + $app().name + "</strong>");
+			}	
+			
 			if ($getMethod() == Methods.POST) {
 				//Get the user from the params
-				var user = new User(params);
-				var password = user.password;
+				var user = session.singlePageAuth?session.user:new User(params);
+				var password = params.password;
 				//lookup the user
 				var users = [];
 				try {
@@ -44,9 +53,7 @@
 				}
 				
 				//Is this an auth for a single page or for the app
-				if ($getSession().singlePageAuth && $getSession().destination && auth) {
-					$f($getSession().destination);
-				} else if (auth) {
+				if (auth && !session.singlePageAuth) {
 					$getAuthSession().user = user;
 					if (params.persistent == "y") setPersistentKey(user);
 					//Keep session alive for 1hr
@@ -58,20 +65,19 @@
 			}
 		}
 	});
-		
+	
 	if (auth) {
 		
 		//If we just logged in and the request was for a different page, then redirect
-		if($getSession().destination) {
-			var dest = $getSession().destination;
-			$getSession().destination = false;
+		if(session.destination) {
+			var dest = session.destination;
+			session.destination = false;
 			$redirect(dest);
 		} else {
 			//redirect to default page
 			forwardToDefault();
 		}
-	} else if ($getSession().user) {
-			
+	} else if (session.user && !session.singlePageAuth) {
 		//redirect to home if already logged in
 		$redirect($app().url);
 	}

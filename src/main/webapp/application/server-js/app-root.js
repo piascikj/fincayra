@@ -198,6 +198,22 @@ Request.prototype.requireAuth = function() {
 	}
 };
 
+Request.prototype.requirePageAuth = function() {
+	var s = this.$getSession();
+	$log().debug("requirePageAuth session:{}".tokenize(JSON.stringify(s)));
+	if (!s.singlePageAuthTO  || s.singlePageAuthTO < new Date()) {
+		s.singlePageAuth = true;
+		//Let's give them a couple minutes to change their settings
+		s.singlePageAuthTO = new Date(new Date().getTime() + 5*60*1000);
+		s.destination = this.$getRequestURL();
+		var redirectTo = $app().secureUrl + "login";
+		$log().debug("requirePageAuth redirecting to:{}".tokenize(redirectTo));
+		this.$redirect(redirectTo);
+	} else {
+		s.singlePageAuth = false;
+	}
+}
+
 function DefaultTemplates(req) {
 	this.req = req;
 };

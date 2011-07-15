@@ -170,13 +170,17 @@ text-align:left;
 width:140px;
 }
 
-.stylized input[type=text], .stylized input[type=password] {
+.stylized input[type=text], .stylized input[type=password], .stylized .static-value {
 float:left;
 font-size:12px;
 padding:0 2px;
 border:solid 1px #aacfe4;
 width:200px;
 margin:2px 5px 20px 10px;
+}
+
+.stylized .static-value {
+	border: none;
 }
 
 input.check {

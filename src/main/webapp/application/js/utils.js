@@ -75,3 +75,27 @@ String.prototype.tokenize = function() {
 };
 
 
+function toggleSpinner(action, msg) {	
+	if (!fincayra.header) fincayra.header = $('#header'); 
+	if (!fincayra.spinner) fincayra.spinner = $('#spinner');
+	if (!fincayra.spinnerP) fincayra.spinnerP = fincayra.spinner.find("p");
+	
+	var header = fincayra.header, spinner = fincayra.spinner, spinnerP = fincayra.spinnerP;
+	
+	if (action != "hide" && spinner.is(":hidden")) spinnerP.html(msg || "Sending Request...");
+	
+	var top = header.offset().top + header.outerHeight() - 4;
+	var left = (header.offset().left + header.outerWidth())/2;
+	left = left - (spinner.outerWidth()/2);
+	var css = {top:top + "px", left:left + "px", zIndex:1000};
+	spinner.css(css);
+	if (action == "show") {
+		spinner.css({display:"block"});
+	} else if (action == "hide") {
+		spinner.hide("fade",500);
+	} else {
+		spinner.toggle();
+	}
+}
+
+
