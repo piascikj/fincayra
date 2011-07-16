@@ -28,6 +28,7 @@
 			dev : $config().dev,
 			defaultError : "Something went wrong.",
 			mail : "/notebooks/api/mail",
+			login : $app().secureUrl + "login",
 			treeData : "/notebooks/api/organize/treedata",
 			moveNoteBook : "/notebooks/api/organize/moveNoteBook",
 			moveTopic : "/notebooks/api/organize/moveTopic",

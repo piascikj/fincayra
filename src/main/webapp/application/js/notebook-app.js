@@ -301,8 +301,8 @@ function bindLiveHandlers() {
 			url: fincayra.mail,
 			data: JSON.stringify(req),
 			success: function(data) {
-				toggleSpinner("show","Mail sent!");
-				setTimeout(function(){toggleSpinner("hide")}, 1000);
+				toggleSpinner("show","Entry sent to {}!".tokenize(fincayra.user.mailTo));
+				setTimeout(function(){toggleSpinner("hide")}, 3000);
 			},
 			error: function(data) {
 				$log("returned error from notebook save", data);
@@ -342,8 +342,18 @@ function bindLiveHandlers() {
 	
 }	
 function init() {
-	//Tipsy for icon-button
-	//$(".icon-button").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
+	//redirect to login if 401 on ajax
+	$(document).ajaxError(function(e,response,settings) {
+		if (response && response.status == 401) {
+			setTimeout(function() {
+				window.location = fincayra.login; 
+			}, 3000);
+			$("<p>Session expired.  You are now be directed to login.</p>").dialog({
+				modal:true,
+				title:"Session expired"
+			});
+		}
+	});
 	
 	setInterval(function() {
 		$.getJSON(fincayra.keepAlive, function(data) {

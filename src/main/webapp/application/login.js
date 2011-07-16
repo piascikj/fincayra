@@ -16,7 +16,8 @@
 	var auth = false;
 	var params = $getPageParams();
 	var session = $getSession();
-
+	$isAPI(params.json != undefined);
+	
 	Templates.simple({
 		requireSSL : true,	
 		title : "Login",
@@ -25,17 +26,19 @@
 		before : function() {
 			$("#forgot").attr("href", $app().url + "forgot");
 			
-			if (session.singlePageAuth) {
+			if (session.user && session.singlePageAuth) {
 				$('#email').attr("hidden", "true").after('<span class="static-value">{}</span>'.tokenize(session.user.email));
 				$('#password').attr("autocomplete", "off");
 				$("#form_box p.title").html('Please verify your password');
+				$('#persistent_check').remove();
 			} else {
 				$("#form_box p.title").append("<strong>" + $app().name + "</strong>");
+				$('#diff_user').remove();
 			}	
 			
 			if ($getMethod() == Methods.POST) {
 				//Get the user from the params
-				var user = session.singlePageAuth?session.user:new User(params);
+				var user = (session.singlePageAuth && session.user)?session.user:new User(params);
 				var password = params.password;
 				//lookup the user
 				var users = [];
@@ -53,7 +56,10 @@
 				}
 				
 				//Is this an auth for a single page or for the app
-				if (auth && !session.singlePageAuth) {
+				if (auth && session.user && session.singlePageAuth) {
+					//Let's give them a couple minutes to change their settings
+					session.singlePageAuthTO = new Date(new Date().getTime() + 5*60*1000);
+				} else if (auth) {
 					$getAuthSession().user = user;
 					if (params.persistent == "y") setPersistentKey(user);
 					//Keep session alive for 1hr
@@ -66,7 +72,9 @@
 		}
 	});
 	
-	if (auth) {
+	if (auth && $isAPI()) {
+		$j(session.user);
+	} else if (auth) {
 		
 		//If we just logged in and the request was for a different page, then redirect
 		if(session.destination) {

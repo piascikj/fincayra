@@ -7,10 +7,18 @@
 
 		<label for="password">Password</label>
 		<input type="password" name="password" id="password"/><div class="fieldHelp"><a id="forgot" href="#">Forgot?</a></div>
-		<label>&nbsp;</label><input type="checkbox" class="check" name="persistent" id="persistent" value="y"><span class="check">Keep me signed in.</span>
+		<div id="persistent_check">
+		<label>&nbsp;</label><input type="checkbox" class="check" name="persistent" id="persistent" value="y"/><span class="check">Keep me signed in.</span>
+		</div>
 		<div class="spacer"></div>
 		<button type="submit">Sign in</button>
 		<div class="spacer"></div>
+		<div id="diff_user">
+			<br/>
+		<div class="spacer"></div>
+		<button>Sign in as a diferent user.</button>
+		<div class="spacer"></div>
+		</div>
 		
 	</form>
 	<script language="JavaScript">$("#email").focus();</script>
