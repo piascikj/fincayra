@@ -348,7 +348,7 @@ function init() {
 			setTimeout(function() {
 				window.location = fincayra.login; 
 			}, 3000);
-			$("<p>Session expired.  You are now be directed to login.</p>").dialog({
+			$("<p>Session expired.  You will now be directed to login.</p>").dialog({
 				modal:true,
 				title:"Session expired"
 			});
@@ -542,27 +542,10 @@ function getEntries() {
 		url: fincayra.getEntries.tokenize(fincayra.topic.uuid),
 		success: function(data) {
 			
-			if (fincayra.topic.entries && fincayra.topic.entries.length > 0) {
-				fincayra.entries = {};
-				$.each(data.results, function(key, val) {
-					fincayra.entries[val.uuid] = val;
-				});
-				
-				$.each(fincayra.topic.entries, function(key, val) {
-					$log("key:" + key)
-					if (fincayra.entries[val]) {
-						var entry = getEntryElement(fincayra.entries[val]);
-						$log("Writing entry:" + val);
-						entries.append(entry);
-					}
-				});
-				
-			} else {
-				$.each(data.results, function(key, val) {
-					var entry = getEntryElement(val);
-					entries.append(entry);
-				});
-			}
+			$.each(data.results, function(key, val) {
+				var entry = getEntryElement(val);
+				entries.append(entry);
+			});
 
 			$('#entries').sortable({
 				axis:"y",
