@@ -11,6 +11,7 @@
 			
 			var topic = new Topic().search('uuid = "{}" and noteBook.owner.uuid = "{}"'.tokenize(params.topicUUId,user.uuid))[0];
 			
+			//Fix entries array if it's not there
 			if (topic.entries == undefined) {
 				var entries = new Entry({topic:topic}).findByProperty("topic");
 				
@@ -25,7 +26,9 @@
 
 			var numEntries = topic.entries && topic.entries.length;
 			if (topic && params.offset < numEntries) {
-				var uuids = topic.entries.slice(params.offset, params.limit || numEntries);
+				$log().info("params:{}", JSON.stringify(params));
+				var end = params.limit?params.offset+params.limit:undefined;
+				var uuids = topic.entries.slice(params.offset, end);
 				var entries = new Entry().search("uuid in ['" + uuids.join("','") + "']");
 				
 				var map = {};
@@ -38,7 +41,7 @@
 					result.push(map[uuid]);
 				});
 				
-				$j({results:result});
+				$j({results:result, offset:params.offset, limit:params.limit});
 			}
 				
 		},

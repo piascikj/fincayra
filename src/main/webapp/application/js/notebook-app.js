@@ -216,7 +216,8 @@ function bindLiveHandlers() {
 		evt.preventDefault( );
 		return false;
 	});
-}	
+}
+	
 function init() {
 	//redirect to login if 401 on ajax
 	$(document).ajaxError(function(e,response,settings) {
@@ -231,6 +232,7 @@ function init() {
 		}
 	});
 	
+	//Keep session active if on this page
 	setInterval(function() {
 		$.getJSON(fincayra.keepAlive, function(data) {
 			$log(JSON.stringify(data));
@@ -406,49 +408,6 @@ function saveTopic(topic) {
 function parseMD(text) {
 	var html = fincayra.showdown.makeHtml(text).replace(/<script.*?>([\s\S]*?)<\/.*?script>/ig,"$1").replace(/(href=["|'].*)javascript:.*(["|'].?>)/ig,"$1#$2");
 	return html
-}
-
-function getEntries() {
-	var entries = $('#entries');
-	entries.html('');
-	fincayra.entry = undefined;
-	$.ajax({
-		async: false,
-		type: "GET",
-		url: fincayra.getEntries.tokenize(fincayra.topic.uuid),
-		success: function(data) {
-			
-			$.each(data.results, function(key, val) {
-				var entry = getEntryElement(val);
-				entries.append(entry);
-			});
-
-			$('#entries').sortable({
-				axis:"y",
-				handle:".entry-header",
-				//Save the new sort order when an entry is moved
-				stop: function(e, ui) {
-					var position = ui.item.parent().find(".entry").index(ui.item);
-					var uuid = ui.item.attr("id");
-					$.ajax({
-						type: "POST",
-						data: JSON.stringify({uuid:uuid, position:position, positionOffset:false}),
-						url: fincayra.moveEntry,
-						success: function(data) {
-						},
-						dataType: 'json'
-					});
-				}
-				
-			});
-
-			highlight();
-			fincayra.layout.initContent("center",true);
-			
-			fincayra.entryView.jumpToEntry();
-		}
-	});
-	
 }
 
 function highlight() {
@@ -811,7 +770,7 @@ function TopicView() {
 		this.nameDisplay.show();
 		this.nameInput.val(fincayra.topic.name);
 		this.nameForm.hide();
-		getEntries();
+		fincayra.entryView.getEntries();
 		
 		this.topic = undefined;
 
@@ -1009,6 +968,8 @@ function TopicView() {
 
 function EntryView() {
 	var $this = this;
+	
+	this.entries = $('#entries');
 	this.searchResults = $('#search_results');
 	this.searchResultsCount = $('#search_results_count');
 	this.searchEntries = $('#search_entries');
@@ -1019,6 +980,22 @@ function EntryView() {
 	this.searchResults.find('.ui-icon').button();
 	
 	this.entry = undefined;
+	
+	this.getEntriesLoaded = function() {
+		return $this.entries.find('.entry').length;
+	};
+	
+	//Get more entries if they exist and we have hit bottom
+	$(fincayra.noteBookView.noteBookContainer).scroll(function(){
+        if ($(this)[0].scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
+			$log("numEntries:" + $this.entries.find('.entry').length);
+			$log("totalEntries:" + fincayra.topic.entries.length);
+			var entriesInTopic = fincayra.topic.entries.length;
+			if ($this.getEntriesLoaded < entriesInTopic) {
+				$this.getEntries($this.entries.find('.entry').length);
+			}
+		}
+	});
 	
 	$('.topic-link').live('click',function() {
 		uuid = $(this).closest('li').attr("id");
@@ -1156,9 +1133,27 @@ function EntryView() {
 		fincayra.noteBookView.noteBookContainer.removeHighlight();
 	});
 	
+	this.loadToEntry = function(entry) {
+		var el = $('#' + entry.uuid);
+		if (el.length == 0) {
+			var entryAt = 0;
+			//Check where this entry is in topic
+			$.each(entry.topic.entries, function(index, uuid) {
+				if (entry.uuid == uuid) {
+					entryAt = index;
+				}
+			});
+			
+			var offset = this.getEntriesLoaded();
+			var limit = entryAt - offset -1;
+			this.getEntries(offset, limit);
+		}
+	}
+
 	this.jumpToEntry = function(entry) {
 		fincayra.noteBookView.noteBookContainer.animate({scrollTop: 0}, 0);
 		entry = entry || this.entry;
+		this.loadToEntry(entry);
 		var el = $('#' + entry.uuid);
 		var entryTop = el.offset().top;
 		var top = entryTop - fincayra.noteBookView.appHeader.outerHeight()*2;
@@ -1167,6 +1162,55 @@ function EntryView() {
 		if (this.searchQry != undefined) {el.highlight($this.searchQry);} 
 	};
 			
+
+	this.getEntries = function(offset, limit) {
+		offset = offset || 0;
+		limit = limit || fincayra.entryLimit;
+		if (offset == 0) {
+			$this.entries.html('');
+			fincayra.entry = undefined;
+		}
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: fincayra.getEntries.tokenize(fincayra.topic.uuid, offset, limit),
+			success: function(data) {
+				$.each(data.results, function(key, val) {
+					var entry = getEntryElement(val);
+					$this.entries.append(entry);
+				});
+
+				if (offset == 0) {
+					$this.entries.sortable({
+						axis:"y",
+						handle:".entry-header",
+						//Save the new sort order when an entry is moved
+						stop: function(e, ui) {
+							var position = ui.item.parent().find(".entry").index(ui.item);
+							var uuid = ui.item.attr("id");
+							$.ajax({
+								type: "POST",
+								data: JSON.stringify({uuid:uuid, position:position, positionOffset:false}),
+								url: fincayra.moveEntry,
+								success: function(data) {
+								},
+								dataType: 'json'
+							});
+						}
+						
+					});
+				} else {
+					entries.sortable("refresh");
+				}
+				
+				highlight();
+				fincayra.layout.initContent("center",true);
+				
+				$this.jumpToEntry();
+			}
+		});
+		
+	}
 	this.search = function() {
 		toggleSpinner();
 		var qry = $this.searchField.val();
@@ -1227,7 +1271,7 @@ function EntryView() {
 	this.newEntry = function() {
 		closeEntry();
 		fincayra.entry = {owner:fincayra.user,topic:fincayra.topic};
-		$('#entries').prepend(fincayra.editor);
+		$this.entries.prepend(fincayra.editor);
 		fincayra.editor.show();
 		fincayra.markDownEditor.val('').focus();
 		return false;
