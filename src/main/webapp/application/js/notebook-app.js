@@ -550,10 +550,18 @@ function getEntries() {
 			$('#entries').sortable({
 				axis:"y",
 				handle:".entry-header",
-				//Save the new sort order when a topic is moved
+				//Save the new sort order when an entry is moved
 				stop: function(e, ui) {
-					fincayra.topic.entries = $('#entries').sortable( "toArray" );
-					saveTopic(fincayra.topic);
+					var position = ui.item.parent().find(".entry").index(ui.item);
+					var uuid = ui.item.attr("id");
+					$.ajax({
+						type: "POST",
+						data: JSON.stringify({uuid:uuid, position:position, positionOffset:false}),
+						url: fincayra.moveEntry,
+						success: function(data) {
+						},
+						dataType: 'json'
+					});
 				}
 				
 			});

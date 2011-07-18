@@ -36,7 +36,25 @@
 			$getSession().user = user;
 			
 			$j({ok:true}); 
-		}
+		},
+		
+		fixEntries : function() {
+			requireAuth();
+			var uuid = $getPageParams().topicUUId;
+			$log().info("uuid:{}",uuid);
+			var topic = new Topic({uuid:uuid}).findByProperty("uuid")[0];
+			$log().info("topic:{}", topic.json());
+			var entries = new Entry({topic:topic}).findByProperty("topic");
+			var sort = [];
+
+			entries.each(function(entry) {
+				sort.push(entry.uuid);
+			});
+			topic.entries = sort;
+			topic.save();
+			
+			$j({ok:true}); 
+		}		
 		
 	});
 

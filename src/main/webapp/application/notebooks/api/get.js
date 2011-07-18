@@ -5,7 +5,7 @@
 			var user = $getSession().user;
 			var params = {
 				offset : 0,
-				limit : 20,
+				limit : undefined,
 				topicUUId : undefined
 			}.extend($getPageParams());
 			
@@ -13,7 +13,7 @@
 
 			var numEntries = topic.entries.length;
 			if (topic && params.offset < numEntries) {
-				var uuids = topic.entries.slice(params.offset, params.limit);
+				var uuids = topic.entries.slice(params.offset, params.limit || numEntries);
 				var entries = new Entry().search("uuid in ['" + uuids.join("','") + "']");
 				
 				var map = {};

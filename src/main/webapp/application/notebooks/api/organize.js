@@ -233,7 +233,7 @@ $api({
 		} 
 		
 		if (!newNoteBook.equals(topic.noteBook)) {
-			//TODO remove the topic from the old NoteBook
+			//remove the topic from the old NoteBook
 			var oldNoteBook = topic.noteBook;
 			if (oldNoteBook.topics && oldNoteBook.topics.length > 0) {
 				oldNoteBook.topics = oldNoteBook.topics.removeString(topic.uuid);
@@ -257,11 +257,17 @@ $api({
 	*/
 	moveEntry : function() {
 		requireAuth();
-		var p = $getPageParams(true);
-		if (p.newParent == undefined || p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
+		var p = {
+			newParent : undefined,
+			position : undefined,
+			uuid : undefined,
+			positionOffset : true //This should be true if old position is taken into account with position passed in (jsTree) 
+		}.extend($getPageParams(true));
 		
-		var newTopic = new Topic({uuid:p.newParent}).findByUUId();
+		if (p.position == undefined || p.uuid == undefined) throw new Error("Invalid params");
+		
 		var entry = new Entry({uuid:p.uuid}).findByUUId();
+		var newTopic = p.newParent?new Topic({uuid:p.newParent}).findByUUId():entry.topic;
 		
 		if (newTopic == undefined || entry == undefined) throw new Error("Object not found");
 		
@@ -276,20 +282,27 @@ $api({
 			});
 		}
 		
+		$log().debug("position:{}", p.position);
 		if (sorted && sorted.length > 0) {
-			//Add the entry to the list
-			dirtySorted = sorted.replaceString(entry.uuid, placeholder);
-			$log().debug("dirtySorted:{}", JSON.stringify(dirtySorted));
-			dirtySorted.splice(p.position,0,entry.uuid);
-			$log().debug("dirtySorted after splice:{}", JSON.stringify(dirtySorted));
-			//remove the placeholder
-			newTopic.entries = dirtySorted.removeString(placeholder);
+			if (p.positionOffset) {
+				//Add the entry to the list
+				var dirtySorted = sorted.replaceString(entry.uuid, placeholder);
+				$log().debug("dirtySorted:{}", JSON.stringify(dirtySorted));
+				dirtySorted.splice(p.position,0,entry.uuid);
+				$log().debug("dirtySorted after splice:{}", JSON.stringify(dirtySorted));
+				//remove the placeholder
+				newTopic.entries = dirtySorted.removeString(placeholder);
+			} else {
+				sorted = sorted.removeString(entry.uuid);
+				sorted.splice(p.position,0,entry.uuid);
+				newTopic.entries = sorted;
+			}
 			$log().debug("entries:{}", JSON.stringify(newTopic.entries));
 			newTopic.save();
 		} 
 		
 		if (!newTopic.equals(entry.topic)) {
-			//TODO remove the entry from the old Topic
+			//remove the entry from the old Topic
 			var oldTopic = entry.topic;
 			if (oldTopic.entries && oldTopic.entries.length > 0) {
 				oldTopic.entries = oldTopic.entries.removeString(entry.uuid);
