@@ -216,130 +216,6 @@ function bindLiveHandlers() {
 		evt.preventDefault( );
 		return false;
 	});
-	
-	$('.topic-link').live('click',function() {
-		uuid = $(this).closest('li').attr("id");
-		closeEntry();
-		fincayra.topicView.displayTopic(true, fincayra.topics[uuid]);
-		return false;
-	});
-	
-	
-	$('#new_entry').live('click',fincayra.entryView.newEntry);
-	$(document).bind('keydown', 'Ctrl+e', fincayra.entryView.newEntry);
-	
-	$('.entry_delete').live("click", function(e) {
-		e.preventDefault();
-		var header = $(this).closest('.entry-header');
-		header.toggleClass("selected", true);
-		var el = $(this).parents(".entry");
-		var entry = el.data("object");
-		confirmDelete("Delete Entry", 'Do you realy want to delete this Entry?',
-		function() {
-			$.ajax({
-				type: "DELETE",
-				url: fincayra.deleteEntry.tokenize(entry.id),
-				success: function(data) {
-					el.remove();
-					fincayra.entries[entry.uuid] = undefined;
-					getTopic(fincayra.topic.id);
-				},
-				dataType: 'json'
-			});
-			header.toggleClass("selected", false);	
-		},
-		function() {
-			header.toggleClass("selected", false);	
-		});
-		e.stopPropagation();
-	});
-
-	
-	$('.entry-body a').live('click', function(e) {
-		e.stopPropagation();
-		return true;
-	});
-	
-	
-	$('.entry-body').live('dblclick',function() {
-		editEntry($(this).closest(".entry"));
-	});
-	
-	$('.entry_collapse').live("click", function() {
-		var el = $(this).closest('.entry')
-		el.find('.entry-body').hide("slide",{direction:"up"},500);
-		el.find('.entry_collapse').hide();
-		el.find('.entry_expand').show();
-	});
-	
-	$('.entry_expand').live("click", function() {
-		var el = $(this).closest('.entry')
-		el.find('.entry-body').show("slide",{direction:"up"},500);
-		el.find('.entry_collapse').show();
-		el.find('.entry_expand').hide();
-	});
-
-	$('.entry_edit').live("click", function() {
-		editEntry($(this).closest(".entry"));
-	});
-	
-	$('.entry_print').live("click", function() {
-		var el = $(this).closest(".entry");
-		//TODO create entryView object to handle finding the element from child and other stuff
-		el.printElement({printMode:'iframe'});
-	});
-	
-	$('.entry_email').live("click", function() {
-		var el = $(this).closest(".entry");
-		var req = {
-			subject: el.find(".entry-title").html(), 
-			html: el.find(".entry-body").html()
-		};
-		
-		$.ajax({
-			type: "POST",
-			url: fincayra.mail,
-			data: JSON.stringify(req),
-			success: function(data) {
-				toggleSpinner("show","Entry sent to {}!".tokenize(fincayra.user.mailTo));
-				setTimeout(function(){toggleSpinner("hide")}, 3000);
-			},
-			error: function(data) {
-				$log("returned error from notebook save", data);
-				e = JSON.parse(data.responseText).error;
-				$log("Error:", e);
-			},
-			dataType: 'json'
-		});
-		
-		if (e) throw e;
-		
-	});	
-	
-	$('.entry_toc').live("click", function() {
-		var entry = $(this).closest(".entry");
-		toggleTOC(entry);
-	});
-	
-	$('.entry-toc a').live("click", function() {
-		var entry = $(this).closest('.entry')
-		var eBody = entry.find('.entry-body');
-		if(eBody.is(':hidden'))	{
-			eBody.show();
-			entry.find('.entry_collapse').show();
-			entry.find('.entry_expand').hide();
-		}
-		return true;
-	});
-	
-	$('#markdown_help').live("click", fincayra.topicView.markDownHelp);
-	$(document).bind('keydown', 'Ctrl+h', function(evt) {
-		fincayra.topicView.markDownHelp();
-		evt.stopPropagation( );  
-		evt.preventDefault( );
-		return false;			
-	});
-	
 }	
 function init() {
 	//redirect to login if 401 on ajax
@@ -975,7 +851,16 @@ function TopicView() {
 		}
 		$('.help').toggle();
 		$('.ui-layout-center .ui-layout-content').scrollTop(0);
-	}
+	};
+
+	$('#markdown_help').live("click", $this.markDownHelp);
+	$(document).bind('keydown', 'Ctrl+h', function(evt) {
+		$this.markDownHelp();
+		evt.stopPropagation( );  
+		evt.preventDefault( );
+		return false;			
+	});
+	
 
 	//The new topic event handler
 	this.newTopic = function() {
@@ -1135,6 +1020,118 @@ function EntryView() {
 	
 	this.entry = undefined;
 	
+	$('.topic-link').live('click',function() {
+		uuid = $(this).closest('li').attr("id");
+		closeEntry();
+		fincayra.topicView.displayTopic(true, fincayra.topics[uuid]);
+		return false;
+	});
+	
+	
+	$('.entry_delete').live("click", function(e) {
+		e.preventDefault();
+		var header = $(this).closest('.entry-header');
+		header.toggleClass("selected", true);
+		var el = $(this).parents(".entry");
+		var entry = el.data("object");
+		confirmDelete("Delete Entry", 'Do you realy want to delete this Entry?',
+		function() {
+			$.ajax({
+				type: "DELETE",
+				url: fincayra.deleteEntry.tokenize(entry.id),
+				success: function(data) {
+					el.remove();
+					fincayra.entries[entry.uuid] = undefined;
+					getTopic(fincayra.topic.id);
+				},
+				dataType: 'json'
+			});
+			header.toggleClass("selected", false);	
+		},
+		function() {
+			header.toggleClass("selected", false);	
+		});
+		e.stopPropagation();
+	});
+
+	
+	$('.entry-body a').live('click', function(e) {
+		e.stopPropagation();
+		return true;
+	});
+	
+	
+	$('.entry-body').live('dblclick',function() {
+		editEntry($(this).closest(".entry"));
+	});
+	
+	$('.entry_collapse').live("click", function() {
+		var el = $(this).closest('.entry')
+		el.find('.entry-body').hide("slide",{direction:"up"},500);
+		el.find('.entry_collapse').hide();
+		el.find('.entry_expand').show();
+	});
+	
+	$('.entry_expand').live("click", function() {
+		var el = $(this).closest('.entry')
+		el.find('.entry-body').show("slide",{direction:"up"},500);
+		el.find('.entry_collapse').show();
+		el.find('.entry_expand').hide();
+	});
+
+	$('.entry_edit').live("click", function() {
+		editEntry($(this).closest(".entry"));
+	});
+	
+	$('.entry_print').live("click", function() {
+		var el = $(this).closest(".entry");
+		//TODO create entryView object to handle finding the element from child and other stuff
+		el.printElement({printMode:'iframe'});
+	});
+	
+	$('.entry_email').live("click", function() {
+		var el = $(this).closest(".entry");
+		var req = {
+			subject: el.find(".entry-title").html(), 
+			html: el.find(".entry-body").html()
+		};
+		
+		$.ajax({
+			type: "POST",
+			url: fincayra.mail,
+			data: JSON.stringify(req),
+			success: function(data) {
+				toggleSpinner("show","Entry sent to {}!".tokenize(fincayra.user.mailTo));
+				setTimeout(function(){toggleSpinner("hide")}, 3000);
+			},
+			error: function(data) {
+				$log("returned error from notebook save", data);
+				e = JSON.parse(data.responseText).error;
+				$log("Error:", e);
+			},
+			dataType: 'json'
+		});
+		
+		if (e) throw e;
+		
+	});	
+	
+	$('.entry_toc').live("click", function() {
+		var entry = $(this).closest(".entry");
+		toggleTOC(entry);
+	});
+	
+	$('.entry-toc a').live("click", function() {
+		var entry = $(this).closest('.entry')
+		var eBody = entry.find('.entry-body');
+		if(eBody.is(':hidden'))	{
+			eBody.show();
+			entry.find('.entry_collapse').show();
+			entry.find('.entry_expand').hide();
+		}
+		return true;
+	});
+
 	$('.entry-header').live("mousedown",function() {
 		$(this).toggleClass("selected", true);
 	}).live("mouseup", function() {
@@ -1235,6 +1232,9 @@ function EntryView() {
 		fincayra.markDownEditor.val('').focus();
 		return false;
 	};		
+	$('#new_entry').live('click',$this.newEntry);
+	$(document).bind('keydown', 'Ctrl+e', $this.newEntry);
+
 }
 
 try {

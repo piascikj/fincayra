@@ -10,8 +10,20 @@
 			}.extend($getPageParams());
 			
 			var topic = new Topic().search('uuid = "{}" and noteBook.owner.uuid = "{}"'.tokenize(params.topicUUId,user.uuid))[0];
+			
+			if (topic.entries == undefined) {
+				var entries = new Entry({topic:topic}).findByProperty("topic");
+				
+				var sort = [];
 
-			var numEntries = topic.entries.length;
+				entries.each(function(entry) {
+					sort.push(entry.uuid);
+				});
+				topic.entries = sort;
+				topic.save();
+			}
+
+			var numEntries = topic.entries && topic.entries.length;
 			if (topic && params.offset < numEntries) {
 				var uuids = topic.entries.slice(params.offset, params.limit || numEntries);
 				var entries = new Entry().search("uuid in ['" + uuids.join("','") + "']");
