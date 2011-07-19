@@ -331,9 +331,9 @@ function getTOC(entry) {
 	return toc;
 };
 
-function toggleTOC(entry) {
+function toggleTOC(entry, action) {
 	var toc = getTOC(entry);
-	toc.toggle();
+	toc.toggle(action);
 }
 
 function getNoteBooks() {
@@ -435,6 +435,15 @@ function getEntryElement(entry) {
 	
 	var html = parseMD(entry.text);
 	jqo.find('.entry-body').html(html);
+	
+	$log("allCollapsed:" + fincayra.topicView.allCollapsed);
+	if (fincayra.topicView.allCollapsed) {
+		jqo.find('.entry-body').hide();
+		jqo.find('.entry_collapse').hide();
+		jqo.find('.entry_expand').show();
+		//fincayra.entryView.collapseEntry(jqo);
+	}
+	
 	//$log("jqo=" + $("#entry_tmpl").text());
 	return jqo.data({object:entry, html:html});
 }
@@ -745,11 +754,15 @@ function TopicView() {
 	this.cancelButton = $('#topic_cancel');
 	
 	this.topic = undefined;
+	this.showingTOC = false;
+	this.allCollapsed = false;
 
 	//Toggle toc for all Entries
 	this.toggleTOC = function() {
+		$this.showingTOC = !$this.showingTOC;
+		var action = $this.showingTOC?"show":"hide";
 		$(".entry").each(function() {
-			toggleTOC($(this));
+			toggleTOC($(this), action);
 		});
 	};
 	
@@ -757,6 +770,8 @@ function TopicView() {
 	$(document).bind('keydown', 'Ctrl+i', $this.toggleTOC);
 	
 	this.displayTopic = function(setLastTopic, topic) {
+		$this.showingTOC = false;
+		$this.allCollapsed = false;
 		closeEntry();
 		toggleNotify("top","hide");
 		//First check overide, then search topic, then firstTopic
@@ -841,6 +856,7 @@ function TopicView() {
 	});
 	
 	this.topicExpand = function() {
+		$this.allCollapsed = false;
 		$('.entry-body').each(function() {
 			if ($(this).is(':hidden'))
 				$(this).show("slide",{direction:"up"},500);
@@ -858,6 +874,7 @@ function TopicView() {
 	});
 	
 	this.topicCollapse = function() {
+		$this.allCollapsed = true;
 		$('.entry-body').each(function() {
 			if ($(this).is(':visible')) {
 				$(this).hide();
@@ -992,7 +1009,7 @@ function EntryView() {
 		var entriesShown = $this.getEntriesLoaded();
 		var totalEntries = fincayra.topic.entries.length;
 		$log("Scrollbar:" + fincayra.noteBookView.noteBookContainer.hasScrollBar());
-		if (!fincayra.noteBookView.noteBookContainer.hasScrollBar() && totalEntries > entriesShown) {
+		if (fincayra.noteBookView.noteBookContainer.hasScrollBar() == false && totalEntries > entriesShown) {
 			$this.getEntries(entriesShown);
 			$this.getMoreEntries();
 		} 
@@ -1056,12 +1073,15 @@ function EntryView() {
 		editEntry($(this).closest(".entry"));
 	});
 	
-	$('.entry_collapse').live("click", function() {
-		var el = $(this).closest('.entry')
+	this.collapseEntry = function(el) {
 		el.find('.entry-body').hide();
 		el.find('.entry_collapse').hide();
 		el.find('.entry_expand').show();
 		fincayra.entryView.getMoreEntries();
+	};
+	
+	$('.entry_collapse').live("click", function() {
+		$this.collapseEntry($(this).closest('.entry'));
 	});
 	
 	$('.entry_expand').live("click", function() {
