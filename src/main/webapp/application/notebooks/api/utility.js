@@ -41,11 +41,8 @@
 		fixEntries : function() {
 			requireAuth();
 			var uuid = $getPageParams().topicUUId;
-			$log().info("uuid:{}",uuid);
 			var topic = new Topic({uuid:uuid}).findByProperty("uuid")[0];
-			$log().info("topic:{}", topic.json());
 			var entries = new Entry({topic:topic}).findByProperty("topic");
-			$log().info("Entries:{}", JSON.stringify(entries, null, "   "));
 			var sort = [];
 
 			entries.each(function(entry) {

@@ -1,4 +1,5 @@
 var fincayra = {};
+
 fincayra.setContentType = function(type) {
 	if (type == undefined) {
 		type = 'application/x-www-form-urlencoded';
@@ -74,21 +75,39 @@ String.prototype.tokenize = function() {
 	return result;
 };
 
-
-function toggleSpinner(action, msg) {	
-	if (!fincayra.header) fincayra.header = $('#header'); 
-	if (!fincayra.spinner) fincayra.spinner = $('#spinner');
-	if (!fincayra.spinnerP) fincayra.spinnerP = fincayra.spinner.find("p");
-	
-	var header = fincayra.header, spinner = fincayra.spinner, spinnerP = fincayra.spinnerP;
-	
-	if (action != "hide" && spinner.is(":hidden")) spinnerP.html(msg || "Sending Request...");
-	
-	var top = header.offset().top + header.outerHeight() - 4;
-	var left = (header.offset().left + header.outerWidth())/2;
-	left = left - (spinner.outerWidth()/2);
-	var css = {top:top + "px", left:left + "px", zIndex:1000};
-	spinner.css(css);
+function toggleNotify(location, action, msg) {
+	var spinner;
+	switch (location) {
+		case "top" :
+			if (!fincayra.header) fincayra.header = $('#header'); 
+			if (!fincayra.spinner) fincayra.spinner = $('#spinner');
+			if (!fincayra.spinnerP) fincayra.spinnerP = fincayra.spinner.find("p");
+			
+			var header = fincayra.header, spinner = fincayra.spinner, spinnerP = fincayra.spinnerP;
+			
+			if (action != "hide" && spinner.is(":hidden")) spinnerP.html(msg || "Sending Request...");
+			
+			var top = header.offset().top + header.outerHeight() - 4;
+			var left = (header.offset().left + header.outerWidth())/2;
+			left = left - (spinner.outerWidth()/2);
+			var css = {top:top + "px", left:left + "px", zIndex:1000};
+			spinner.css(css);			
+			break;
+		case "bottom" :
+			if (!fincayra.spinnerBottom) fincayra.spinnerBottom = $('#spinner-bottom');
+			if (!fincayra.spinnerBottomP) fincayra.spinnerBottomP = fincayra.spinnerBottom.find("p");
+			
+			spinner = fincayra.spinnerBottom, spinnerP = fincayra.spinnerBottomP;
+			
+			if (action != "hide" && spinner.is(":hidden")) spinnerP.html(msg || "Sending Request...");
+			
+			var left = $(window).width()/2;
+			left = left - (spinner.outerWidth()/2);
+			var css = {left:left + "px", zIndex:1000};
+			spinner.css(css);
+			break;
+	}
+		
 	if (action == "show") {
 		spinner.css({display:"block"});
 	} else if (action == "hide") {
@@ -98,4 +117,9 @@ function toggleSpinner(action, msg) {
 	}
 }
 
+(function($) {
+    $.fn.hasScrollBar = function() {
+        return this.get(0).scrollHeight > this.height();
+    }
+})(jQuery);
 

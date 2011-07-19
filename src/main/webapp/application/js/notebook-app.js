@@ -321,10 +321,10 @@ function getTOC(entry) {
 	toc.find('a').each(function() {
 		$(this).click(function() {
 			var topLink = $('<a href="#{}">Back to Entry table of contents</a>'.tokenize(entryId)).click( function() {
-				toggleSpinner("hide");
+				toggleNotify("top","hide");
 				return true;
 			});
-			toggleSpinner("show",topLink);
+			toggleNotify("top","show",topLink);
 			return true;
 		});
 	});
@@ -456,7 +456,7 @@ function saveEntry() {
 	fincayra.entry.text = fincayra.markDownEditor.val();
 	$log("saving entry:",fincayra.entry);
 	fincayra.lastSavedEntry.hide();
-	toggleSpinner("show", "Saving Entry...");
+	toggleNotify("top","show", "Saving Entry...");
 	$.ajax({
 		async: true,
 		type: type,
@@ -484,7 +484,7 @@ function saveEntry() {
 			fincayra.lastSavedEntryTime.html(getDateString(new Date()));
 			fincayra.lastSavedEntry.show();
 			fincayra.edited = false;
-			toggleSpinner("hide");
+			toggleNotify("top","hide");
 		},
 		dataType: 'json'
 	});
@@ -640,7 +640,7 @@ function NoteBookView() {
 			clearStyle: true,
 			changestart:function(event, ui) {
 				closeEntry();
-				toggleSpinner("show");
+				toggleNotify("top","show");
 				//setting a timer to allow spinner to show
 				setTimeout(function() {
 					var uuid = ui.newHeader.find('a').attr('id');
@@ -702,7 +702,7 @@ function NoteBookView() {
 					} else {
 						$log("fincayra.noteBook not set");
 					}
-					toggleSpinner("hide");
+					toggleNotify("top","hide");
 
 				}, 10);
 
@@ -758,7 +758,7 @@ function TopicView() {
 	
 	this.displayTopic = function(setLastTopic, topic) {
 		closeEntry();
-		toggleSpinner("hide");
+		toggleNotify("top","hide");
 		//First check overide, then search topic, then firstTopic
 		topic = topic || fincayra.topicView.topic || getFirstTopic();
 		if (topic == undefined) return;
@@ -858,8 +858,11 @@ function TopicView() {
 	
 	this.topicCollapse = function() {
 		$('.entry-body').each(function() {
-			if ($(this).is(':visible'))
-				$(this).hide("slide",{direction:"up"},100);
+			if ($(this).is(':visible')) {
+				$(this).hide();
+				//$(this).hide("slide",{direction:"up"},100,fincayra.entryView.getMoreEntries);
+				fincayra.entryView.getMoreEntries();
+			}
 		});
 		$('.entry_collapse').each(function() {$(this).hide();});
 		$('.entry_expand').each(function() {$(this).show();});
@@ -985,13 +988,22 @@ function EntryView() {
 		return $this.entries.find('.entry').length;
 	};
 	
+	this.getMoreEntries = function() {
+		var entriesShown = $this.getEntriesLoaded();
+		var totalEntries = fincayra.topic.entries.length;
+		if (totalEntries > entriesShown) {
+			this.getEntries(entriesShown);
+		} 
+	};
+
 	//Get more entries if they exist and we have hit bottom
 	$(fincayra.noteBookView.noteBookContainer).scroll(function(){
         if ($(this)[0].scrollHeight - $(this).scrollTop() == $(this).outerHeight()) {
 			$log("numEntries:" + $this.entries.find('.entry').length);
 			$log("totalEntries:" + fincayra.topic.entries.length);
 			var entriesInTopic = fincayra.topic.entries.length;
-			if ($this.getEntriesLoaded < entriesInTopic) {
+			if ($this.getEntriesLoaded() < entriesInTopic) {
+				$log("Getting entries");
 				$this.getEntries($this.entries.find('.entry').length);
 			}
 		}
@@ -1078,8 +1090,8 @@ function EntryView() {
 			url: fincayra.mail,
 			data: JSON.stringify(req),
 			success: function(data) {
-				toggleSpinner("show","Entry sent to {}!".tokenize(fincayra.user.mailTo));
-				setTimeout(function(){toggleSpinner("hide")}, 3000);
+				toggleNotify("top","show","Entry sent to {}!".tokenize(fincayra.user.mailTo));
+				setTimeout(function(){toggleNotify("top","hide")}, 3000);
 			},
 			error: function(data) {
 				$log("returned error from notebook save", data);
@@ -1145,7 +1157,7 @@ function EntryView() {
 			});
 			
 			var offset = this.getEntriesLoaded();
-			var limit = entryAt - offset -1;
+			var limit = (entryAt - offset) + 3;
 			this.getEntries(offset, limit);
 		}
 	}
@@ -1160,21 +1172,25 @@ function EntryView() {
 		$log("Scrolling to entry:{} at top:{}".tokenize(entry.uuid, top));
 		fincayra.noteBookView.noteBookContainer.animate({scrollTop: top}, 100);
 		if (this.searchQry != undefined) {el.highlight($this.searchQry);} 
+		this.entry = undefined;
 	};
 			
 
 	this.getEntries = function(offset, limit) {
 		offset = offset || 0;
 		limit = limit || fincayra.entryLimit;
+		$log("offset:{}, limit:{}".tokenize(offset, limit));
 		if (offset == 0) {
 			$this.entries.html('');
 			fincayra.entry = undefined;
 		}
+
 		$.ajax({
 			async: false,
 			type: "GET",
 			url: fincayra.getEntries.tokenize(fincayra.topic.uuid, offset, limit),
 			success: function(data) {
+				$log("Loaded {} more entries".tokenize(data.results.length));
 				$.each(data.results, function(key, val) {
 					var entry = getEntryElement(val);
 					$this.entries.append(entry);
@@ -1204,6 +1220,7 @@ function EntryView() {
 				}
 				
 				highlight();
+
 				fincayra.layout.initContent("center",true);
 				
 				$this.jumpToEntry();
@@ -1212,7 +1229,7 @@ function EntryView() {
 		
 	}
 	this.search = function() {
-		toggleSpinner();
+		toggleNotify("top");
 		var qry = $this.searchField.val();
 		$this.searchQry = qry;
 		$this.searchEntries.html("");
@@ -1251,10 +1268,10 @@ function EntryView() {
 					$this.searchEntries.show();
 					$this.searchEntries.find('a').first().focus();
 				}
-				toggleSpinner();
+				toggleNotify("top");
 			},
 			error: function(data) {
-				toggleSpinner();
+				toggleNotify("top");
 				$log("returned error from search", data);
 				e = JSON.parse(data.responseText).error;
 				$log("Error:", e);

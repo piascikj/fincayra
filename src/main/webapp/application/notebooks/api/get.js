@@ -26,9 +26,10 @@
 
 			var numEntries = topic.entries && topic.entries.length;
 			if (topic && params.offset < numEntries) {
-				$log().info("params:{}", JSON.stringify(params));
-				var end = params.limit?params.offset+params.limit:undefined;
+				var end = params.limit?new Number(params.offset)+new Number(params.limit):undefined;
+				//var end = params.limit;
 				var uuids = topic.entries.slice(params.offset, end);
+				$log().debug("offset:{}, end:{}, length:{}",[params.offset,end,uuids.length]);
 				var entries = new Entry().search("uuid in ['" + uuids.join("','") + "']");
 				
 				var map = {};

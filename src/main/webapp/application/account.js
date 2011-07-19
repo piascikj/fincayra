@@ -64,7 +64,7 @@
 				user = user.save();
 				//Send them an email
 				$sendMail("/user/accountChange.js",{user:user});
-				$appendScript("head",'$(document).ready(function(){toggleSpinner("show","Your changes have been saved.");});');
+				$appendScript("head",'$(document).ready(function(){toggleNotify("top","show","Your changes have been saved.");});');
 			} catch(e) {
 				if(e.javaException) {
 					error = "CAUGHT JAVA EXCEPTION" + e.javaException.message;

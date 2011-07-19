@@ -467,7 +467,20 @@ border-radius: 4px;
 .help-toc ul {
 	padding-left: 10px;
 }
+
 #spinner {
+	border-top:none;
+}
+
+#spinner-bottom {
+	border-bottom:none;
+	border-left:none;
+	border-right:none;
+	position: fixed;
+	bottom: 0;
+}
+
+.notify {
 	background-color:#075385;
 	border-color:#075385;
 	border-top:none;
@@ -475,13 +488,13 @@ border-radius: 4px;
 	margin: 0;
 }
 
-#spinner p {
+.notify p {
 	color: white;
 	padding:  0 5px 10px 5px;
 	font-weight: bold;
 }
 
-#spinner a {
+.notify a {
 	color: white;
 	text-decoration: none;
 }
