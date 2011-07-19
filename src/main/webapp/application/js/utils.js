@@ -119,7 +119,8 @@ function toggleNotify(location, action, msg) {
 
 (function($) {
     $.fn.hasScrollBar = function() {
-        return this.get(0).scrollHeight > this.height();
+		$log("ScrollHeight:{}, height:{}".tokenize($(this).get(0).scrollHeight,$(this).outerHeight()));
+        return $(this).get(0).scrollHeight > $(this).outerHeight();
     }
 })(jQuery);
 

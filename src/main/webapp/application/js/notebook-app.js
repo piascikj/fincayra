@@ -771,6 +771,7 @@ function TopicView() {
 		this.nameInput.val(fincayra.topic.name);
 		this.nameForm.hide();
 		fincayra.entryView.getEntries();
+		fincayra.entryView.getMoreEntries();
 		
 		this.topic = undefined;
 
@@ -860,12 +861,11 @@ function TopicView() {
 		$('.entry-body').each(function() {
 			if ($(this).is(':visible')) {
 				$(this).hide();
-				//$(this).hide("slide",{direction:"up"},100,fincayra.entryView.getMoreEntries);
-				fincayra.entryView.getMoreEntries();
 			}
 		});
 		$('.entry_collapse').each(function() {$(this).hide();});
 		$('.entry_expand').each(function() {$(this).show();});
+		fincayra.entryView.getMoreEntries();
 	};
 	
 	$('#topic_collapse').live("click", $this.topicCollapse);	
@@ -991,8 +991,10 @@ function EntryView() {
 	this.getMoreEntries = function() {
 		var entriesShown = $this.getEntriesLoaded();
 		var totalEntries = fincayra.topic.entries.length;
-		if (totalEntries > entriesShown) {
-			this.getEntries(entriesShown);
+		$log("Scrollbar:" + fincayra.noteBookView.noteBookContainer.hasScrollBar());
+		if (!fincayra.noteBookView.noteBookContainer.hasScrollBar() && totalEntries > entriesShown) {
+			$this.getEntries(entriesShown);
+			$this.getMoreEntries();
 		} 
 	};
 
@@ -1056,9 +1058,10 @@ function EntryView() {
 	
 	$('.entry_collapse').live("click", function() {
 		var el = $(this).closest('.entry')
-		el.find('.entry-body').hide("slide",{direction:"up"},500);
+		el.find('.entry-body').hide();
 		el.find('.entry_collapse').hide();
 		el.find('.entry_expand').show();
+		fincayra.entryView.getMoreEntries();
 	});
 	
 	$('.entry_expand').live("click", function() {
