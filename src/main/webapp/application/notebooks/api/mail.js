@@ -21,13 +21,16 @@ $api({
 		var user = $getSession().user;
 		
 		var data = $getPageParams(true);
-		data.user = user;
+		//data.user = user;
+		$log().info("data:{}",JSON.stringify(data, null, "   "));
 		
-		$log().debug("config : {}", JSON.stringify($config(), null, "   "));
-		var userConfig = $getProperty("user.home") + "/.fincayra/app-config.js";
-		$log().debug("User-config: {} : {}",(new java.io.File(userConfig)).exists(),userConfig); 
-		
-		$sendMail("/notebooks/entry.js", data);
+		//$sendMail("/notebooks/entry.js", data);
+		$sendMail2({
+			Subject : data.subject,
+			HtmlBody : data.html,
+			To : user.mailTo,
+			Tag : "Entry"
+		});
 	}
 });
 })();

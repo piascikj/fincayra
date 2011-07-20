@@ -1195,7 +1195,7 @@ Request.prototype.$e = Request.prototype.$execute = function(page, c) {
 	page = page.replace(/\.html$/g,".js");
 	
 	if (page.indexOf(".html") < 0 && page.indexOf(".js") < 0) page += ".js";
-
+	
 	var jsPage = this.scope.context.mergeEngine.pageDir + this.$getPagePath(page);
 
 	this.$executePage(jsPage);
@@ -1641,6 +1641,51 @@ Request.prototype.$sendMail = function(path, data) {
 	
 };
 
+/*
+	Function: $sendMail
+	
+		Execute a mail template and ultimately send it.
+		
+		If you want data to be accessible to the template use <$setPageParams>
+	
+	Parameters:
+
+		msg - Am object representing the msg in the following format
+		
+		>{
+		>	"Headers" : [{ "Name" : "CUSTOM-HEADER", "Value" : "value" }],
+		>	"From" : "sender@example.com", //This will be set by the MailManager
+		>	"To" : "receiver@example.com",
+		>	"Cc" : "copied@example.com",
+		>	"Bcc": "blank-copied@example.com",
+		>	"Subject" : "Test",
+		>	"Tag" : "Invitation",
+		>	"HtmlBody" : "<b>Hello</b>", //This will be set to the doc result of the template if a path is passed
+		>	"TextBody" : "Hello", //This will be set to $getPageParams().TextBody, so set it in the template if you want it
+		>	"ReplyTo" : "reply@example.com"
+		>}
+
+		path - (optional) The path to the mail template js file relative to mailManager.templateDir
+
+*/
+Request.prototype.$sendMail2 = function(msg, path) {
+	//get the current doc so we can create the message and set it back later
+	var el = this.scope.context.getElement();
+	
+	if (path) {
+		var template = this.$getPageDir() + $config().mailConfig.templateDir + path;
+		$log().debug("mailTemplate:{}", template);
+		this.$executePage(template);
+		msg.HtmlBody = this.scope.context.getElement().toString();
+	}	
+	if (this.$getPageParams().TextBody) { msg.TextBody = this.$getPageParams().TextBody;}
+	
+
+	$mm().send(msg);
+	
+	this.$d(el);
+	
+};
 
 function FincayraSession(){};
 

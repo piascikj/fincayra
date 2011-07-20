@@ -28,6 +28,16 @@ fincayra.config = {
 	errorPage:"/error",
 	store:"db/orientDB-store.js",
 	search:"search/lucene-search.js",
+	mail:"mail/postmark-mail.js",//TODO default should be mail/google-mail.js
+	mailConfig: {
+		//google mail values
+		
+		//postmark-mail values
+		apiKey:"POSTMARK_API_TEST", //You must register your own at http://postmarkapp.com
+		senderSignature:"", //You must register your own at http://postmarkapp.com
+		//generic values
+		templateDir:"mail",
+	},
 	indexOnStartUp:true,
 	expose:["css","images","js"],
 	mailSender: {
@@ -76,6 +86,7 @@ function $config(config) {
 	$app().setSecureUrl($config().secureUrl);
 	$app().setName($config().name);
 
+	//Configure the MailSender
 	var mailSender = new org.springframework.mail.javamail.JavaMailSenderImpl();
 	mailSender.setHost($config().mailSender.host);
 	mailSender.setPort($config().mailSender.port);
@@ -97,6 +108,12 @@ function $config(config) {
 	$app().getMailManager().init();
 	$log().info("Done Initializing MailManager");
 
+	//New MailManager impl
+	load("mail/mail.js");
+	load($config().mail);
+	$mm().init($config().mailConfig);
+	
+	
 	load("db/store.js");
 
 	//Set the $load function to load from the server-js dir for application convenience
