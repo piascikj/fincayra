@@ -129,7 +129,7 @@ function getEntries(uuid) {
 			nodes.push(getEntryNode(entry));				
 		});
 	}
-	return nodes;
+	return nodes.length > 0?nodes:undefined;
 }
 	
 $api({

@@ -681,6 +681,10 @@ String.prototype.truncate = function(len, suffix, replaceCR) {
 	return text;
 };
 
+function sync(f) {
+	return new Packages.org.mozilla.javascript.Synchronizer(f);
+}
+
 //SetTimeout and SetInterval implementation
 var setTimeout,
     clearTimeout,

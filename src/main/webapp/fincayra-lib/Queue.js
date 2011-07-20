@@ -38,37 +38,43 @@ function Queue(){
 
   }
 
+
+  this.accessQueue = sync(function(action, item) {
+		switch(action) {
+			case "enqueue":
+				queue.push(item);
+				break;
+			case "dequeue":
+				// if the queue is empty, return undefined
+				if (queue.length == 0) return undefined;
+
+				// store the item at the front of the queue
+				var item = queue[offset];
+
+				// increment the offset and remove the free space if necessary
+				if (++ offset * 2 >= queue.length){
+				  queue  = queue.slice(offset);
+				  offset = 0;
+				}
+
+				// return the dequeued item
+				return item;
+				break;
+		}
+  });
   /* Enqueues the specified item. The parameter is:
    *
    * item - the item to enqueue
    */
   this.enqueue = function(item){
-
-    // enqueue the item
-    queue.push(item);
-
+		this.accessQueue("enqueue", item);
   }
 
   /* Dequeues an item and returns it. If the queue is empty then undefined is
    * returned.
    */
   this.dequeue = function(){
-
-    // if the queue is empty, return undefined
-    if (queue.length == 0) return undefined;
-
-    // store the item at the front of the queue
-    var item = queue[offset];
-
-    // increment the offset and remove the free space if necessary
-    if (++ offset * 2 >= queue.length){
-      queue  = queue.slice(offset);
-      offset = 0;
-    }
-
-    // return the dequeued item
-    return item;
-
+		return this.accessQueue("dequeue");
   }
 
   /* Returns the item at the front of the queue (without dequeuing it). If the

@@ -20,32 +20,64 @@ function PostMarkMailManager() {
 	  //"ReplyTo" : "reply@example.com"
 	};
 	
-	this.config = {};
+	this.config = {
+		apiKey:"POSTMARK_API_TEST", //You must register your own at http://postmarkapp.com
+		senderSignature:"", //You must register your own at http://postmarkapp.com
+		//generic values
+		templateDir:"mail",
+		senders:1,
+		pollingInterval:5000
+	};
+
+	this.senders = [];
+	this.q = new Queue();
 	this.init = function(config) {
-		this.config = config;
+		this.config = $extend(this.config, config);
+		$log().info("Initializing PostmarkMailManager with config:{}", JSON.stringify(this.config, null, "   "));
+		//Create the MessageSenders
+		for(i = 0; i < this.config.senders; i++) {
+			$log().info("Adding message sender");
+			var sender = new MessageSender(this.q);
+			this.senders.push(sender);
+			setInterval(sender.run, this.config.pollingInterval);
+		}
 	};
 	
-	this.getMailTemplate = function(msg) {
+	var getMailTemplate = function(msg) {
 		msg = $extend($extend(mailTemplate,{From:$this.config.senderSignature}), msg);
 		return msg;
 	}
 	
 	this.send = function(msg) {
-		with (httpClientPackages) {
-			msg = this.getMailTemplate(msg);
-			$log().info("MAIL:{}", JSON.stringify(msg, null, "   "));
-			//TODO this should be processed by the queue
-			//TODO this should cacth and log exceptions
-			var client = new DefaultHttpClient();
-			var post = new HttpPost(url); 
-			post.setHeader("Content-Type", "application/json"); 
-			post.setHeader("Accept", "application/json");
-			post.setHeader(apiKeyHeader, $this.config.apiKey);
-			post.setEntity(new StringEntity(JSON.stringify(msg),"UTF-8")); 
+		this.q.enqueue(getMailTemplate(msg));
+	};
+	
+	function MessageSender(queue) {	
+		var q = queue;
+		var running = false;
+		var client = new org.apache.http.impl.client.DefaultHttpClient();
+		this.run = function() {
+			$log().debug("Running messageSender");
+			if (!running) {
+				running = true;
+				while(!q.isEmpty()) {
+					var msg = q.dequeue();
+					$log().debug("Mail:{}", JSON.stringify(msg, null, "   "));
+					//TODO this should cacth and log exceptions
+					with (httpClientPackages) {
+						var post = new HttpPost(url); 
+						post.setHeader("Content-Type", "application/json"); 
+						post.setHeader("Accept", "application/json");
+						post.setHeader(apiKeyHeader, $this.config.apiKey);
+						post.setEntity(new StringEntity(JSON.stringify(msg),"UTF-8")); 
 
-			var responseHandler = new BasicResponseHandler(); 
-			var response = client.execute(post,responseHandler); 
-			$log().info("Mail response:{}", response);
+						var responseHandler = new BasicResponseHandler(); 
+						var response = client.execute(post,responseHandler); 
+					}
+					$log().debug("Mail response:{}", response);
+				}
+				running = false;
+			}
 		}
 	}
 }

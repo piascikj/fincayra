@@ -36,7 +36,7 @@ fincayra.config = {
 		apiKey:"POSTMARK_API_TEST", //You must register your own at http://postmarkapp.com
 		senderSignature:"", //You must register your own at http://postmarkapp.com
 		//generic values
-		templateDir:"mail",
+		templateDir:"mail"
 	},
 	indexOnStartUp:true,
 	expose:["css","images","js"],
