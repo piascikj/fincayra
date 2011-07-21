@@ -203,6 +203,8 @@ function initEditor() {
 	fincayra.lastSavedEntryTime = $('#last_saved_entry_time');
 	
 	fincayra.markDownEditor.dblclick(closeEntry);
+	fincayra.markDownEditor.tabOverride(true);
+	//$.fn.tabOverride.setTabSize(4);
 	fincayra.editor.detach();
 	
 }
@@ -814,15 +816,27 @@ function TopicView() {
 	
 	this.markDownHelp = function() {
 		if (fincayra.markdownHelp == undefined) {
-			$.get("/js/help/markdown/syntax.text",function(data) {
-				fincayra.markdownHelp = data;
+			$.ajax({
+				url:"/js/help/markdown/syntax.text",
+				dataType:"text",
+				success:function(data) {
+					fincayra.markdownHelp = data;
+					$('.help-body').html(parseMD(fincayra.markdownHelp));
+					var toc = $('.help-toc');
+					toc.html("");
+					toc.toc({context:'.help-body'});
+					toc.find('a').each(function() {
+						$(this).click(function() {
+							var topLink = $('<a href="#mdhelp">Back to Markdown help index.</a>').click( function() {
+								toggleNotify("top","hide");
+								return true;
+							});
+							toggleNotify("top","show",topLink);
+							return true;
+						});
+					});
+				}
 			});
-				
-			$('.help-body').html(parseMD(fincayra.markdownHelp));
-			var toc = $('.help-toc');
-			toc.html("");
-			toc.toc({context:'.help-body'});
-
 		}
 		$('.help').toggle();
 		$('.ui-layout-center .ui-layout-content').scrollTop(0);

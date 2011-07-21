@@ -8,6 +8,8 @@ body{
 	padding: 0px;
 	text-align: center;
 	height: 100%;
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
 }
 
 .container p, .container h1, .container form, .container button{border:0; margin:0; padding:0;}

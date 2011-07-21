@@ -53,10 +53,11 @@
 				//This puts the error with the label
 				$("[for=" + prop + "]").append("<span class='error'>" + result[prop] + "</span>");
 			}}
-			fillForm();
+			fillForm($getSession().user);
 		} else {
 			user.role = Role.user;
 			try {
+				$getSession().user = user;
 				//Save the new user
 				user = user.save();
 				//Send them an email
@@ -81,7 +82,6 @@
 		}
 	}
 
-	fillForm(user);
-		
+	fillForm($getSession().user);
 	 
 })();
