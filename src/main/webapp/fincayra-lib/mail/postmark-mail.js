@@ -16,7 +16,7 @@ function PostMarkMailManager() {
 	  "Subject" : "Test",
 	  "Tag" : "Invitation",
 	  "HtmlBody" : "<b>Hello</b>",
-	  "TextBody" : "Hello",
+	  //"TextBody" : "Hello",
 	  //"ReplyTo" : "reply@example.com"
 	};
 	
@@ -44,7 +44,8 @@ function PostMarkMailManager() {
 	};
 	
 	var getMailTemplate = function(msg) {
-		msg = $extend($extend(mailTemplate,{From:$this.config.senderSignature}), msg);
+		var template = $extend({},mailTemplate);
+		msg = $extend($extend(template,{From:$this.config.senderSignature}), msg);
 		return msg;
 	}
 	

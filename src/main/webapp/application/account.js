@@ -20,7 +20,7 @@
 
 	//This is used to prefill form fields if we find a bad value
 
-	var fillForm = function() {
+	var fillForm = function(user) {
 		$("#name").val(user.name);
 		$("#nickname").val(user.nickname);
 		$("#email").val(user.email);
@@ -35,9 +35,6 @@
 	});
 	
 	requirePageAuth();
-
-	fillForm();
-	//$("#form_box p.title").append("<strong>" + $app().name + "</strong>");
 
 	if ($getMethod() == Methods.POST) {
 	//If it's post we know someone submitted something
@@ -63,7 +60,12 @@
 				//Save the new user
 				user = user.save();
 				//Send them an email
-				$sendMail("/user/accountChange.js",{user:user});
+				$sendMail({
+					Subject : $config().name + " account activity",
+					To : user.mailTo,
+					Tag : $config().name + " account activity"
+				}, "/user/accountChange.js");
+
 				$appendScript("head",'$(document).ready(function(){toggleNotify("top","show","Your changes have been saved.");});');
 			} catch(e) {
 				if(e.javaException) {
@@ -75,10 +77,11 @@
 					error = "CAUGHT RHINO EXCEPTION" + e.name;
 				}
 				throw new Error(error);
-			} finally {
-				fillForm();
 			}
 		}
 	}
+
+	fillForm(user);
+		
 	 
 })();

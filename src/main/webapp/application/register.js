@@ -62,7 +62,13 @@
 						user = user.save();
 						//Send them an email
 						$log().debug("sending reg email to {}",user.email);
-						$sendMail("/user/regConfirm.js",{user:user});
+						
+						$sendMail({
+							Subject : "Welcome to " + $config().name + "!",
+							To : user.mailTo,
+							Tag : $config().name
+						}, "/user/regConfirm.js");
+
 					} catch(e) {
 						e.printStackTrace();
 						if(e.javaException) {

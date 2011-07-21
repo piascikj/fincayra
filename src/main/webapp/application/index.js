@@ -34,7 +34,7 @@
 		return content.append("<h2>" + str + "</h2>");
 	};
 
-	h2("Welcome to " + $app().name + "!");
+	h2("Welcome to " + $config().name + "!");
 
 	p("We guarantee you'll get things done.  Fast!");
 })();

@@ -12,20 +12,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-var msgEl = $("#message");
+(function() { 
+	var	user = $getPageParams().user;
+	$("#userName").html(user.name);
+	$("#appName").html($config().name);
 
-Templates.mail({
-	before : function(data) {
-		var name = data.user.name;
-		$("#userName").html(name);
-		$("#appName").html($app().name);
+	var resetString = $encode(user.resetString);
 
-		var resetString = $encode(data.user.resetString);
+	$("body").append("<br/>" + $href({text:"Reset {}'s password now.".tokenize(user.name),page:"recover?resetString=" + resetString, ssl:true}));
 
-		msgEl.append("<br/>" + $href({page:"recover?resetString=" + resetString, ssl:true}));
-	},
-	
-	text : $('#greeting').text()  + "\n" + msgEl.text(),
-	
-	subject : $app().name + " account recovery"
-});
+	Templates.mail({});
+})();

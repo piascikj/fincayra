@@ -1614,37 +1614,6 @@ Request.prototype.$invalidateSession = function() {
 	return this.sessionMgr.invalidateSession();
 };
 
-
-/*
-	Function: $sendMail
-
-		Execute a mail template and ultimately send it
-
-	Parameters:
-		
-		path - The path to the mail template js file relative to mailManager.templateDir
-		data - Am object to be accessible in the template as context.messageData
-*/
-Request.prototype.$sendMail = function(path, data) {
-	var el = this.scope.context.getElement();
-	
-	var msg = $app().getMailManager().createMessage(true);
-	var helper = msg.getMimeMessageHelper();
-	helper.setFrom($config().mailSender.fromEmail);
-
-	this.scope.context.messageHelper = helper;
-	this.scope.context.messageData = data;
-	
-	var template = this.$getPageDir() + $config().mailSender.templateDir + path;
-	$log().debug("mailTemplate:{}", template);
-	this.$executePage(template);
-	
-	$app().getMailManager().send(msg);
-	
-	this.$d(el);
-	
-};
-
 /*
 	Function: $sendMail
 	
@@ -1672,7 +1641,7 @@ Request.prototype.$sendMail = function(path, data) {
 		path - (optional) The path to the mail template js file relative to mailManager.templateDir
 
 */
-Request.prototype.$sendMail2 = function(msg, path) {
+Request.prototype.$sendMail = function(msg, path) {
 	//get the current doc so we can create the message and set it back later
 	var el = this.scope.context.getElement();
 	
@@ -1680,7 +1649,7 @@ Request.prototype.$sendMail2 = function(msg, path) {
 		var template = this.$getPageDir() + $config().mailConfig.templateDir + path;
 		$log().debug("mailTemplate:{}", template);
 		this.$executePage(template);
-		msg.HtmlBody = this.scope.context.getElement().toString();
+		msg.HtmlBody = new String(this.scope.context.getElement().toString());
 	}	
 	if (this.$getPageParams().TextBody) { msg.TextBody = this.$getPageParams().TextBody;}
 	

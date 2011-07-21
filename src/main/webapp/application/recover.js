@@ -65,7 +65,13 @@
 						user = user.save();
 						success = true;
 						//Send them an email that informs them that their password has been changed
-						$sendMail("/user/resetConfirm.js",{user:user});
+						$setPageParams({user:user});
+						$sendMail({
+							Subject : $config().name + " account activity",
+							To : user.mailTo,
+							Tag : $config().name + " account activity"
+						}, "/user/resetConfirm.js");
+
 					} catch(e) {
 						if(e.javaException) {
 							error = "CAUGHT JAVA EXCEPTION" + e.javaException.message;

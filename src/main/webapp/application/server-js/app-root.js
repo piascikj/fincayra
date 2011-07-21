@@ -17,9 +17,6 @@
  * this is a great place to create some singletons, libraries, reference services and domain objects.
  */
 
-//Set the app name
-//$app().name="Fincayra";
-
 
 //--------------------------------------------------------------------------------------------
 //Hide dev if not reloading root scope dyanmically
@@ -239,7 +236,7 @@ DefaultTemplates.prototype.basic = function(config) {
 			this.req.$e(config.page); //Here we extend the templates html by placing it in the dom
 			
 			//config.title
-			if (config.title) this.req.$("title").html($app().name + " - " + config.title); //We set the title
+			if (config.title) this.req.$("title").html($config().name + " - " + config.title); //We set the title
 			
 			if (body) this.req.$(config.contentSelector).html(body.html()); //set the content of the template to the requested page
 			if (head) this.req.$("head").append(head.html());
@@ -266,34 +263,15 @@ DefaultTemplates.prototype.simple = function(config) {
 };
 		
 DefaultTemplates.prototype.mail = function(config) {
-	var data = this.req.context.messageData;
-	if (data.user) {
-
-		if (config.before) config.before(data);
+	var user = this.req.$getSession().user;
+	if (user) {
+		if (config.before) config.before();
 		
 		//Grab the body of the page that is using this template
 		var body = this.req.$("body"); 
 		
-		this.req.$e("/templates/simple.html"); //Here we extend the templates html by placing it in the dom
+		this.req.$e("/mail/templates/simple.html"); //Here we extend the templates html by placing it in the dom
 		
 		if (body) this.req.$("body").append(body.html()); //set the content of the template to the requested page
-		
-		//Now that we've modified the markup, lets set up the message
-		helper = this.req.context.getMessageHelper();
-		
-		helper.setTo(data.user.email);
-		
-		if (config.subject) {
-			helper.setSubject(config.subject);
-		} else {
-			helper.setSubject($app().name);
-		}
-		
-		var d = this.req.context.element;
-		if (config.text) {
-			helper.setText(config.text, d.html());
-		} else {
-			helper.setText(d.html(), true);
-		}
 	}	
 }

@@ -22,7 +22,7 @@
 		
 		//runs before the simple template is loaded into the document
 		before : function() {
-			$("#appName").html($app().name);
+			$("#appName").html($config().name);
 			if (method == Methods.POST) {
 				//Get the user from the params
 				user = new User($getPageParams());
@@ -40,7 +40,12 @@
 					user.getResetString();
 					user = user.save();
 					//Send them an email
-					$sendMail("/user/reset.js",{user:user});
+					$setPageParams({user:user});
+					$sendMail({
+						Subject : $config().name + " account recovery",
+						To : user.mailTo,
+						Tag : $config().name
+					}, "/user/reset.js");
 					
 				}
 				

@@ -12,16 +12,11 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-var msgEl = $("#message");
-Templates.mail({
-	before : function(data) {
-		var name = data.user.name;
-		$("#userName").html(name);
-		
-		msgEl.append("<br/>" + $href({page:"login", ssl:true}));
-	},
-	
-	text : $('#greeting').text() + "\n" + msgEl.text(),
-	
-	subject : $app().name + " account activity"
-});
+(function() {
+	var msgEl = $("#message");
+	var	user = $getSession().user;
+	$("#userName").html(user.name);
+	msgEl.append("<br/>" + $href({page:"login", ssl:true}));
+
+	Templates.mail({});
+})();

@@ -32,7 +32,7 @@
 				$("#form_box p.title").html('Please verify your password');
 				$('#persistent_check').remove();
 			} else {
-				$("#form_box p.title").append("<strong>" + $app().name + "</strong>");
+				$("#form_box p.title").append("<strong>" + $config().name + "</strong>");
 				$('#diff_user').remove();
 			}	
 			

@@ -24,8 +24,7 @@ $api({
 		//data.user = user;
 		$log().info("data:{}",JSON.stringify(data, null, "   "));
 		
-		//$sendMail("/notebooks/entry.js", data);
-		$sendMail2({
+		$sendMail({
 			Subject : data.subject,
 			HtmlBody : data.html,
 			To : user.mailTo,
