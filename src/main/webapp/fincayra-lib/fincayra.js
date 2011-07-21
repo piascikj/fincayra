@@ -86,27 +86,7 @@ function $config(config) {
 	$app().setSecureUrl($config().secureUrl);
 	$app().setName($config().name);
 
-	//Configure the MailSender
-	var mailSender = new org.springframework.mail.javamail.JavaMailSenderImpl();
-	mailSender.setHost($config().mailSender.host);
-	mailSender.setPort($config().mailSender.port);
-	mailSender.setUsername($config().mailSender.userName);
-	mailSender.setPassword($config().mailSender.password);
-	var props = new java.util.Properties();
-	props.setProperty("mail.smtp.auth", $config().mailSender.auth);
-	props.setProperty("mail.smtp.starttls.enable", $config().mailSender.starttls);
-	props.setProperty("mail.smtp.timeout", $config().mailSender.timeout);
-	mailSender.setJavaMailProperties(props);
-
-	var mailManager = new  org.innobuilt.fincayra.mail.MailManager();
-	mailManager.setMailSender(mailSender);
-
-	$app().setMailManager(mailManager);
 	$hide([$config().mailSender.templateDir]);
-
-	$log().info("Initializing MailManager");
-	$app().getMailManager().init();
-	$log().info("Done Initializing MailManager");
 
 	//New MailManager impl
 	load("mail/mail.js");

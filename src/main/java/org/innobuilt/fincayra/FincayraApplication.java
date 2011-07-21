@@ -8,7 +8,6 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
 import org.apache.commons.vfs.impl.DefaultFileMonitor;
-import org.innobuilt.fincayra.mail.MailManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /*   Copyright 2010 Jesse Piascik
@@ -32,7 +31,6 @@ public class FincayraApplication {
 	private String jsDir = null;
 	private String bundleDir = null;
 	private MergeEngine mergeEngine = new MergeEngine();
-	private MailManager mailManager = null;
 	private String url = "http://localhost:8080/fincayra/";
 	private String secureUrl;
 	private String name;
@@ -73,15 +71,6 @@ public class FincayraApplication {
 	
 	public static final FincayraApplication get() {
 		return application;
-	}
-
-	public void setMailManager(MailManager mailManager) {
-		this.mailManager = mailManager;
-	}
-
-
-	public MailManager getMailManager() {
-		return mailManager;
 	}
 
 	public void setMergeEngine(MergeEngine mergeEngine) {
