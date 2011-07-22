@@ -17,7 +17,7 @@
 var classes = "";
 var user = $getSession().user;
 var lastTopic;
-
+var type = "root";
 
 function getTopicNode(topic) {
 	return {			
@@ -27,8 +27,8 @@ function getTopicNode(topic) {
 			"object" : {id:topic.id, uuid:topic.uuid, name:topic.name},
 			type : $type(topic)
 		},
-		children : getEntries(topic.uuid),
-		state : (user.lastTopicId == topic.id)?"open":"closed"
+		children : (type == "root" && topic.id == lastTopic.id)?getEntries(topic.uuid):[],
+		state : (user.lastTopicId == topic.id && type == "root")?"open":"closed"
 		
 	};
 }
@@ -53,10 +53,10 @@ function getNoteBookNode(noteBook) {
 		},
 		attr : {"class":classes},
 		metadata : {
-			"object" : noteBook,
+			"object" : {id: noteBook.id, uuid:noteBook.uuid, name:noteBook.name},
 			type : $type(noteBook)
 		},
-		children : getTopics(noteBook.uuid),
+		children : (type == "root" && lastTopic.noteBook.id == noteBook.id)?getTopics(noteBook.uuid):[],
 		state : (lastTopic && noteBook.id == lastTopic.noteBook.id)?"open":"closed"
 	};
 }
@@ -133,22 +133,26 @@ function getEntries(uuid) {
 }
 	
 $api({
-	treedata : function() {
+	getNodes : function() {
 		requireAuth();
-		var tree = {
-			data : "NoteBooks",
-			state : "open",
-			children : getNoteBooks(),
-			metadata: {
-				object : {},
-				type : "root"
-			}
-		};
+		type = $apiAction(1);
+		var uuid = $apiAction(2);
+		var nodes = []
 		
-		$j(tree);
+		switch (type) {
+			case "root":
+				nodes = getNoteBooks();
+				break;
+			case "NoteBook":
+				nodes = getTopics(uuid);
+				break;
+			case "Topic":
+				nodes = getEntries(uuid);
+				break;
+		}
 		
+		$j(nodes);
 	},
-	
 	/*
 		Func: moveNoteBook
 		Move a NoteBook to a different position

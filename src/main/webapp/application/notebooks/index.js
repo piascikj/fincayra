@@ -29,7 +29,7 @@
 			defaultError : "Something went wrong.",
 			mail : "/notebooks/api/mail",
 			login : $app().secureUrl + "login",
-			treeData : "/notebooks/api/organize/treedata",
+			treeData : "/notebooks/api/organize/getNodes",
 			moveNoteBook : "/notebooks/api/organize/moveNoteBook",
 			moveTopic : "/notebooks/api/organize/moveTopic",
 			moveEntry : "/notebooks/api/organize/moveEntry",

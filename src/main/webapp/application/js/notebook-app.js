@@ -27,7 +27,14 @@ function organizeNoteBooks() {
 		json_data : {
 			ajax : {
 				async: true,
-				url : fincayra.treeData,
+				url : function(node) {
+					var uuid = node == -1?-1:node.data("object").uuid;
+					var type = node == -1?"root":node.data("type");
+					var url = fincayra.treeData + "/" + type + "/" + uuid;
+					$log("Getting {} node:".tokenize(type),uuid);
+					$log("url:", url);
+					return url;
+				},
 				data : function(n) {
 					return n;
 				}
