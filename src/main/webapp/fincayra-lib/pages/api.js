@@ -58,6 +58,8 @@ $api({
 						result = object.findById();
 						if (result == null ) throw new ObjectNotFoundError();
 					} else if (params.qry != undefined) {
+						var exp=/(insert )|(update )|(grant )|(create )|(delete )/gi;
+						if (params.qry.match(exp)) {throw new ForbiddenException("Function unavailable");} 
 						var offset = params.offset || 0;
 						var limit = params.limit || 200;
 						if (limit > 200) limit = 200;					

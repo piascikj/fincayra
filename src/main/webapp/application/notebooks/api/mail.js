@@ -22,7 +22,7 @@ $api({
 		
 		var data = $getPageParams(true);
 		//data.user = user;
-		$log().info("data:{}",JSON.stringify(data, null, "   "));
+		$log().debug("data:{}",JSON.stringify(data, null, "   "));
 		
 		$sendMail({
 			Subject : data.subject,
