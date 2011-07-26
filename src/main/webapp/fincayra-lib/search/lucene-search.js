@@ -86,6 +86,7 @@ function SearchManager() {
 			//End indexOnStartUp
 			}
 			
+			//This needs to be recreated if index is updated, maybe every user should have one, or we have a pool???
 			$this.searcher = new IndexSearcher($this.directory);
 		
 		
@@ -237,7 +238,8 @@ function SearchManager() {
 		options = defaults.extend(options);
 		with (Lucene.Packages) {
 			var analyzer = $this.analyzer;
-			var searcher = $this.searcher;
+			//var searcher = $this.searcher;
+			var searcher = new IndexSearcher($this.directory);
 			var parser = new QueryParser($this.version, options.defaultField, analyzer);
 			if (options.storable != undefined) options.qry = options.qry + " AND clazz:" + $type(options.storable);
 			var query = parser.parse(options.qry);

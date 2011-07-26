@@ -510,6 +510,7 @@ function saveEntry() {
 
 function closeEntry() {
 	if (fincayra.entry && fincayra.entry.uuid) {
+		fincayra.topicView.allCollapsed = false;
 		var el = getEntryElement(fincayra.entry).show();
 		getTOC(el);
 	}

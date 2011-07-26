@@ -59,7 +59,19 @@ div.error {
     background-color: #FFBABA;
     background-image: url('error.png');
 }
+div.statement {
+	margin: 0 auto;
+	width: 950px;
+	font-family: "minion-pro-1","minion-pro-2","Times New Roman", Georgia, serif;
+	color: #232323;
+	text-align: center;
+}
 
+div.statement h1 {
+	font-size: 52px;
+	margin-top: 60px;
+	font-weight: normal;
+}
 #header {
 	padding-left:8px;
 	padding-right:8px;
@@ -67,7 +79,7 @@ div.error {
 	height:50px;
 	color:#EBF4FB;
 	font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, Arial, sans-serif;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: bold;
 	line-height: 1.7em;
 }
@@ -75,7 +87,7 @@ div.error {
 #header a {
 	color: #EBF4FB;
 	padding: 0 10px 0 0;
-	font-weight:bold;
+	font-weight:normal;
 	text-decoration:none;
 }
 
