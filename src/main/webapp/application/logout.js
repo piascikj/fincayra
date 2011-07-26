@@ -15,11 +15,5 @@
 (function() {
 	removePersistentKey();
 	$invalidateSession();
-	
-	Templates.simple({
-	
-		title : "Thank you!"
-	});
-
-	$("#content").html("<p>Thank you for using Fincayra</p>");
+	$redirect($app().url);
 })();
