@@ -262,6 +262,23 @@ DefaultTemplates.prototype.simple = function(config) {
 	}
 };
 		
+DefaultTemplates.prototype.content = function(config) {
+	try {
+		config.page = "/templates/content.html";
+		config.contentSelector = "#content";
+		this.basic(config);
+	} catch (e) {
+		$debug(e);
+		throw e;
+	} finally {
+		if ($app().reloadRootScope) {
+			//TODO we need to make this a side tab initiated thing
+			//$source();
+			//$debug(context.element.html());
+		}
+	}
+};
+
 DefaultTemplates.prototype.mail = function(config) {
 	var user = this.req.$getSession().user;
 	if (user) {

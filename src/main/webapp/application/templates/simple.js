@@ -40,7 +40,7 @@ function Simple () {
 
 	//this should go away when in prod
 	if ($config().dev) nav.append($href({page:"dev/utils", text:"Utils"}));
-	nav.append($href({page:"notebooks/", text:"NoteBooks"}));
+	//nav.append($href({page:"notebooks/", text:"NoteBooks"}));
 	
 	var logoLink = $("#logo_link");
 	logoLink.html($config().name);

@@ -1,0 +1,13 @@
+div.container {
+	width: 980px;
+}
+
+#sign_nav {
+	float:left;
+	margin-left:30px;
+}
+
+#llc_logo {
+	float: right;
+	margin-top: -15px;
+}

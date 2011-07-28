@@ -18,7 +18,7 @@
 	var session = $getSession();
 	$isAPI(params.json != undefined);
 	
-	Templates.simple({
+	Templates.content({
 		requireSSL : true,	
 		title : "Login",
 		
@@ -72,6 +72,7 @@
 		}
 	});
 	
+	$("#navigation").remove();
 	if (auth && $isAPI()) {
 		$j(session.user);
 	} else if (auth) {

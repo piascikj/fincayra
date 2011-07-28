@@ -19,7 +19,7 @@
 	var error = null;
 
 	//Extend the Simple template - it only needs a title
-	Templates.simple({
+	Templates.content({
 		requireSSL : true,	
 		title : "Register",
 		

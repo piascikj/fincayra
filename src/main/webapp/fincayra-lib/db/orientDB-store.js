@@ -16,11 +16,14 @@
 var orientDB = {};
 orientDB.packages = new JavaImporter(
 	com.orientechnologies.orient.server,
+	com.orientechnologies.orient.core.db.record,
 	com.orientechnologies.orient.core.record.impl, 
 	com.orientechnologies.orient.core.sql.query,
 	com.orientechnologies.orient.core.db.document,
 	com.orientechnologies.orient.core.metadata.schema,
 	com.orientechnologies.orient.core.id,
+	com.orientechnologies.orient.core.command,
+	com.orientechnologies.orient.core.db.tool,
 	org.innobuilt.fincayra.persistence.orientDB);
 
 orientDB.Type = {};
@@ -148,6 +151,21 @@ function OrientDBObjectManager() {
 		
 		return db;
 	};
+	
+	this.exportDB = function() {
+		var dir = $config().storeConfig.exportDir;
+		with (orientDB.packages) {
+			var db = this.openDB();
+			try {
+				var listener = new OCommandOutputListener({onMessage:function(msg) {$log().info(msg);}});
+				var exporter = new ODatabaseExport(db, "{}/fincayra_orientDB_export_{}.gz".tokenize(dir,new Date().format("MMddyyyy.HHmmss")), listener); 
+				exporter.exportDatabase();
+			} finally {
+				db.close();
+			}
+		}
+		return true;
+	}; 		
 	
 	this.txn = function(transact) {
 		var db = this.openDB();

@@ -12,16 +12,23 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
+
 (function() {
-	this.checkPersistentKey();
 	
-	if ($getSession().user) forwardToDefault();
+	var nav = $("#navigation");
+	var signNav = $("#sign_nav");
+
 	
-	Templates.content( {
-		title : "Home"
-	});
+	if (!$getSession().user || $getSession().user == null) {
+		signNav.append($href({page:"register", text:"Register", ssl:true}));
+		signNav.append($href({page:"login", text:"Sign In", ssl:true}));
+	}
 
-
-	var params = $getPageParams();
-
+	//this should go away when in prod
+	//if ($config().dev) nav.append($href({page:"dev/utils", text:"Utils"}));
+	nav.append($href({page:"", text:"Home"}));
+	nav.append($href({page:"tour", text:"Tour"}));
+	
+	$("head").prepend('<link rel="shortcut icon" href="' + $app().url + 'images/favicon.ico">');
 })();
+

@@ -16,7 +16,7 @@
 	var user = null;
 	var form = $("#reset_form_box");
 	var method = $getMethod();
-	Templates.simple({
+	Templates.content({
 		requireSSL : true,	
 		title : "Forgot",
 		

@@ -27,6 +27,7 @@
 	if (users.length < 1) $redirect($app().url);
 	user = users[0];
 
+	
 	//Extend the Simple template - it only needs a title
 	Templates.simple({
 		requireSSL : true,

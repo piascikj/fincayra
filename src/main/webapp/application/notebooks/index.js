@@ -42,7 +42,6 @@
 			deleteTopic : "/api/Topic/{}",
 			getLastTopic : "/notebooks/api/utility/getLastTopic",
 			setLastTopic : "/notebooks/api/utility/setLastTopic/{}",
-			//getEntries : "/api/Entry?qry=topic.uuid = '{}' order by createDate desc",
 			getEntries : "/notebooks/api/get/entries?topicUUId={}&offset={}&limit={}",
 			entryLimit : 5,
 			saveEntry : "/api/Entry",

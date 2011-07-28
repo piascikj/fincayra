@@ -27,6 +27,9 @@ fincayra.config = {
 	name:"Fincayra",
 	errorPage:"/error",
 	store:"db/orientDB-store.js",
+	storeConfig:{
+		exportDir:"/tmp"
+	},
 	search:"search/lucene-search.js",
 	mail:"mail/postmark-mail.js",//TODO default should be mail/google-mail.js
 	mailConfig: {
