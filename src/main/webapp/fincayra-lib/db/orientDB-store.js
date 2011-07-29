@@ -167,6 +167,23 @@ function OrientDBObjectManager() {
 		return true;
 	}; 		
 	
+	this.importDB = function(file) {
+		var dir = $config().storeConfig.exportDir;
+		with (orientDB.packages) {
+			var db = this.openDB();
+			try {
+				db["delete"]();
+				db = this.openDB();
+				var listener = new OCommandOutputListener({onMessage:function(msg) {$log().info(msg);}});
+				var importer = new ODatabaseImport(db, "{}/{}".tokenize(dir,file), listener); 
+				importer.importDatabase();
+			} finally {
+				db.close();
+			}
+		}
+		return true;
+	};
+	
 	this.txn = function(transact) {
 		var db = this.openDB();
 		var failed;

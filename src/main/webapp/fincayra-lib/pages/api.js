@@ -176,6 +176,18 @@ $api({
 		}
 	},
 
+	importDB : function() {
+		if ($config().dev == true || $getSession().isAdmin == true) {
+			var file = $getPageParams().file;
+			var start = new Date();
+			var completed = $om().importDB(file);
+			var end = new Date();
+			$j({ok:completed, duration:end.getTime()-start.getTime()});
+		} else {
+			throw new ForbiddenException("Function unavailable");
+		}
+	},
+
 	keepAlive : function() {
 		$j({ok:true});
 	}

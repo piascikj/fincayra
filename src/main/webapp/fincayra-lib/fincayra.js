@@ -28,7 +28,7 @@ fincayra.config = {
 	errorPage:"/error",
 	store:"db/orientDB-store.js",
 	storeConfig:{
-		exportDir:"/tmp"
+		exportDir:"{}/tmp".tokenize($getProperty("user.home"))
 	},
 	search:"search/lucene-search.js",
 	mail:"mail/postmark-mail.js",//TODO default should be mail/google-mail.js
