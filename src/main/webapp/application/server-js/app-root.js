@@ -58,6 +58,12 @@ function User(clone) {
 			this.password = encryptor.encryptPassword(this.password);
 		}
 	};
+	
+	this.onValidate = onValidate = function() {
+		if (!this.mailTo) {
+			this.mailTo = this.email;
+		}
+	}
 
 }; 
 
@@ -139,7 +145,18 @@ new User().define({
 	persistentKey: {
 		index:true,
 		unique:true
-	}
+	},
+	
+	lastTopicId : {},
+	
+	mailTo : {
+		required: true,
+		pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
+		error:"Email address is not valid",
+		unique:true//this will ensure another object with the same value is not created, unique:false is default
+	}, 
+	
+	noteBooks : {rel: Relationship.ownsMany}	
 });
 
 //We should now create an admin

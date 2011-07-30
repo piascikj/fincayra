@@ -61,24 +61,30 @@ div.error {
 }
 div.statement {
 	margin: 0 auto;
-	width: 950px;
+	margin-top: 30px;
+	width: 980px;
 	font-family: "minion-pro-1","minion-pro-2","Times New Roman", Georgia, serif;
-	color: #232323;
+	color: #000000;
 	text-align: center;
 }
 
 div.statement h1 {
 	font-size: 52px;
-	margin-top: 60px;
 	font-weight: normal;
+	clear: both;
 }
+
+div.statement img {
+	float: left;
+}
+
 #header {
 	padding-left:8px;
 	padding-right:8px;
 	background:#075385;
 	height:50px;
 	color:#EBF4FB;
-	font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, Arial, sans-serif;
+	font-family: helvetica, arial, sans-serif;
 	font-size: 14px;
 	font-weight: bold;
 	line-height: 1.7em;

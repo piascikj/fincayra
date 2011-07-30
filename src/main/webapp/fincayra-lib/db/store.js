@@ -489,10 +489,14 @@ Storable.prototype.onValidate = function() {
 	>	password:"Password must be at least 6 characters long."
 	> }
 */
-Storable.prototype.validate = function() {
+Storable.prototype.validate = function(config) {
+	config = {
+		except :undefined
+	}.extend(config);
 	var classDef = $om().getClassDef($type(this));
 	var result = this.onValidate();//result will contain names of properties that did not pass inspection, with values of the error text
 	for (prop in classDef) {if (classDef.hasOwnProperty(prop)) {
+		if (config.except && config.except[prop]) {continue;}
 		var propSpec = classDef[prop];
 		
 		if (propSpec.required && this[prop] == undefined && prop != "uuid") {

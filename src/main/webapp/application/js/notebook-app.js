@@ -226,20 +226,22 @@ function bindLiveHandlers() {
 		return false;
 	});
 }
-	
+
+function unauthorized(e,response,settings) {
+	if (response && response.status == 401) {
+		setTimeout(function() {
+			window.location = fincayra.login; 
+		}, 3000);
+		$("<p>Your session has expired.  You will now be directed to the sign in page.</p>").dialog({
+			modal:true,
+			title:"Session expired"
+		});
+	}
+};	
+
 function init() {
 	//redirect to login if 401 on ajax
-	$(document).ajaxError(function(e,response,settings) {
-		if (response && response.status == 401) {
-			setTimeout(function() {
-				window.location = fincayra.login; 
-			}, 3000);
-			$("<p>Session expired.  You will now be directed to login.</p>").dialog({
-				modal:true,
-				title:"Session expired"
-			});
-		}
-	});
+	$(document).ajaxError(unauthorized);
 	
 	//Keep session active if on this page
 	setInterval(function() {
@@ -1225,6 +1227,7 @@ function EntryView() {
 		offset = offset || 0;
 		limit = limit || fincayra.entryLimit;
 		$log("offset:{}, limit:{}".tokenize(offset, limit));
+		var error = undefined;
 		if (offset == 0) {
 			$this.entries.html('');
 			fincayra.entry = undefined;
@@ -1269,8 +1272,15 @@ function EntryView() {
 				fincayra.layout.initContent("center",true);
 				
 				$this.jumpToEntry();
+			},
+			
+			error: function(jqXHR, textStatus, errorThrown) {
+				$log("Recived error while getting entries:",textStatus);
+				error = new Error(errorThrown);
 			}
 		});
+		
+		if (error != undefined) {throw error;}
 		
 	}
 	this.search = function() {

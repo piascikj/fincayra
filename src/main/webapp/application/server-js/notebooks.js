@@ -218,19 +218,6 @@ new Task().define({
 });
 
 
-//Extend user
-new User().define({
-	lastTopicId : {},
-	mailTo : {
-		required: true,
-		pattern:/^([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
-		error:"Email address is not valid",
-		unique:true//this will ensure another object with the same value is not created, unique:false is default
-	}, 
-	noteBooks : {rel: Relationship.ownsMany}
-
-});
-
 User.prototype.fixNoteBooks = function() {
 	var noteBooks = new NoteBook({owner:this}).findByProperty("owner");
 	var noSort = [];

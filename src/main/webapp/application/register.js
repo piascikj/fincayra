@@ -41,7 +41,7 @@
 				};
 				
 				//Validate the user object
-				var result = user.validate();
+				var result = user.validate({except:{mailTo:true}});
 				if (!user.password.equals(user.retype_password)) {
 					//Make sure passwords match
 					if (result == null) result = {};
@@ -52,6 +52,7 @@
 				if (result != null) {
 					for(prop in result) { if (result.hasOwnProperty(prop)) {
 						//This puts the error with the label
+						$log().debug("Error in {}", prop);
 						$("[for=" + prop + "]").append("<span class='error'>" + result[prop] + "</span>");
 					}}
 					fillForm();
