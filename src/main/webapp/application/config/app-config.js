@@ -32,6 +32,9 @@ $config({
 */
 		
 	$config({
+		storeConfig:{
+			exportDir:"{}/backup/fincayra".tokenize($getProperty("user.home"))
+		},
 
 		preInitDb : function() {
 			$l("app-root.js");
@@ -194,11 +197,13 @@ $config({
 		$l(userConfig);
 	}
 
+	/*
 	if ($getProperty("fincayra.beanstalk") != null) {
 		$config({
 			url : "http://fincayra.elasticbeanstalk.com/",
 			secureUrl: "http://fincayra.elasticbeanstalk.com/"
 		});
 	}
+	*/
 
 })();
