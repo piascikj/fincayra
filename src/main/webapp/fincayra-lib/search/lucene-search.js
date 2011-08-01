@@ -240,32 +240,36 @@ function SearchManager() {
 			var analyzer = $this.analyzer;
 			//var searcher = $this.searcher;
 			var searcher = new IndexSearcher($this.directory);
-			var parser = new QueryParser($this.version, options.defaultField, analyzer);
-			if (options.storable != undefined) options.qry = options.qry + " AND clazz:" + $type(options.storable);
-			var query = parser.parse(options.qry);
-			var end = options.offset + options.limit;
-			$log().debug("qry={}",options.qry);
-			var results = searcher.search(query, end);
-			var hits = results.scoreDocs;
-			
-			var out = [];
-			$log().debug("hits={}, offest={}", [hits.length, options.offset]);
-			for (i = options.offset;i < end && i < hits.length;i++) {
+			try {
+				var parser = new QueryParser($this.version, options.defaultField, analyzer);
+				if (options.storable != undefined) options.qry = options.qry + " AND clazz:" + $type(options.storable);
+				var query = parser.parse(options.qry);
+				var end = options.offset + options.limit;
+				$log().debug("qry={}",options.qry);
+				var results = searcher.search(query, end);
+				var hits = results.scoreDocs;
 				
-				var hit = hits[i];
-				var doc = searcher.doc(hit.doc);
-				var uuid = doc.get("uuid");
-				var clazz = doc.get("clazz");
-				if ($log().isDebugEnabled()) {
-					$log().debug("Found Doc:", doc.toString());
-					doc.getFields().toArray().each(function(field) {
-						$log().debug(field.name() + " = " + field.stringValue());
-					});
+				var out = [];
+				$log().debug("hits={}, offest={}", [hits.length, options.offset]);
+				for (i = options.offset;i < end && i < hits.length;i++) {
+					
+					var hit = hits[i];
+					var doc = searcher.doc(hit.doc);
+					var uuid = doc.get("uuid");
+					var clazz = doc.get("clazz");
+					if ($log().isDebugEnabled()) {
+						$log().debug("Found Doc:", doc.toString());
+						doc.getFields().toArray().each(function(field) {
+							$log().debug(field.name() + " = " + field.stringValue());
+						});
+					}
+					var obj = $getInstance(clazz);
+					obj.uuid = uuid;
+					
+					out.push(obj.findByUUId());
 				}
-				var obj = $getInstance(clazz);
-				obj.uuid = uuid;
-				
-				out.push(obj.findByUUId());
+			} finally {
+				searcher.close();
 			}
 			
 		}

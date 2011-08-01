@@ -177,6 +177,7 @@ function OrientDBObjectManager() {
 				var listener = new OCommandOutputListener({onMessage:function(msg) {$log().info(msg);}});
 				var importer = new ODatabaseImport(db, "{}/{}".tokenize(dir,file), listener); 
 				importer.importDatabase();
+				$sm().init();
 			} finally {
 				db.close();
 			}
@@ -219,6 +220,7 @@ function OrientDBObjectManager() {
 
 			//save
 			var doc = this.saveObject(db,obj,false);
+			$log().debug("preparing to save doc:{}", doc.toJSON("indent:6"));
 			db.save(doc);
 			$log().debug("******************* DONE SAVING DOC*********************");
 			$log().debug(doc.toJSON("rid,version,class,indent:6"));
@@ -290,8 +292,13 @@ function OrientDBObjectManager() {
 						
 							if (Type[propType]) {
 								var val = manager.toJava(obj[prop], propType);
-								$log().debug("Saving javascript:{} as Java:{}",[obj[prop], val]);
-								doc.field(prop, val, orientDB.Type[propType]);
+								$log().debug("Saving field:{} in javascript:{} as Java:{}",[prop, obj[prop], val]);
+								if (rel == Relationship.ownsMany) {
+									$log().debug("Saving as list...");
+									doc.field(prop, java.util.Arrays.asList(val), OType.EMBEDDEDLIST);
+								} else {
+									doc.field(prop, val, orientDB.Type[propType]);
+								}
 							} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
 								$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
 								var propDoc = manager.saveObject(db, manager.cast(obj[prop],propType), true);
@@ -303,7 +310,7 @@ function OrientDBObjectManager() {
 									var propDoc = manager.saveObject(db, manager.cast(val,propType), true);
 									values[i] = propDoc;
 								});
-								doc.field(prop, values);
+								doc.field(prop, java.util.Arrays.asList(values));
 								
 							} else {
 								throw new Error("Relationship not defined");
@@ -708,7 +715,7 @@ function OrientDBObjectManager() {
 						return new java.util.Date(val.getTime());
 						break;
 					case Type.Boolean:
-						return new Boolean(val);
+						return new java.lang.Boolean(val);
 						break;
 					default:
 					  return val.toString();

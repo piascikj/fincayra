@@ -2,7 +2,6 @@
 
 function NoteBook(clone) {
 	this.createDate = new Date();
-	this.isSearch = false;
 	this.extend(new Storable(clone));
 	
 	this.onRemove = function(db) {
@@ -60,10 +59,6 @@ new NoteBook().define({
 	
 	topics:{
 		rel: Relationship.ownsMany
-	},
-	
-	isSearch:{
-		type:Type.Boolean
 	}
 });
 

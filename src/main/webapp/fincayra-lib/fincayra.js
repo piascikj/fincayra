@@ -33,13 +33,24 @@ fincayra.config = {
 	search:"search/lucene-search.js",
 	mail:"mail/postmark-mail.js",//TODO default should be mail/google-mail.js
 	mailConfig: {
-		//google mail values
-		
 		//postmark-mail values
 		apiKey:"POSTMARK_API_TEST", //You must register your own at http://postmarkapp.com
 		senderSignature:"", //You must register your own at http://postmarkapp.com
+		
+		//smtp values
+		/*host:"smtp.gmail.com",
+		port:587,
+		userName:"someUser",
+		password:"somePassword",
+		fromEmail:"jesse@piascik.net",
+		templateDir:"mail",
+		auth:true,
+		starttls:true,
+		timeout:25000,*/
+		
 		//generic values
 		templateDir:"mail"
+		
 	},
 	indexOnStartUp:true,
 	expose:["css","images","js"],
@@ -88,8 +99,6 @@ function $config(config) {
 	$app().setUrl($config().url);
 	$app().setSecureUrl($config().secureUrl);
 	$app().setName($config().name);
-
-	$hide([$config().mailSender.templateDir]);
 
 	//New MailManager impl
 	load("mail/mail.js");
