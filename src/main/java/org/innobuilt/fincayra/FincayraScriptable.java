@@ -118,7 +118,7 @@ public class FincayraScriptable extends ImporterTopLevel {
 			cx.evaluateString(scope, js, name, 1, null);
 		}  catch (RhinoException re) {
 			// Some form of JavaScript error.
-			LOGGER.error("Evaluator Exception: {}", re.getMessage());
+			//LOGGER.error("Evaluator Exception: {}", re.getMessage());
 			throw re;
 		}
 	}

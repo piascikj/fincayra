@@ -38,8 +38,10 @@ try {
 	}
 
 } catch(e) {
-	$log().error("Caught an exception while handling fincayra request");
-	e.printStackTrace();
+	if (!(e instanceof AuthRequiredException)) {
+		$log().error("Caught an exception while handling fincayra request");
+		e.printStackTrace();
+	}
 	$setPageParams({error:e});
 	$log().debug("isAPI:{}", $isAPI());
 	if ($isAPI()) {

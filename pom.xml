@@ -27,8 +27,7 @@
 		</repository> 		
 	</repositories>
 	<properties>
-		<!--<orientDB-version>1.0rc1</orientDB-version>-->
-		<orientDB-version>1.0rc4-SNAPSHOT</orientDB-version>
+		<orientDB-version>1.0rc4</orientDB-version>
 	</properties>
 	<dependencies>
 		<!-- Document DB -->

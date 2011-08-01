@@ -15,6 +15,12 @@ Methods = {
 	DELETE: "DELETE"
 }
 
+function AuthRequiredException(msg) {
+	this.message = "You must sign in to see this page.";
+	this.extend(new Error(msg || this.message));
+	this.statusCode = 401;
+}
+
 function ForbiddenException(msg) {
 	this.message = "This request is forbidden";
 	this.extend(new Error(msg || this.message));
@@ -1235,8 +1241,10 @@ Request.prototype.$executePage = function(jsPage) {
 	} catch (e if e.javaException instanceof java.io.FileNotFoundException) {
 		$log().debug("Unable to find file: {}", jsPage);
 	} catch (e) {
-		$log().error("Caught exception while trying to load JavaScript file: {}", jsPage);
-		e.printStackTrace();
+		if (!(e instanceof AuthRequiredException)) {
+			$log().error("Caught exception while trying to load JavaScript file: {}", jsPage);
+			e.printStackTrace();
+		}
 		throw e;
 	}
 }

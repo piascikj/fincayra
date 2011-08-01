@@ -35,12 +35,6 @@ var Role = {
 	user : 'user'
 };
 
-function AuthRequiredException(msg) {
-	this.message = "You must sign in to see this page.";
-	this.extend(new Error(msg || this.message));
-	this.statusCode = 401;
-}
-
 //Define some model objects
 function User(clone) {
 	
