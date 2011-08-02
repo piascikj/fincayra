@@ -41,6 +41,8 @@ function User(clone) {
 	this.active = true;
 	
 	this.createDate = new Date();
+	
+	this.noteBooks = [];
 
 	this.extend(new Storable(clone));
 	

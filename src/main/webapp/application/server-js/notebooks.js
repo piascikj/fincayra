@@ -2,6 +2,7 @@
 
 function NoteBook(clone) {
 	this.createDate = new Date();
+	this.topics = [];
 	this.extend(new Storable(clone));
 	
 	this.onRemove = function(db) {
@@ -64,6 +65,7 @@ new NoteBook().define({
 
 function Topic(clone) {
 	this.createDate = new Date();
+	this.entries = [];
 	this.extend(new Storable(clone));
 	this.onRemove = function(db) {
 		var self = this;
