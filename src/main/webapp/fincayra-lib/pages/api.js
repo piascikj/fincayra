@@ -168,9 +168,9 @@ $api({
 	exportDB : function() {
 		if ($config().dev == true || $getSession().isAdmin == true) {
 			var start = new Date();
-			var completed = $om().exportDB();
+			var file = $om().exportDB();
 			var end = new Date();
-			$j({ok:completed, duration:end.getTime()-start.getTime()});
+			$j({file:file, duration:end.getTime()-start.getTime()});
 		} else {
 			throw new ForbiddenException("Function unavailable");
 		}
