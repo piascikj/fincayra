@@ -565,7 +565,10 @@ Array.prototype.each = function(callback,end) {
 
 Array.prototype.removeString = function(val) {
 	var ary = this;
-	return ary.join("|").replace(val, "").replace("||","|").replace(/^\|/,"").replace(/\|$/,"").split("|");
+	//return ary.join("|").replace(val, "").replace("||","|").replace(/^\|/,"").replace(/\|$/,"").split("|");
+	var aryString = ary.join("|").replace(val, "").replace("||","|").replace(/^\|/,"").replace(/\|$/,"");
+	var newAry = aryString.length<1?[]:aryString.split("|");
+	return newAry;
 }
 
 Array.prototype.replaceString = function(cur, repl) {
