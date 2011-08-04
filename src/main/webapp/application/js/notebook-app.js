@@ -1283,6 +1283,17 @@ function EntryView() {
 		if (error != undefined) {throw error;}
 		
 	}
+	
+	this.displayEntry = function(entry) {
+		$this.entry = entry;
+		fincayra.topicView.topic = entry.topic;
+		if (fincayra.noteBook.uuid == entry.topic.noteBook.uuid) {
+			fincayra.topicView.displayTopic(true);
+		} else {
+			fincayra.noteBookView.displayNoteBook(entry.topic.noteBook);
+		}
+	};
+		
 	this.search = function() {
 		toggleNotify("top");
 		var qry = $this.searchField.val();
@@ -1309,13 +1320,7 @@ function EntryView() {
 							$log("-------------------------------");
 							$log("Entry:" + entryDesc + " clicked");
 							//fincayra.noteBookView.deactivate();
-							$this.entry = entry;
-							fincayra.topicView.topic = entry.topic;
-							if (fincayra.noteBook.uuid == entry.topic.noteBook.uuid) {
-								fincayra.topicView.displayTopic(true);
-							} else {
-								fincayra.noteBookView.displayNoteBook(entry.topic.noteBook);
-							}
+							$this.displayEntry(entry);
 							e.preventDefault();
 							return false;
 						});

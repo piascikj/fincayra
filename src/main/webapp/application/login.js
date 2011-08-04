@@ -72,7 +72,7 @@
 		}
 	});
 	
-	$("#navigation").remove();
+	//$("#navigation").remove();
 	if (auth && $isAPI()) {
 		$j(session.user);
 	} else if (auth) {
