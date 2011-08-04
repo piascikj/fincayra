@@ -69,7 +69,7 @@ div.statement {
 }
 
 div.statement h1 {
-	font-size: 52px;
+	font-size: 48px;
 	font-weight: normal;
 	clear: both;
 }
@@ -78,6 +78,10 @@ div.statement img {
 	float: left;
 }
 
+#logo_link {
+	float: left;
+}
+	
 #header {
 	padding-left:8px;
 	padding-right:8px;

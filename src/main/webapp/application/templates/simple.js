@@ -43,7 +43,7 @@ function Simple () {
 	//nav.append($href({page:"notebooks/", text:"NoteBooks"}));
 	
 	var logoLink = $("#logo_link");
-	logoLink.html($config().name);
+	//logoLink.html($config().name);
 	logoLink.attr("href", $app().url);
 	$("head").prepend('<link rel="shortcut icon" href="' + $app().url + 'images/favicon.ico">');
 };
