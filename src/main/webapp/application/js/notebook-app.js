@@ -309,9 +309,14 @@ function init() {
 		}
 	},fincayra.autoSaveIncrement);
 
-	//Display the lastTopice viewed
-	fincayra.topicView.getLastTopic(true);
-
+	var forEntry = window.location.hash.split("#").length > 1;
+	if (forEntry) {
+		var uuid = window.location.hash.split("#")[1];
+		fincayra.entryView.loadEntry(uuid);
+	} else {
+		//Display the lastTopice viewed
+		fincayra.topicView.getLastTopic(true);
+	}
 }
 
 function editEntry(el) {
@@ -1284,10 +1289,32 @@ function EntryView() {
 		
 	}
 	
+	this.loadEntry = function(uuid) {
+		var error;
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: fincayra.getEntry.tokenize(uuid),
+			success: function(data) {
+				var entry = data.results[0];
+				//$log(entry);
+				$this.displayEntry(entry);
+			},
+			
+			error: function(jqXHR, textStatus, errorThrown) {
+				$log("Recived error while getting entry:",textStatus);
+				error = new Error(errorThrown);
+			}
+		});
+		
+		if (error != undefined) {throw error;}
+	
+	};
+	
 	this.displayEntry = function(entry) {
 		$this.entry = entry;
 		fincayra.topicView.topic = entry.topic;
-		if (fincayra.noteBook.uuid == entry.topic.noteBook.uuid) {
+		if (fincayra.noteBook && fincayra.noteBook.uuid == entry.topic.noteBook.uuid) {
 			fincayra.topicView.displayTopic(true);
 		} else {
 			fincayra.noteBookView.displayNoteBook(entry.topic.noteBook);
@@ -1311,7 +1338,7 @@ function EntryView() {
 				if (data.length > 0) {
 					$.each(data,function(i, entry) {
 						var entryDesc = fincayra.truncate(entry.text.split("\n")[0],30,"...");
-						var entryItem = $('<li><a href="#" class="search_entry_link">{}</a></li>'.tokenize(entryDesc));
+						var entryItem = $('<li><a href="#{}" class="search_entry_link">{}</a></li>'.tokenize(entry.uuid,entryDesc));
 						var entryLink = entryItem.find('a');
 						entryLink.data("entry", entry);
 						$this.searchEntries.append(entryItem);

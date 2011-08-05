@@ -47,6 +47,7 @@
 			saveEntry : "/api/Entry",
 			deleteEntry : "/api/Entry/{}",
 			searchEntries : "/api/search/Entry?defaultField=text&qry={}",
+			getEntry : "/api/Entry?qry=uuid = '{}'",
 			noteBooks : {},
 			topics : {},
 			entries : {},

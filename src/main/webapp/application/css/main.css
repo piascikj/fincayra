@@ -395,11 +395,23 @@ border-radius: 4px;
 }	
 
 .entry-body ol {
-	list-style: decimal;
+    list-style-type: upper-roman;
 }
-
+ 
 .entry-body ol ol {
-	list-style: lower-alpha;
+    list-style-type: upper-alpha;
+}
+ 
+.entry-body ol ol ol {
+    list-style-type: decimal;
+}
+ 
+.entry-body ol ol ol ol {
+    list-style-type: lower-alpha;
+}
+ 
+.entry-body ol ol ol ol ol {
+    list-style-type: lower-roman;
 }
 
 .entry-header {
