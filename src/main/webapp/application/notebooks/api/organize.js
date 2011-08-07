@@ -21,7 +21,10 @@ var type = "root";
 
 function getTopicNode(topic) {
 	return {			
-		data : topic.name,
+		data : {
+			title: topic.name,
+			icon : "ui-icon ui-icon-folder-collapsed"
+		},
 		attr : {"class":classes},
 		metadata : {
 			"object" : {id:topic.id, uuid:topic.uuid, name:topic.name},
@@ -129,7 +132,7 @@ function getEntries(uuid) {
 			nodes.push(getEntryNode(entry));				
 		});
 	}
-	return nodes.length > 0?nodes:undefined;
+	return nodes;
 }
 	
 $api({
@@ -137,7 +140,7 @@ $api({
 		requireAuth();
 		type = $apiAction(1);
 		var uuid = $apiAction(2);
-		var nodes = []
+		var nodes = [];
 		
 		switch (type) {
 			case "root":

@@ -25,6 +25,7 @@ function organizeNoteBooks() {
 	});
 	tree.jstree({
 		json_data : {
+			correct_state : true,
 			ajax : {
 				async: true,
 				url : function(node) {
@@ -312,8 +313,10 @@ function init() {
 	var forEntry = window.location.hash.split("#").length > 1;
 	if (forEntry) {
 		var uuid = window.location.hash.split("#")[1];
-		fincayra.entryView.loadEntry(uuid);
-	} else {
+		forEntry = fincayra.entryView.loadEntry(uuid);
+	} 
+	
+	if (!forEntry) {
 		//Display the lastTopice viewed
 		fincayra.topicView.getLastTopic(true);
 	}
@@ -1291,14 +1294,18 @@ function EntryView() {
 	
 	this.loadEntry = function(uuid) {
 		var error;
+		var success = false;
 		$.ajax({
 			async: false,
 			type: "GET",
 			url: fincayra.getEntry.tokenize(uuid),
 			success: function(data) {
-				var entry = data.results[0];
-				//$log(entry);
-				$this.displayEntry(entry);
+				if (data.results.length > 0) {
+					var entry = data.results[0];
+					//$log(entry);
+					$this.displayEntry(entry);
+					success = true;
+				}
 			},
 			
 			error: function(jqXHR, textStatus, errorThrown) {
@@ -1308,7 +1315,7 @@ function EntryView() {
 		});
 		
 		if (error != undefined) {throw error;}
-	
+		return success;
 	};
 	
 	this.displayEntry = function(entry) {

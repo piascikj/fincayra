@@ -87,7 +87,7 @@ function toggleNotify(location, action, msg) {
 			
 			if (action != "hide" && spinner.is(":hidden")) spinnerP.html(msg || "Sending Request...");
 			
-			var top = header.offset().top + header.outerHeight() - 4;
+			var top = header.offset().top + header.outerHeight() - 6;
 			var left = (header.offset().left + header.outerWidth())/2;
 			left = left - (spinner.outerWidth()/2);
 			var css = {top:top + "px", left:left + "px", zIndex:1000};
