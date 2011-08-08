@@ -109,9 +109,9 @@ function toggleNotify(location, action, msg) {
 	}
 		
 	if (action == "show") {
-		spinner.css({display:"block"});
+		spinner.show();
 	} else if (action == "hide") {
-		spinner.hide("fade",500);
+		spinner.slideUp(500);
 	} else {
 		spinner.toggle();
 	}

@@ -845,7 +845,7 @@ function TopicView() {
 					toc.toc({context:'.help-body'});
 					toc.find('a').each(function() {
 						$(this).click(function() {
-							var topLink = $('<a href="#mdhelp">Back to Markdown help index.</a>').click( function() {
+							var topLink = $('<a href="#mdhelp">Back to syntax help index.</a>').click( function() {
 								toggleNotify("top","hide");
 								return true;
 							});
@@ -1184,11 +1184,11 @@ function EntryView() {
 	
 	$('#search_results_toggle').click(function() {
 		if($this.searchEntries.is(':hidden')) {
-			$this.searchEntries.show("fade");
+			$this.searchEntries.slideDown(500);
 			$(this).removeClass("ui-icon-triangle-1-s");
 			$(this).addClass("ui-icon-triangle-1-n");
 		} else {
-			$this.searchEntries.hide("fade");
+			$this.searchEntries.slideUp(500);
 			$(this).removeClass("ui-icon-triangle-1-n");
 			$(this).addClass("ui-icon-triangle-1-s");			
 		}
