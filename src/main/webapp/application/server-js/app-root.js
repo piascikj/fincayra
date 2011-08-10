@@ -143,7 +143,9 @@ new User().define({
 		unique:true
 	},
 	
-	lastTopicId : {},
+	lastTopicId : {
+		required: false
+	},
 	
 	mailTo : {
 		required: true,
@@ -164,6 +166,7 @@ Request.prototype.setPersistentKey = function(user) {
 }
 
 Request.prototype.removePersistentKey = function() {
+	$log().debug("Removing the persistentKey");
 	if (this.$getSession().user) {
 		var user = this.$getSession().user.findById();
 		user.persistentKey = uuid();
@@ -173,7 +176,8 @@ Request.prototype.removePersistentKey = function() {
 };
 
 Request.prototype.checkPersistentKey = function() {
-	if (!this.$getSession().user) {
+	if (this.$getSession().user == undefined) {
+		$log().debug("Checking persistentKey!!!!!!!!!!!!!!!!");
 		var persistentKey = this.$getCookie("persistent");
 		if (persistentKey) {
 			var users = new User({persistentKey:persistentKey}).findByProperty("persistentKey");
@@ -199,6 +203,7 @@ Request.prototype.requireAuth = function() {
 		if (this.$isAPI()) {
 			throw new AuthRequiredException();
 		} else {
+			$log().debug("No user logged in!");
 			//set the destination so we can take them there after login
 			this.$getSession().destination = this.$getRequestURL();
 			var redirectTo = $app().secureUrl + "login";

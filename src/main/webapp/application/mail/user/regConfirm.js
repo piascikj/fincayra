@@ -15,7 +15,6 @@
 (function() {
 	var msgEl = $("#message");
 	var	user = $getSession().user;
-	$("#userName").html(user.name);
 	msgEl.append("<br/>" + $href({page:"login", ssl:true}));
 
 	Templates.mail({});

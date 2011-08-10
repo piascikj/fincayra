@@ -43,7 +43,7 @@
 			getLastTopic : "/notebooks/api/utility/getLastTopic",
 			setLastTopic : "/notebooks/api/utility/setLastTopic/{}",
 			getEntries : "/notebooks/api/get/entries?topicUUId={}&offset={}&limit={}",
-			entryLimit : 5,
+			entryLimit : 2,
 			saveEntry : "/api/Entry",
 			deleteEntry : "/api/Entry/{}",
 			searchEntries : "/api/search/Entry?defaultField=text&qry={}",

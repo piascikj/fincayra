@@ -60,8 +60,8 @@
 					//Let's give them a couple minutes to change their settings
 					session.singlePageAuthTO = new Date(new Date().getTime() + 5*60*1000);
 				} else if (auth) {
+					if (params.persistent == "y") { setPersistentKey(user); }
 					$getAuthSession().user = user;
-					if (params.persistent == "y") setPersistentKey(user);
 					//Keep session alive for 1hr (The value must be in seconds)
 					$setMaxInactiveInterval(60 * 60);
 				} else {
