@@ -36,6 +36,8 @@ try {
 	} else {
 		$redirect($getErrorPage());
 	}
+	
+	$saveSession();
 
 } catch(e) {
 	if (!(e instanceof AuthRequiredException)) {

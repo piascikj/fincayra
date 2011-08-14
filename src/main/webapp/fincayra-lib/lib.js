@@ -1509,6 +1509,7 @@ Request.prototype.$setCookie = function(name, value, maxAge) {
 		if (parms.maxAge) cookie.maxAge = parms.maxAge;
 		if (parms.path) cookie.path = pams.path;
 		if (parms.secure) cookie.secure = parms.secure;
+		if (parms.httpOnly && cookie.httpOnly) cookie.httpOnly = parms.httpOnly;
 	} else {
 		cookie = new javax.servlet.http.Cookie(name, value);
 		if (maxAge) cookie.maxAge = maxAge;
@@ -1557,6 +1558,52 @@ Request.prototype.$getCookie = function(name) {
     }
     return val;	
 }
+
+/*
+	Function: $sendMail
+	
+		Execute a mail template and ultimately send it.
+		
+		If you want data to be accessible to the template use <$setPageParams>
+	
+	Parameters:
+
+		msg - Am object representing the msg in the following format
+		
+		>{
+		>	"Headers" : [{ "Name" : "CUSTOM-HEADER", "Value" : "value" }],
+		>	"From" : "sender@example.com", //This will be set by the MailManager
+		>	"To" : "receiver@example.com",
+		>	"Cc" : "copied@example.com",
+		>	"Bcc": "blank-copied@example.com",
+		>	"Subject" : "Test",
+		>	"Tag" : "Invitation",
+		>	"HtmlBody" : "<b>Hello</b>", //This will be set to the doc result of the template if a path is passed
+		>	"TextBody" : "Hello", //This will be set to $getPageParams().TextBody, so set it in the template if you want it
+		>	"ReplyTo" : "reply@example.com"
+		>}
+
+		path - (optional) The path to the mail template js file relative to mailManager.templateDir
+
+*/
+Request.prototype.$sendMail = function(msg, path) {
+	//get the current doc so we can create the message and set it back later
+	var el = this.scope.context.getElement();
+	
+	if (path) {
+		var template = this.$getPageDir() + $config().mailConfig.templateDir + path;
+		$log().debug("mailTemplate:{}", template);
+		this.$executePage(template);
+		msg.HtmlBody = new String(this.scope.context.getElement().toString());
+	}	
+	if (this.$getPageParams().TextBody) { msg.TextBody = this.$getPageParams().TextBody;}
+	
+
+	$mm().send(msg);
+	
+	this.$d(el);
+	
+};
 
 /*
 Func: $setSessionClass
@@ -1625,50 +1672,8 @@ Request.prototype.$invalidateSession = function() {
 	return this.sessionMgr.invalidateSession();
 };
 
-/*
-	Function: $sendMail
-	
-		Execute a mail template and ultimately send it.
-		
-		If you want data to be accessible to the template use <$setPageParams>
-	
-	Parameters:
-
-		msg - Am object representing the msg in the following format
-		
-		>{
-		>	"Headers" : [{ "Name" : "CUSTOM-HEADER", "Value" : "value" }],
-		>	"From" : "sender@example.com", //This will be set by the MailManager
-		>	"To" : "receiver@example.com",
-		>	"Cc" : "copied@example.com",
-		>	"Bcc": "blank-copied@example.com",
-		>	"Subject" : "Test",
-		>	"Tag" : "Invitation",
-		>	"HtmlBody" : "<b>Hello</b>", //This will be set to the doc result of the template if a path is passed
-		>	"TextBody" : "Hello", //This will be set to $getPageParams().TextBody, so set it in the template if you want it
-		>	"ReplyTo" : "reply@example.com"
-		>}
-
-		path - (optional) The path to the mail template js file relative to mailManager.templateDir
-
-*/
-Request.prototype.$sendMail = function(msg, path) {
-	//get the current doc so we can create the message and set it back later
-	var el = this.scope.context.getElement();
-	
-	if (path) {
-		var template = this.$getPageDir() + $config().mailConfig.templateDir + path;
-		$log().debug("mailTemplate:{}", template);
-		this.$executePage(template);
-		msg.HtmlBody = new String(this.scope.context.getElement().toString());
-	}	
-	if (this.$getPageParams().TextBody) { msg.TextBody = this.$getPageParams().TextBody;}
-	
-
-	$mm().send(msg);
-	
-	this.$d(el);
-	
+Request.prototype.$saveSession = function() {
+	this.sessionMgr.saveSession();
 };
 
 function FincayraSession(){};
@@ -1706,7 +1711,7 @@ SessionManager.prototype.setSessionClass = function(clazz) {
  * 
  */
 SessionManager.prototype.getHttpSession = function() {
-	return this.scope.context.getRequest().getSession();
+	return this.scope.context.getRequest().getSession(true);
 }
 
 SessionManager.prototype.invalidateSession = function() {
@@ -1728,10 +1733,17 @@ SessionManager.prototype.getSession = function() {
 		}
 		$log().debug("SESSION CLASS TYPE:{}", $type(this.sessionClass));
 	}
-	
+		
 	return this.session;
 }
 
+/*
+*/
+SessionManager.prototype.saveSession = function() {
+	var httpSession = this.getHttpSession();
+	$log().debug("Saving session:{} | {}",[httpSession.id, JSON.stringify(this.session, null, "   ")]);
+	httpSession.setAttribute(this.sessionAttr, this.session);
+}
 
 SessionManager.prototype.getAuthSession = function() {
 	//get the fincayra session
@@ -1743,6 +1755,13 @@ SessionManager.prototype.getAuthSession = function() {
 			session.invalidate();
 			//set the fincayra session attribute
 			this.getHttpSession().setAttribute(this.sessionAttr, fSession);
+			this.scope.$setCookie({
+				name:"JSESSIONID",
+				value:this.getHttpSession().id,
+				//secure:true,
+				httpOnly:true
+			});
+			
 			this.session = null;
 		}
 	}
