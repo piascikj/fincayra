@@ -60,8 +60,11 @@
 					//Let's give them a couple minutes to change their settings
 					session.singlePageAuthTO = new Date(new Date().getTime() + 5*60*1000);
 				} else if (auth) {
-					if (params.persistent == "y") { setPersistentKey(user); }
+					//TODO, try putting this into Request object and see if it makes a difference
 					$getAuthSession().user = user;
+					//$setCookie("JSESSIONID", $getSession().id,60 * 60 * 1000);
+
+					if (params.persistent == "y") { setPersistentKey(user); } 
 					//Keep session alive for 1hr (The value must be in seconds)
 					$setMaxInactiveInterval(60 * 60);
 				} else {
@@ -83,6 +86,7 @@
 			session.destination = false;
 			$redirect(dest);
 		} else {
+			$log().debug("Forwarding to defaultPage");
 			//redirect to default page
 			forwardToDefault();
 		}

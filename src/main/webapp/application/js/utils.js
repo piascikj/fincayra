@@ -75,7 +75,7 @@ String.prototype.tokenize = function() {
 	return result;
 };
 
-function toggleNotify(location, action, msg) {
+function toggleNotify(location, action, msg, block) {
 	var spinner;
 	switch (location) {
 		case "top" :
@@ -90,7 +90,7 @@ function toggleNotify(location, action, msg) {
 			var top = header.offset().top + header.outerHeight() - 6;
 			var left = (header.offset().left + header.outerWidth())/2;
 			left = left - (spinner.outerWidth()/2);
-			var css = {top:top + "px", left:left + "px", zIndex:1000};
+			var css = {top:top + "px", left:left + "px", zIndex:2000};
 			spinner.css(css);			
 			break;
 		case "bottom" :
@@ -109,9 +109,11 @@ function toggleNotify(location, action, msg) {
 	}
 		
 	if (action == "show") {
+		if (block) {block.block({message:null});}
 		spinner.show();
 	} else if (action == "hide") {
 		spinner.slideUp(500);
+		if (block) {block.unblock();}
 	} else {
 		spinner.toggle();
 	}

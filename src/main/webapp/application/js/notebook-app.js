@@ -246,9 +246,24 @@ function init() {
 	
 	//Keep session active if on this page
 	setInterval(function() {
-		$.getJSON(fincayra.keepAlive, function(data) {
-			$log(JSON.stringify(data));
+		var error;
+		var success = false;
+		$.ajax({
+			async: true,
+			type: "GET",
+			url: fincayra.keepAlive,
+			success: function(data) {
+				$log(JSON.stringify(data));
+			},
+			
+			error: function(jqXHR, textStatus, errorThrown) {
+				$log("Recived error while running keepAlive:",textStatus);
+				error = new Error(errorThrown);
+			}
 		});
+		
+		if (error != undefined) {throw error;}
+
 	}, fincayra.keepAliveIncrement);
 	
 	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
@@ -377,6 +392,7 @@ function getNoteBooks() {
 
 function saveNoteBook(noteBook) {
 	var e, type = (noteBook.uuid)?"POST":"PUT";
+	toggleNotify("top", "show", "Saving NoteBook...", $("#page"));
 	$.ajax({
 		type: type,
 		url: fincayra.saveNoteBook,
@@ -394,7 +410,7 @@ function saveNoteBook(noteBook) {
 		},
 		dataType: 'json'
 	});
-	
+	toggleNotify("top", "hide", "Saving NoteBook...", $("#page"));
 	if (e) throw e;
 	
 	return fincayra.noteBook;
@@ -403,6 +419,7 @@ function saveNoteBook(noteBook) {
 function saveTopic(topic) {
 	$log("Saving topic", topic);
 	var e, type = (topic.uuid)?"POST":"PUT";
+	toggleNotify("top", "show", "Saving Topic...", $("#page"));
 	$.ajax({
 		type: type,
 		url: fincayra.saveTopic,
@@ -418,6 +435,7 @@ function saveTopic(topic) {
 		},
 		dataType: 'json'
 	});
+	toggleNotify("top", "hide", "Saving Topic...", $("#page"));
 	
 	if (e) throw e;
 	

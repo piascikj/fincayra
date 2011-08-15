@@ -177,7 +177,7 @@ Request.prototype.removePersistentKey = function() {
 
 Request.prototype.checkPersistentKey = function() {
 	if (this.$getSession().user == undefined) {
-		$log().debug("Checking persistentKey!!!!!!!!!!!!!!!!");
+		$log().debug("Checking persistentKey.");
 		var persistentKey = this.$getCookie("persistent");
 		if (persistentKey) {
 			var users = new User({persistentKey:persistentKey}).findByProperty("persistentKey");

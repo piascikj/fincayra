@@ -128,6 +128,11 @@ $config({
 					}
 					
 					break;
+				case "keepAlive" :
+					if (user == undefined) {
+						throw new ForbiddenException();
+					}
+					break;
 				default :
 					throw new ForbiddenException();
 					break;
