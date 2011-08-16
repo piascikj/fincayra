@@ -24,6 +24,7 @@ fincayra.config = {
 	afterAPI:function(){return true;}, //Runs After API calls
 	url:"http://localhost:8080/",
 	secureUrl:"https://localhost:4443/",
+	maxInactiveInterval: 60 * 30, //Seconds to keep session active in between access
 	name:"Fincayra",
 	errorPage:"/error",
 	store:"db/orientDB-store.js",

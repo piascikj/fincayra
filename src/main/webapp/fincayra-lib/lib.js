@@ -1504,15 +1504,15 @@ Request.prototype.$setCookie = function(name, value, maxAge) {
 	if (name instanceof Object) {
 		var parms = name;
 		cookie = new javax.servlet.http.Cookie(parms.name, parms.value);
-		if (parms.comment) cookie.comment = parms.comment;
-		if (parms.domain) cookie.domain = parms.domain;
-		if (parms.maxAge) cookie.maxAge = parms.maxAge;
-		if (parms.path) cookie.path = pams.path;
-		if (parms.secure) cookie.secure = parms.secure;
-		if (parms.httpOnly && cookie.httpOnly) cookie.httpOnly = parms.httpOnly;
+		if (parms.comment) {cookie.comment = parms.comment;}
+		if (parms.domain) {cookie.domain = parms.domain;}
+		if (parms.maxAge) {cookie.maxAge = parms.maxAge;}
+		if (parms.path) {cookie.path = pams.path;}
+		if (parms.secure) {cookie.secure = parms.secure;}
+		if (parms.httpOnly && cookie.httpOnly) {cookie.httpOnly = parms.httpOnly;}
 	} else {
 		cookie = new javax.servlet.http.Cookie(name, value);
-		if (maxAge) cookie.maxAge = maxAge;
+		if (maxAge) {cookie.maxAge = maxAge;}
 	}
 	
 	this.scope.context.response.addCookie(cookie);
@@ -1755,13 +1755,7 @@ SessionManager.prototype.getAuthSession = function() {
 			session.invalidate();
 			//set the fincayra session attribute
 			this.getHttpSession().setAttribute(this.sessionAttr, fSession);
-			this.scope.$setCookie({
-				name:"JSESSIONID",
-				value:this.getHttpSession().id,
-				//secure:true,
-				httpOnly:true
-			});
-			
+			this.setSessionCookie();
 			this.session = null;
 		}
 	}
@@ -1769,6 +1763,20 @@ SessionManager.prototype.getAuthSession = function() {
 	return this.getSession();
 		
 }
+/*
+ * 
+ * 
+ */
+SessionManager.prototype.setSessionCookie = function(maxAge) {
+	this.scope.$setCookie({
+		name:"JSESSIONID",
+		value:this.getHttpSession().id,
+		//secure:true,
+		httpOnly:true,
+		maxAge: maxAge || $config().maxInactiveInterval
+	});
+}
+
 
 /*
  * 

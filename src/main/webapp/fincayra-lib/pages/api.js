@@ -189,6 +189,11 @@ $api({
 	},
 
 	keepAlive : function() {
+		$getSession();
+		$j({ok:true});
+	},
+	
+	isOK : function() {
 		$j({ok:true});
 	}
 });
