@@ -231,7 +231,7 @@ function bindLiveHandlers() {
 function unauthorized(e,response,settings) {
 	if (response && response.status == 401) {
 		setTimeout(function() {
-			window.location = fincayra.login; 
+			window.location = fincayra.login;
 		}, 3000);
 		$("<p>Your session has expired.  You will now be directed to the sign in page.</p>").dialog({
 			modal:true,
@@ -240,31 +240,33 @@ function unauthorized(e,response,settings) {
 	}
 };	
 
+function sendKeepAlive() {
+	var error;
+	var success = false;
+	$.ajax({
+		async: true,
+		type: "GET",
+		url: fincayra.keepAlive,
+		success: function(data) {
+			$log(JSON.stringify(data));
+		},
+		
+		error: function(jqXHR, textStatus, errorThrown) {
+			$log("Recived error while running keepAlive:",textStatus);
+			error = new Error(errorThrown);
+		}
+	});
+	
+	if (error != undefined) {throw error;}
+
+}
+
 function init() {
 	//redirect to login if 401 on ajax
 	$(document).ajaxError(unauthorized);
 	
 	//Keep session active if on this page
-	setInterval(function() {
-		var error;
-		var success = false;
-		$.ajax({
-			async: true,
-			type: "GET",
-			url: fincayra.keepAlive,
-			success: function(data) {
-				$log(JSON.stringify(data));
-			},
-			
-			error: function(jqXHR, textStatus, errorThrown) {
-				$log("Recived error while running keepAlive:",textStatus);
-				error = new Error(errorThrown);
-			}
-		});
-		
-		if (error != undefined) {throw error;}
-
-	}, fincayra.keepAliveIncrement);
+	setInterval(sendKeepAlive, fincayra.keepAliveIncrement);
 	
 	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	$(".tip-sw").tipsy({gravity:'sw', live:true, fade:true, delayIn:300});
@@ -704,7 +706,7 @@ function NoteBookView() {
 						
 						var topicItems = [];
 						var topics = getTopics(uuid);
-						var topicTmpl = '<li id="{}"><span title="Drag and drop sort" class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
+						var topicTmpl = '<li id="{}"><span title="Drag and drop to change order." class="ui-icon ui-icon-arrowthick-2-n-s"></span><a href="#" class="topic-link">{}</a></li>';
 						
 						if (fincayra.noteBook.topics && fincayra.noteBook.topics.length > 0) {
 							//If there is a custom sort we use it

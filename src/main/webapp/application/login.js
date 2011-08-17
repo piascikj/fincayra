@@ -66,7 +66,7 @@
 
 					if (params.persistent == "y") { setPersistentKey(user); } 
 					//Keep session alive for 1hr (The value must be in seconds)
-					$setMaxInactiveInterval(60 * 60);
+					$setMaxInactiveInterval($config().maxInactiveInterval);
 				} else {
 					$("#form_box").prepend("<p>Cannot sign in with the email and password combination entered.  <br/>Please try again or Sign up for a new account.</p>");
 				}
