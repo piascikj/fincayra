@@ -403,6 +403,22 @@ var $mapToJS = function(map) {
 }
 
 /*
+	Function: $getHostName
+		returns the current hostname
+*/
+var $getHostName = function() {
+	var addr = java.net.InetAddress.getLocalHost();
+
+	// Get IP Address
+	var ipAddr = addr.getAddress();
+
+	// Get hostname
+	var hostname = addr.getHostName();
+
+	return new String(hostname);
+}
+
+/*
 	Function: $encode
  
 		Encodes text for urls

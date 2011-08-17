@@ -45,7 +45,12 @@
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orientdb-server</artifactId>
 			<version>${orientDB-version}</version>
-		</dependency>		
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-core</artifactId>
+			<version>5.0.0.FINAL</version>
+		</dependency>					
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>

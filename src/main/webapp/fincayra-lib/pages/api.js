@@ -195,6 +195,10 @@ $api({
 	
 	isOK : function() {
 		$j({ok:true});
+	},
+	
+	host : function() {
+		$j({host:$getHostName()});
 	}
 });
 
