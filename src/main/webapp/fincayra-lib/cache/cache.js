@@ -19,3 +19,16 @@ function CacheManager() {
 	);
 	this.iCacheManager = new org.infinispan.manager.DefaultCacheManager($config().cache.configFile);
 }
+
+CacheManager.instance;
+
+/*
+	Function: $cm
+	Returns the current CacheManager
+*/
+function $cm() {
+	if (CacheManager.instance) {
+		CacheManager.instance = new CacheManager();
+	}
+	return CacheManager.instance;
+}

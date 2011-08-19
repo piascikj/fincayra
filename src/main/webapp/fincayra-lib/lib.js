@@ -1788,8 +1788,7 @@ SessionManager.prototype.setSessionCookie = function(maxAge) {
 		name:"JSESSIONID",
 		value:this.getHttpSession().id,
 		//secure:true,
-		httpOnly:true,
-		maxAge: maxAge || $config().maxInactiveInterval
+		httpOnly:true
 	});
 }
 

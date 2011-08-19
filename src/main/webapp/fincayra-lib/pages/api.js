@@ -189,7 +189,7 @@ $api({
 	},
 
 	keepAlive : function() {
-		$getSession();
+		$log().debug("Keep alive received for session:{}",$getHttpSession().id);
 		$j({ok:true});
 	},
 	
