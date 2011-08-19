@@ -1,38 +1,9 @@
 (function() {
 /*
-
-This is the default config
-
-$config({
-	preInit:function(){},
-	postInit:function(){},
-	preInitDb:function(){},
-	onRequest:function(){},
-	dev:true,
-	fileCache:false,
-	allowAPIAccess:function(){return true;},
-	url:"http://localhost:8080/",
-	secureUrl:"https://localhost:4443/",
-	name:"Fincayra",
-	errorPage:"/error",
-	store:"db/orientDB-store.js",
-	expose:["css","images","js"],
-	mailSender: {
-		host:"smtp.gmail.com",
-		port:587,
-		userName:"someUser",
-		password:"somePassword",
-		fromEmail:"jesse@piascik.net",
-		templateDir:"mail",
-		auth:true,
-		starttls:true,
-		timeout:25000
-	}
-});
 */
 		
 	$config({
-		storeConfig:{
+		store:{
 			exportDir:"{}/backup/fincayra".tokenize($getProperty("user.home"))
 		},
 
