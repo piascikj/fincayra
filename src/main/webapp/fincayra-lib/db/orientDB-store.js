@@ -153,7 +153,7 @@ function OrientDBObjectManager() {
 	};
 	
 	this.exportDB = function() {
-		var dir = $config().storeConfig.exportDir;
+		var dir = $config().store.exportDir;
 		var fileName = "fincayra_orientDB_export_{}.gz".tokenize(new Date().format("MMddyyyy.HHmmss"));
 		with (orientDB.packages) {
 			var db = this.openDB();
@@ -169,7 +169,7 @@ function OrientDBObjectManager() {
 	}; 		
 	
 	this.importDB = function(file) {
-		var dir = $config().storeConfig.exportDir;
+		var dir = $config().store.exportDir;
 		with (orientDB.packages) {
 			var db = this.openDB();
 			try {

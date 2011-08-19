@@ -310,10 +310,6 @@ ObjectManager.prototype.isStorable = function(obj) {
 
 //TODO prototype the rest of the ObjectManager methods
 
-//Load the objectManager impl file
-//load($config().store);
-
-
 ObjectManager.instance;
 
 /*

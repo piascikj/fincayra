@@ -1607,7 +1607,7 @@ Request.prototype.$sendMail = function(msg, path) {
 	var el = this.scope.context.getElement();
 	
 	if (path) {
-		var template = this.$getPageDir() + $config().mailConfig.templateDir + path;
+		var template = this.$getPageDir() + $config().mail.templateDir + path;
 		$log().debug("mailTemplate:{}", template);
 		this.$executePage(template);
 		msg.HtmlBody = new String(this.scope.context.getElement().toString());

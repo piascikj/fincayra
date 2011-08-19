@@ -4,7 +4,7 @@ MailManager.prototype.init = function(config) {}
 
 MailManager.prototype.globalInit = function() {
 	if (!this.globalInitCalled) {
-		$hide([$config().mailConfig.templateDir]);
+		$hide([$config().mail.templateDir]);
 		this.globalInitCalled = true;
 	}
 }

@@ -1,4 +1,18 @@
-//This is loaded once on startup
+/*   Copyright 2010 Jesse Piascik
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+ //This is loaded once on startup
 this.fincayra = {};
 //Load our libraries
 load("lib.js");
@@ -27,19 +41,23 @@ fincayra.config = {
 	maxInactiveInterval: 60 * 30, //Seconds to keep session active in between access
 	name:"Fincayra",
 	errorPage:"/error",
-	store:"db/orientDB-store.js",
-	storeConfig:{
+	store:{
+		impl:"db/orientDB-store.js",
 		exportDir:"{}/tmp".tokenize($getProperty("user.home"))
 	},
+	cache: {
+		configFile:$app().getRootDir() + "/fincayra-lib/cache/distributed-udp.xml"
+	},
 	search:"search/lucene-search.js",
-	mail:"mail/postmark-mail.js",//TODO default should be mail/google-mail.js
-	mailConfig: {
+	mail: {
+		impl: "mail/postmark-mail.js",//TODO default should be mail/google-mail.js
 		//postmark-mail values
 		apiKey:"POSTMARK_API_TEST", //You must register your own at http://postmarkapp.com
 		senderSignature:"", //You must register your own at http://postmarkapp.com
 		
 		//smtp values
-		/*host:"smtp.gmail.com",
+		/*
+		host:"smtp.gmail.com",
 		port:587,
 		userName:"someUser",
 		password:"somePassword",
@@ -55,17 +73,7 @@ fincayra.config = {
 	},
 	indexOnStartUp:true,
 	expose:["css","images","js"],
-	mailSender: {
-		host:"smtp.gmail.com",
-		port:587,
-		userName:"someUser",
-		password:"somePassword",
-		fromEmail:"jesse@piascik.net",
-		templateDir:"mail",
-		auth:true,
-		starttls:true,
-		timeout:25000
-	}
+
 }
 
 function $config(config) {
@@ -103,8 +111,8 @@ function $config(config) {
 
 	//New MailManager impl
 	load("mail/mail.js");
-	load($config().mail);
-	$mm().init($config().mailConfig);
+	load($config().mail.impl);
+	$mm().init($config().mail);
 	
 	
 	load("db/store.js");
@@ -117,7 +125,7 @@ function $config(config) {
 
 	//Load the store implementation
 	$log().info("Loading the store implimentation config.store.");
-	load($config().store);
+	load($config().store.impl);
 
 	//Run the database preInit function
 	$log().info("Running config.preInitDb");
