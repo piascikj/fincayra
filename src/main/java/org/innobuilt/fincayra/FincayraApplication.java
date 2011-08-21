@@ -3,6 +3,8 @@ package org.innobuilt.fincayra;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
@@ -37,7 +39,16 @@ public class FincayraApplication {
 	private boolean reloadRootScope = false;
 	private List<String> hiddenPaths = new ArrayList<String>();
 	private List<String> exposedPaths = new ArrayList<String>();
+	private ServletContext servletContext;
 	
+	public ServletContext getServletContext() {
+		return servletContext;
+	}
+
+	public void setServletContext(ServletContext servletContext) {
+		this.servletContext = servletContext;
+	}
+
 	public void watch(String fileName) {
 		if (this.getReloadRootScope()) {
 	

@@ -31,6 +31,7 @@ public class FincayraFilter implements Filter {
 	public void init(FilterConfig config) throws ServletException {
 		this.config = config;
 		this.app = FincayraApplication.get();
+		this.app.setServletContext(config.getServletContext());
 	}
 
 	public void doFilter(ServletRequest req, ServletResponse res,

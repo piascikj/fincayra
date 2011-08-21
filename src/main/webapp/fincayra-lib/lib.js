@@ -1133,7 +1133,7 @@ Request.prototype.$getPagePath = function(jsPage) {
 */
 Request.prototype.$getRealPath = function(path) {
 	if (path != undefined) {
-		return this.scope.context.request.getServletContext().getRealPath(path)
+		return this.scope.context.request.getServletContext().getRealPath(path);
 	}
 	return $app().mergeEngine.pageDir + this.$getCurrentPage();
 };
