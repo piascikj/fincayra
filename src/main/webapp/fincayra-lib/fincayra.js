@@ -114,6 +114,8 @@ function $config(config) {
 	load($config().mail.impl);
 	$mm().init($config().mail);
 	
+	load("cache/cache.js");
+	
 	
 	load("db/store.js");
 

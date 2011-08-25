@@ -36,6 +36,7 @@ function $destroy() {
 	$log().info("Fincayra is shutting down!");
 	if ($om().destroy != undefined) $om().destroy();
 	if ($sm().destroy != undefined) $sm().destroy();
+	$cm().stop();
 	clearSchedule();
 };
 

@@ -22,12 +22,29 @@ function CacheManager() {
 
 CacheManager.instance;
 
+CacheManager.prototype.getCache = function(cacheName, createIfAbsent) {
+	createIfAbsent = createIfAbsent || false;
+	return this.iCacheManager.getCache(cacheName, createIfAbsent);
+}
+
+CacheManager.prototype.stop = function() {
+	return this.iCacheManager.stop();
+}
+
+CacheManager.prototype.start = function() {
+	return this.iCacheManager.start();
+}
+
+CacheManager.prototype.defineConfiguration = function(cacheName, configOverride) {
+	return this.iCacheManager.defineConfiguration(cacheName, configOverride);
+}
+
 /*
 	Function: $cm
 	Returns the current CacheManager
 */
 function $cm() {
-	if (CacheManager.instance) {
+	if (!CacheManager.instance) {
 		CacheManager.instance = new CacheManager();
 	}
 	return CacheManager.instance;

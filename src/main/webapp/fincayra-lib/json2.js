@@ -238,9 +238,20 @@ if (!this.JSON) {
 
 // If the value has a toJSON method, call it to obtain a replacement value.
 
+		//Check for java objects
 		if (value && typeof value == 'object' && value.getClass != undefined) {
-			value = {"javaObject":new String(value.getClass().getName()), stringValue: new String(value.toString())};
-		} else if (value && typeof value === 'object' && value.toJSON &&
+			//Check for java strings and numbers
+			var clazz = value.getClass().getName();
+			if (clazz.indexOf("java.lang.String") > -1) {
+				value = new String(value);
+			} else if (clazz.indexOf("java.lang.Double") > -1) {
+				value = new Number(value);
+			} else {
+				value = {"javaObject":new String(value.getClass().getName()), stringValue: new String(value.toString())};
+			}
+		} 
+		
+		if (value && typeof value === 'object' && value.toJSON &&
 				typeof value.toJSON === 'function') {
 			value = value.toJSON(key);
 		}

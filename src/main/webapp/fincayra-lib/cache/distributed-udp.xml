@@ -33,7 +33,7 @@
 
    <default>
       <clustering mode="distribution">
-         <l1 enabled="false" />
+         <l1 enabled="true" />
          <hash numOwners="2"/>
          <sync/>
       </clustering>
