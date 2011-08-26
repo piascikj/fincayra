@@ -17,8 +17,8 @@ var cacheName = "TestCache"	;
 var location = "fincayra-cache/";
 
 $("body").append("<h1>Location: {}</h1>".tokenize(location));
-$cm().stop()
-$cm().start();
+//$cm().stop()
+//$cm().start();
 $cm().defineConfiguration(cacheName, new org.infinispan.config.Configuration().fluent()
   .loaders()
     .shared(false).passivation(false).preload(true)

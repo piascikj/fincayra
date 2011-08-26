@@ -54,4 +54,6 @@ try {
 	} else {
 		$f($getErrorPage());
 	}
+} finally {
+	$saveSession();
 }

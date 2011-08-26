@@ -41,6 +41,7 @@ fincayra.config = {
 	maxInactiveInterval: 60 * 30, //Seconds to keep session active in between access
 	name:"Fincayra",
 	errorPage:"/error",
+	sessionCacheName:"fincayra-session",
 	store:{
 		impl:"db/orientDB-store.js",
 		exportDir:"{}/tmp".tokenize($getProperty("user.home"))
@@ -114,9 +115,13 @@ function $config(config) {
 	load($config().mail.impl);
 	$mm().init($config().mail);
 	
+	//Load the cache lib
 	load("cache/cache.js");
 	
+	//Create the Session cache
+	$getSessionCache();
 	
+	//Load the object store lib
 	load("db/store.js");
 
 	//Set the $load function to load from the server-js dir for application convenience

@@ -29,6 +29,7 @@ function ForbiddenException(msg) {
 
 function $init() {
 	clearSchedule();
+	$log().info("Fincayra is restarting.");
 	$app().mergeEngine.init();
 };
 
@@ -145,7 +146,8 @@ var $l = $load = function(file) {
 	Avoid string concatination by using like this 
   > $log().debug("Hello {}", "World");
  */
-var $log = function() {	
+var $log = function() {
+	//logger().info("Caller=", this.__parent__.toString());	
 	return logger(); 
 };
 
@@ -1690,12 +1692,22 @@ Request.prototype.$invalidateSession = function() {
 };
 
 Request.prototype.$saveSession = function() {
-	this.sessionMgr.saveSession();
+	return this.sessionMgr.saveSession();
 };
 
-function FincayraSession(){};
+function FincayraSession(id){
+	var id = id || uuid();
+	this.getId = function() {
+		return id;
+	}
+};
 
 FincayraSession.prototype.user = null;
+
+
+function $getSessionCache() {
+	return $cm().getCache($config().sessionCacheName, true);
+};
 
 /*
  * 
@@ -1705,10 +1717,10 @@ function SessionManager(scope) {
 	this.scope = scope;
 };
 
-SessionManager.prototype.sessionAttr = "fincayra";
 SessionManager.prototype.session = null;
+SessionManager.prototype.userSession = null;
 SessionManager.prototype.scope = undefined;
-
+SessionManager.sessionAttr = "fincayra";
 /*
  * 
  * 
@@ -1731,9 +1743,15 @@ SessionManager.prototype.getHttpSession = function() {
 	return this.scope.context.getRequest().getSession(true);
 }
 
+
 SessionManager.prototype.invalidateSession = function() {
-	this.session = null;
-	this.getHttpSession().invalidate();
+	//new
+	if (this.userSession != null) {
+		$getSessionCache().remove(this.userSession.getId());
+	}
+	this.userSession = null;
+	this.getSession();
+
 }
 
 /*
@@ -1741,56 +1759,56 @@ SessionManager.prototype.invalidateSession = function() {
  * 
  */
 SessionManager.prototype.getSession = function() {
-	if (this.session == null) {
-		var httpSession = this.getHttpSession();
-		this.session = httpSession.getAttribute(this.sessionAttr);
-		if (this.session == null) {
-			this.session = eval("new " + $type(this.sessionClass) + "();");
-			httpSession.setAttribute(this.sessionAttr, this.session);
+	$log().debug("Someone wants a session");
+	//new
+	if (this.userSession == null) {
+		var sid = this.scope.$getCookie(SessionManager.sessionAttr);
+		if (sid == undefined) {
+			this.createSession();	
+		} else {
+			$log().debug("Getting session:{}", sid);
+			this.userSession = $getSessionCache().get(sid.toString());
+			if (this.userSession == null) {
+				$log().debug("Session is null");
+				this.createSession();
+			}
 		}
-		$log().debug("SESSION CLASS TYPE:{}", $type(this.sessionClass));
-	}
+	}	
 		
-	return this.session;
+	//new
+	return this.userSession;
 }
 
-/*
-*/
-SessionManager.prototype.saveSession = function() {
-	var httpSession = this.getHttpSession();
-	$log().debug("Saving session:{} | {}",[httpSession.id, JSON.stringify(this.session, null, "   ")]);
-	httpSession.setAttribute(this.sessionAttr, this.session);
-}
+SessionManager.prototype.createSession = function() {
+	this.userSession = eval("new " + $type(this.sessionClass) + "();");
+	$log().debug("Creating session:{}", this.userSession.getId());
+	$getSessionCache().put(this.userSession.getId(), this.userSession);
+	this.setSessionCookie();	
+}	
 
 SessionManager.prototype.getAuthSession = function() {
-	//get the fincayra session
-	var session = this.scope.context.getRequest().getSession(false);
-	if (session != null) {
-		var fSession = session.getAttribute(this.sessionAttr);;
-		if (fSession != null) {
-			//invalidate the current session
-			session.invalidate();
-			//set the fincayra session attribute
-			this.getHttpSession().setAttribute(this.sessionAttr, fSession);
-			this.setSessionCookie();
-			this.session = null;
-		}
-	}
+	this.invalidateSession();
 
 	return this.getSession();
-		
 }
+
 /*
  * 
  * 
  */
-SessionManager.prototype.setSessionCookie = function(maxAge) {
+SessionManager.prototype.setSessionCookie = function() {
 	this.scope.$setCookie({
-		name:"JSESSIONID",
-		value:this.getHttpSession().id,
+		name:SessionManager.sessionAttr,
+		value:this.userSession.getId(),
 		//secure:true,
 		httpOnly:true
-	});
+	});	
+}
+
+SessionManager.prototype.saveSession = function() {
+	if (this.userSession != null) {
+		$getSessionCache().put(this.userSession.getId(), this.userSession);
+	}
 }
 
 
@@ -1799,5 +1817,5 @@ SessionManager.prototype.setSessionCookie = function(maxAge) {
  * 
  */
 SessionManager.prototype.setMaxInactiveInterval = function(seconds) {
-	this.getHttpSession().setMaxInactiveInterval(seconds);
+	//this.getHttpSession().setMaxInactiveInterval(seconds);
 }
