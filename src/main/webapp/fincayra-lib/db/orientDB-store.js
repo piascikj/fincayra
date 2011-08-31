@@ -41,13 +41,72 @@ $log().debug(JSON.stringify(orientDB.Type, null, "   "));
 function OrientDBObjectManager() {
 	var manager = this;
 	
-	this.url = "local:fincayra-store";
-	
+	this.origin;
+	this.url = "local:./fincayra-store";
+	this.dbName = "fincayra-store";
+	this.clusterCacheName = this.dbName;
 	this.server;
 	
+	this.addToCluster = function() {
+		//$log().info("Cluster master is:{}", origin);
+		if (this.isMaster()){
+			this.getClusterCache().put("origin", $getHostAddress());
+			//We must be the first in the cluster.  Listen for additions to the cache and share with new members
+			new org.innobuilt.fincayra.cache.ListenerAdapter().addCacheEntryCreatedListener(this.getClusterCache().iCache, new org.innobuilt.fincayra.cache.FincayraCacheListener({
+				handle:function(event) {
+					if (manager.isMaster()) {
+						$log().info("Received event {}", event.toString());
+						if (!event.isPre()) {
+							var ip = event.getKey();
+							$log().info("Another server was added to the cluster at {}", event.getKey());
+							//TODO Share with the added ip
+							with (new JavaImporter(com.orientechnologies.orient.client.remote)) {
+								var localUrl = "remote:" + $getHostAddress() + ":2424";
+								//var localUrl = "remote:localhost/" + manager.dbName;
+								$log().info("Connecting to local server at:" + localUrl);
+								var serverAdmin = new OServerAdmin(localUrl);
+								var server = serverAdmin.connect("root", "2E0E6DC5ADDA");
+								server.shareDatabase("local:./" + manager.dbName, "admin", "admin", ip + ":2424", false);
+							}
+						}
+					}
+				}
+			}), false);
+		} else {
+			//The cluster cache exists, so we should add ourselves
+			$log().info("Cluster cache exists at {} adding {}", [this.getClusterCache().get("origin"),$getHostAddress()]);
+			this.getClusterCache().put($getHostAddress(), $getHostAddress());
+			$log().info("Cluster cache exists, added "+ this.getClusterCache().get($getHostAddress()));
+		}
+		
+	}
+	
+	this.createClusterCache = function() {
+		$log().info("Creating cluster cache...");
+		$cm().defineConfiguration(this.clusterCacheName, new org.infinispan.config.Configuration().fluent()
+		  .clustering()
+		  .mode(org.infinispan.config.Configuration.CacheMode.REPL_SYNC)
+		  .build());
+		return this.getClusterCache();
+	};
+	
+	this.getClusterCache = function() {
+		return $cm().getCache(this.clusterCacheName, true);
+	};
+	
+	this.isMaster = function() {
+		if (this.origin == undefined) {
+			this.origin = this.getClusterCache().get("origin") == null;
+		} 
+		return this.origin; 
+	};
+	
 	this.initDb = function() {
+		this.createClusterCache();
 		var path = $app().getRootDir() + "/fincayra-lib/db/config/orientdb-server.xml";
-		var conf = new java.io.File(path);
+		var conf = org.apache.commons.io.FileUtils.readFileToString(new java.io.File(path)).replace("${ip}",$getHostAddress());
+		$log().info(conf);
+		
 		//First create the Type objects and add them
 		with (orientDB.packages) {
 			this.server = OServerMain.server();
@@ -132,6 +191,8 @@ function OrientDBObjectManager() {
 			
 			db.close();
 		}
+		
+		this.addToCluster();
 		
 	};
 	

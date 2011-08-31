@@ -24,7 +24,7 @@ CacheManager.instance;
 
 CacheManager.prototype.getCache = function(cacheName, createIfAbsent) {
 	createIfAbsent = createIfAbsent || false;
-	return this.iCacheManager.getCache(cacheName, createIfAbsent);
+	return new Cache(this.iCacheManager.getCache(cacheName, createIfAbsent));
 }
 
 CacheManager.prototype.stop = function() {
@@ -33,6 +33,10 @@ CacheManager.prototype.stop = function() {
 
 CacheManager.prototype.start = function() {
 	return this.iCacheManager.start();
+}
+
+CacheManager.prototype.cacheExists = function(name) {
+	return this.iCacheManager.cacheExists(name);
 }
 
 CacheManager.prototype.defineConfiguration = function(cacheName, configOverride) {
@@ -49,3 +53,54 @@ function $cm() {
 	}
 	return CacheManager.instance;
 }
+
+function Cache(iCache) {
+	this.iCache = iCache;
+};
+
+Cache.prototype.put = function(key, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit) {
+	key = key.toString();
+	value = Cache.marshallObject(value);
+	
+	if (maxIdleTimeUnit) {
+		this.iCache.put(key, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
+	} else if (lifespanUnit) {
+		this.iCache.put(key, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
+	} else if (value) {
+		this.iCache.put(key, value);
+	}
+};
+
+Cache.marshallObject = function(obj) {
+	var sObject = obj;
+	if (!obj.getClass) {
+		sObject = JSON.stringify(obj);
+	}
+		
+	return sObject.toString();
+}
+
+Cache.unmarshallObject = function(sObject) {
+	var object = sObject;
+	//TODO first make sure this is a string!!!
+	try {
+		object = JSON.parse(new String(sObject));
+	} catch (e){
+		$log().error("Exception type:{}", typeof e);
+		$log().error("Unable to unmarshall object from cache.  Returning raw object.");
+	}
+	return object;
+}
+
+Cache.prototype.get = function(key) {
+	var val = this.iCache.get(key.toString());
+	if (val != null) {
+		val = Cache.unmarshallObject(val);
+	}
+	return val;
+};
+
+Cache.prototype.remove = function(key) {
+	return this.iCache.remove(key);
+};
+

@@ -47,6 +47,16 @@
 			<version>${orientDB-version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-client</artifactId>
+			<version>${orientDB-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.marshalling</groupId>
+			<artifactId>jboss-marshalling</artifactId>
+			<version>1.3.0.GA</version>
+		</dependency>	
+		<dependency>
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-core</artifactId>
 			<version>5.0.0.FINAL</version>

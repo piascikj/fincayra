@@ -189,7 +189,7 @@ $api({
 	},
 
 	keepAlive : function() {
-		$log().debug("Keep alive received for session:{}",$getHttpSession().id);
+		$log().debug("Keep alive received for session:{}",$getSession().getId());
 		$j({ok:true});
 	},
 	
@@ -199,6 +199,14 @@ $api({
 	
 	host : function() {
 		$j({host:$getHostName()});
+	},
+	
+	address : function() {
+		$j({address:$getHostAddress()});
+	},
+	
+	net : function() {
+		$j($getNetworkInterfaces());
 	}
 });
 

@@ -93,6 +93,10 @@ function $rootScope() {
 	return $app().mergeEngine.topScope; 
 }
 
+function $getScope() {
+	return $rootScope();
+}
+
 /*
   Func: $getJsDir
   Get the path to the jsDir
@@ -412,13 +416,61 @@ var $mapToJS = function(map) {
 var $getHostName = function() {
 	var addr = java.net.InetAddress.getLocalHost();
 
-	// Get IP Address
-	var ipAddr = addr.getAddress();
-
 	// Get hostname
 	var hostname = addr.getHostName();
 
 	return new String(hostname);
+}
+
+/*
+	Function: $getHostAddress
+		returns the local ip address
+*/
+var $getHostAddress = function() {
+	var ip;
+	var ifEnum = java.net.NetworkInterface.getNetworkInterfaces();
+	while (ifEnum.hasMoreElements()) {
+		var val = ifEnum.nextElement();
+		var addresses = val.getInetAddresses()
+		while (addresses.hasMoreElements()){
+			var addr = addresses.nextElement();
+			if (addr.isSiteLocalAddress()) {
+				ip = addr.getHostAddress();
+				break;
+			}
+		}
+		if (ip != undefined) break;
+	}
+	
+	return ip || "127.0.0.1";
+}	
+
+/*
+	Function: $getNetworkInterfaces
+		returns the network interfaces on this machine
+*/
+var $getNetworkInterfaces = function() {
+	var ifs = [];
+	var ifEnum = java.net.NetworkInterface.getNetworkInterfaces();
+	while (ifEnum.hasMoreElements()) {
+		var val = ifEnum.nextElement();
+		var iface = {
+			name: val.getName(),
+			displayName: val.getDisplayName(),
+			addresses: []
+		};
+		
+		var addresses = val.getInetAddresses()
+		while (addresses.hasMoreElements()){
+			var addr = addresses.nextElement();
+			if (addr.isSiteLocalAddress()) {
+				iface.addresses.push({ip:addr.getHostAddress(),name:addr.getHostName()});
+			}
+		}
+		ifs.push(iface);
+	}
+	
+	return ifs;
 }
 
 /*
@@ -795,6 +847,10 @@ Request.prototype.$isAPI = function(api) {
 	Get the request scope
 */
 Request.prototype.$requestScope = function() {
+	return this.scope;
+}
+
+Request.prototype.$getScope = function() {
 	return this.scope;
 }
 /*
@@ -1653,16 +1709,6 @@ Request.prototype.$setMaxInactiveInterval = function(seconds) {
 };
 
 /*
-	func: $getHttpSession
-	
-	Returns:
-	The javax.servlet.HttpSession
- */
-Request.prototype.$getHttpSession = function() {
-	return this.sessionMgr.getHttpSession();
-};
-
-/*
 	Function: $getSession
 	
 	Returns:
@@ -1696,9 +1742,9 @@ Request.prototype.$saveSession = function() {
 };
 
 function FincayraSession(id){
-	var id = id || uuid();
+	this.id = id || uuid();
 	this.getId = function() {
-		return id;
+		return this.id;
 	}
 };
 
@@ -1735,17 +1781,7 @@ SessionManager.prototype.setSessionClass = function(clazz) {
 	this.sessionClass = clazz;
 }
 
-/*
- * 
- * 
- */
-SessionManager.prototype.getHttpSession = function() {
-	return this.scope.context.getRequest().getSession(true);
-}
-
-
 SessionManager.prototype.invalidateSession = function() {
-	//new
 	if (this.userSession != null) {
 		$getSessionCache().remove(this.userSession.getId());
 	}
@@ -1760,35 +1796,34 @@ SessionManager.prototype.invalidateSession = function() {
  */
 SessionManager.prototype.getSession = function() {
 	$log().debug("Someone wants a session");
-	//new
 	if (this.userSession == null) {
 		var sid = this.scope.$getCookie(SessionManager.sessionAttr);
 		if (sid == undefined) {
 			this.createSession();	
 		} else {
 			$log().debug("Getting session:{}", sid);
-			this.userSession = $getSessionCache().get(sid.toString());
+			this.userSession = $getSessionCache().get(sid);
 			if (this.userSession == null) {
 				$log().debug("Session is null");
 				this.createSession();
+			} else {
+				this.userSession = new FincayraSession(sid).extend(this.userSession)
 			}
 		}
 	}	
 		
-	//new
 	return this.userSession;
 }
 
 SessionManager.prototype.createSession = function() {
 	this.userSession = eval("new " + $type(this.sessionClass) + "();");
 	$log().debug("Creating session:{}", this.userSession.getId());
-	$getSessionCache().put(this.userSession.getId(), this.userSession);
+	this.setMaxInactiveInterval($config().maxInactiveInterval);
 	this.setSessionCookie();	
 }	
 
 SessionManager.prototype.getAuthSession = function() {
 	this.invalidateSession();
-
 	return this.getSession();
 }
 
@@ -1817,5 +1852,5 @@ SessionManager.prototype.saveSession = function() {
  * 
  */
 SessionManager.prototype.setMaxInactiveInterval = function(seconds) {
-	//this.getHttpSession().setMaxInactiveInterval(seconds);
+	$getSessionCache().put(this.userSession.getId(),this.userSession,1, java.util.concurrent.TimeUnit.DAYS,seconds,java.util.concurrent.TimeUnit.SECONDS);
 }
