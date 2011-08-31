@@ -19,7 +19,7 @@
 		
 		beforeAPI : function(request) {
 			request.requireAuth();
-			var user = request.$getSession().user;
+			var user = new User(request.$getSession().user).findById();
 			var params = request.$getPageParams();
 			var eMsg = "You are not allowed to perform this operation";
 			var action = request.$apiAction();

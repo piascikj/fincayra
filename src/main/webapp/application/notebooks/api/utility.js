@@ -17,9 +17,9 @@
 			var path = $getExtraPath().split("/");
 			var ok = false;
 			if (path.length > 1) {
-				var user = $getSession().user;
+				var user = new User($getSession().user).findById();
 				user.lastTopicId = path[1];
-				$log().debug("Saving last topic for user:{}",user.json());
+				$log().debug("Saving last topic for user:{}",JSON.stringify(user));
 				user.save();
 				$getSession().user = user;
 				ok = true;

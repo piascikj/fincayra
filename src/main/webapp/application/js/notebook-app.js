@@ -265,9 +265,6 @@ function init() {
 	//redirect to login if 401 on ajax
 	$(document).ajaxError(unauthorized);
 	
-	//Keep session active if on this page
-	setInterval(sendKeepAlive, fincayra.keepAliveIncrement);
-	
 	$(".tip").tipsy({gravity:'s', live:true, fade:true, delayIn:300});
 	$(".tip-sw").tipsy({gravity:'sw', live:true, fade:true, delayIn:300});
 	
