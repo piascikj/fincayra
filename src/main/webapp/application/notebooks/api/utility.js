@@ -17,7 +17,7 @@
 			var path = $getExtraPath().split("/");
 			var ok = false;
 			if (path.length > 1) {
-				var user = new User($getSession().user).findById();
+				var user = getSessionUser();
 				user.lastTopicId = path[1];
 				$log().debug("Saving last topic for user:{}",JSON.stringify(user));
 				user.save();
@@ -30,7 +30,7 @@
 		
 		fixNoteBooks : function() {
 			requireAuth();
-			var user = $getSession().user;
+			var user = getSessionUser();
 			user.fixNoteBooks();
 			user.save();
 			$getSession().user = user;

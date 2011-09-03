@@ -2,7 +2,7 @@
 	$api({
 		entries : function() {
 			requireAuth();
-			var user = $getSession().user;
+			var user = getSessionUser();
 			var params = {
 				offset : 0,
 				limit : undefined,

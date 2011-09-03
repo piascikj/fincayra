@@ -18,7 +18,7 @@ $api({
 	defaultAction : function() {
 		requireAuth();
 		
-		var user = $getSession().user;
+		var user = getSessionUser();
 		
 		var data = $getPageParams(true);
 		//data.user = user;

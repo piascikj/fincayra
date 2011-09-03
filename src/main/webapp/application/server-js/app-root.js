@@ -61,8 +61,7 @@ function User(clone) {
 		}
 	}
 
-}; 
-
+};
 
 User.prototype.getResetString = function() {
 	//Set the reset string and timestamp
@@ -159,6 +158,14 @@ new User().define({
 
 //We should now create an admin
 
+Request.prototype.getSessionUser = function() {
+	var user = this.$getSession().user;
+	if (user != undefined) {
+		user = new User(user).findById();
+	}
+	return user;
+}
+
 Request.prototype.setPersistentKey = function(user) {
 	user.persistentKey = uuid();
 	this.$setCookie("persistent", user.persistentKey,$config().persistentLoginDuration);
@@ -168,7 +175,7 @@ Request.prototype.setPersistentKey = function(user) {
 Request.prototype.removePersistentKey = function() {
 	$log().debug("Removing the persistentKey");
 	if (this.$getSession().user) {
-		var user = this.$getSession().user.findById();
+		var user = this.getSessionUser();
 		user.persistentKey = uuid();
 		user.save();
 	}

@@ -15,7 +15,7 @@
 (function() {
 	
 var classes = "";
-var user = $getSession().user;
+var user = getSessionUser();
 var lastTopic;
 var type = "root";
 

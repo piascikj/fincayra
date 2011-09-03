@@ -19,7 +19,7 @@
 		
 		beforeAPI : function(request) {
 			request.requireAuth();
-			var user = new User(request.$getSession().user).findById();
+			var user = request.getSessionUser();
 			var params = request.$getPageParams();
 			var eMsg = "You are not allowed to perform this operation";
 			var action = request.$apiAction();
@@ -112,12 +112,13 @@
 		},
 
 		afterAPI : function(request, result) {
-			var user = request.$getSession().user;
+			var user = request.getSessionUser();
 
 			switch (request.$apiAction()) {
 				case "NoteBook" :
 					var id = request.$apiAction(1);
 					if (request.$isDELETE() || request.$isPOST() || request.$isPUT) {
+						//Make sure the session user has the right notebooks in the list
 						request.$getSession().user = user.findById();
 						
 						if (request.$isPUT()) {

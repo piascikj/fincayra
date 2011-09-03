@@ -15,7 +15,7 @@
 (function() {
 	//populate the user from the params
 	var params = $getPageParams();
-	var user = $getSession().user;
+	var user = getSessionUser();
 	var error = null;
 
 	//This is used to prefill form fields if we find a bad value
@@ -53,7 +53,7 @@
 				//This puts the error with the label
 				$("[for=" + prop + "]").append("<span class='error'>" + result[prop] + "</span>");
 			}}
-			fillForm($getSession().user);
+			fillForm(getSessionUser());
 		} else {
 			user.role = Role.user;
 			try {
@@ -82,6 +82,6 @@
 		}
 	}
 
-	fillForm($getSession().user);
+	fillForm(getSessionUser());
 	 
 })();

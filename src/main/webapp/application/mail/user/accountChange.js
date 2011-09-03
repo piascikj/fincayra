@@ -14,7 +14,7 @@
  */
 (function() {
 	var msgEl = $("#message");
-	var	user = $getSession().user;
+	var	user = getSessionUser();
 	$("#userName").html(user.name);
 	msgEl.append("<br/>" + $href({page:"login", ssl:true}));
 

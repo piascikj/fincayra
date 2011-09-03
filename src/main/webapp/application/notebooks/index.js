@@ -19,7 +19,7 @@
 		requireAuth : true,
 		title : "NoteBooks"
 	});
-	var user = $getSession().user;
+	var user = getSessionUser();
 	
 	if (user) {
 		var params = $getPageParams();

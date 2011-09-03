@@ -23,7 +23,7 @@ function Simple () {
 		signNav.append($href({page:"register", text:"Register", ssl:true}));
 		signNav.append($href({page:"login", text:"Sign In", ssl:true}));
 	} else {
-		var user = $getSession().user;
+		var user = getSessionUser();
 		$setMaxInactiveInterval(60 * 45);
 		
 		var pageVars = {
