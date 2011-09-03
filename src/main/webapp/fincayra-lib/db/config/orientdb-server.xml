@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <orient-server>
+	<!--
 	<handlers> 
         <handler class="com.orientechnologies.orient.server.handler.distributed.ODistributedServerManager"> 
             <parameters> 
@@ -14,19 +15,21 @@
             </parameters> 
         </handler> 
     </handlers>
+    -->
     <network>
         <protocols>
             <protocol name="binary" implementation="com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary"/>
             <protocol name="http" implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb"/>
-            <protocol name="distributed" implementation="com.orientechnologies.orient.server.network.protocol.distributed.ONetworkProtocolDistributed"/> 
+            <!--<protocol name="distributed" implementation="com.orientechnologies.orient.server.network.protocol.distributed.ONetworkProtocolDistributed"/> -->
         </protocols>
         <listeners>
-            <listener ip-address="${ip}" port-range="2424-2430" protocol="distributed"/>
+            <!--<listener ip-address="${ip}" port-range="2424-2430" protocol="distributed"/>-->
+            <listener ip-address="${ip}" port-range="2424-2430" protocol="binary"/>
             <listener ip-address="${ip}" port-range="2480-2490" protocol="http"/>
         </listeners>
     </network>
     <storages>
-        <storage name="fincayra-store" path="local:./fincayra-store" userName="admin" userPassword="admin" loaded-at-startup="true"/>
+        <storage name="fincayra-store" path="${engine_host}fincayra-store" userName="admin" userPassword="admin" loaded-at-startup="true"/>
     </storages>
     <users>
         <user name="root" password="2E0E6DC5ADDA" resources="*"/>

@@ -42,7 +42,8 @@ function OrientDBObjectManager() {
 	var manager = this;
 	
 	this.origin;
-	this.url = "local:./fincayra-store";
+	this.originKey = "origin";
+	this.url = "local:fincayra-store";
 	this.dbName = "fincayra-store";
 	this.clusterCacheName = this.dbName;
 	this.server;
@@ -50,7 +51,6 @@ function OrientDBObjectManager() {
 	this.addToCluster = function() {
 		//$log().info("Cluster master is:{}", origin);
 		if (this.isMaster()){
-			this.getClusterCache().put("origin", $getHostAddress());
 			//We must be the first in the cluster.  Listen for additions to the cache and share with new members
 			new org.innobuilt.fincayra.cache.ListenerAdapter().addCacheEntryCreatedListener(this.getClusterCache().iCache, new org.innobuilt.fincayra.cache.FincayraCacheListener({
 				handle:function(event) {
@@ -94,18 +94,33 @@ function OrientDBObjectManager() {
 		return $cm().getCache(this.clusterCacheName, true);
 	};
 	
+	this.isClusterMode = function() {
+		return $config().store.mode == "cluster";
+	};
+	
 	this.isMaster = function() {
 		if (this.origin == undefined) {
-			this.origin = this.getClusterCache().get("origin") == null;
+			this.origin = (this.getMaster() == null);
 		} 
 		return this.origin; 
 	};
+	
+	this.getMaster = function() {
+		return this.getClusterCache().get(this.originKey);
+	}
 	
 	this.initDb = function() {
 		this.createClusterCache();
 		var path = $app().getRootDir() + "/fincayra-lib/db/config/orientdb-server.xml";
 		var conf = org.apache.commons.io.FileUtils.readFileToString(new java.io.File(path)).replace("${ip}",$getHostAddress());
+		if (this.isMaster()) {
+			conf = conf.replace("${engine_host}","local:");
+			this.getClusterCache().put(this.originKey, $getHostAddress());
+		} else {
+			conf = conf.replace("${engine_host}", "remote:" + this.getMaster() + "/");
+		}
 		$log().info(conf);
+
 		
 		//First create the Type objects and add them
 		with (orientDB.packages) {
@@ -115,84 +130,91 @@ function OrientDBObjectManager() {
 				this.server.startup(conf);
 			}
 			
+			//TODO put this setting in store config
 			com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().setup(50,1000);
 			
-			var db = this.openDB();
-			
-			for (clazz in this.classDefs) {
-				if (this.classDefs.hasOwnProperty(clazz)) {
-					var schema = db.getMetadata().getSchema();
-					//Check if the class exists if not create it!
-					var oClass;
-					if(schema.existsClass(clazz)) {
-						$log().debug("Found persistent type:{}", clazz);
-						oClass = schema.getClass(clazz);
-					} else {
-						$log().debug("Creating persistent type:{}", clazz);
-						oClass = schema.createClass(clazz);
-					}
-					
-					var classDef = this.classDefs[clazz];
-					for(propName in classDef) {
-						if (classDef[propName] != undefined && classDef.hasOwnProperty(propName) && typeof classDef[propName] !='function' ) {
-							var property = classDef[propName];
-							var oProperty;
-							if (oClass.existsProperty(propName)) {
-								$log().debug("Getting {} property: {}",[clazz, propName]);
-								oProperty = oClass.getProperty(propName);
-							} else {
-								$log().debug("Creating {} property: {}",[clazz, propName]);
-								var oPropType = orientDB.Type[property.type];
-								var linkedType = undefined;
+			//If store.mode  is "cluster"  add to cluster
+			if (this.isClusterMode()  || this.isMaster()) {
 
-								if (oPropType == undefined) {
-									if (property.rel == Relationship.hasA) {
-										oPropType = OType.LINK;
-									} else if (property.rel == Relationship.hasMany) {
-										oPropType = OType.LINKLIST;
-									} else if (property.rel == Relationship.ownsA) {
-										oPropType = OType.EMBEDDED;
+				var db = this.openDB();
+				
+				for (clazz in this.classDefs) {
+					if (this.classDefs.hasOwnProperty(clazz)) {
+						var schema = db.getMetadata().getSchema();
+						//Check if the class exists if not create it!
+						var oClass;
+						if(schema.existsClass(clazz)) {
+							$log().debug("Found persistent type:{}", clazz);
+							oClass = schema.getClass(clazz);
+						} else {
+							$log().debug("Creating persistent type:{}", clazz);
+							oClass = schema.createClass(clazz);
+						}
+						
+						var classDef = this.classDefs[clazz];
+						for(propName in classDef) {
+							if (classDef[propName] != undefined && classDef.hasOwnProperty(propName) && typeof classDef[propName] !='function' ) {
+								var property = classDef[propName];
+								var oProperty;
+								if (oClass.existsProperty(propName)) {
+									$log().debug("Getting {} property: {}",[clazz, propName]);
+									oProperty = oClass.getProperty(propName);
+								} else {
+									$log().debug("Creating {} property: {}",[clazz, propName]);
+									var oPropType = orientDB.Type[property.type];
+									var linkedType = undefined;
+
+									if (oPropType == undefined) {
+										if (property.rel == Relationship.hasA) {
+											oPropType = OType.LINK;
+										} else if (property.rel == Relationship.hasMany) {
+											oPropType = OType.LINKLIST;
+										} else if (property.rel == Relationship.ownsA) {
+											oPropType = OType.EMBEDDED;
+										}
+									}
+									
+									if (property.rel == Relationship.ownsMany) {
+										linkedType = oPropType;
+										oPropType = OType.EMBEDDEDLIST;
+									}
+									
+									if (linkedType != undefined) {
+										oProperty = oClass.createProperty(propName, oPropType, linkedType);
+									} else {	
+										oProperty = oClass.createProperty(propName, oPropType);
 									}
 								}
 								
-								if (property.rel == Relationship.ownsMany) {
-									linkedType = oPropType;
-									oPropType = OType.EMBEDDEDLIST;
-								}
+								//Set the index
+								if (property.unique) {
+									oProperty.createIndex(OProperty.INDEX_TYPE.UNIQUE);
+								} else if (property.index) {
+									if (property.type == Type.String) {
+										oProperty.createIndex(OProperty.INDEX_TYPE.FULLTEXT);
+									} else {
+										oProperty.createIndex(OProperty.INDEX_TYPE.NOTUNIQUE);
+									}
+								} 
 								
-								if (linkedType != undefined) {
-									oProperty = oClass.createProperty(propName, oPropType, linkedType);
-								} else {	
-									oProperty = oClass.createProperty(propName, oPropType);
+								if (property.required) {
+									oProperty.setMandatory(true).setNotNull(true);
 								}
-							}
-							
-							//Set the index
-							if (property.unique) {
-								oProperty.createIndex(OProperty.INDEX_TYPE.UNIQUE);
-							} else if (property.index) {
-								if (property.type == Type.String) {
-									oProperty.createIndex(OProperty.INDEX_TYPE.FULLTEXT);
-								} else {
-									oProperty.createIndex(OProperty.INDEX_TYPE.NOTUNIQUE);
-								}
-							} 
-							
-							if (property.required) {
-								oProperty.setMandatory(true).setNotNull(true);
-							}
 
+							}
 						}
+						
+						schema.save();
 					}
-					
-					schema.save();
 				}
+					
+				db.close();
+
+				this.addToCluster();
 			}
 			
-			db.close();
 		}
-		
-		this.addToCluster();
+			
 		
 	};
 	
@@ -202,12 +224,20 @@ function OrientDBObjectManager() {
 	};
 	
 	this.openDB = function() {
-		var dbx = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(this.url);
 		var db = null;
-		if (!dbx.exists()) {
-			db = dbx.create();
+		
+		if (this.isClusterMode() || this.isMaster()) {
+			var dbx = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(this.url);
+			if (!dbx.exists()) {
+				db = dbx.create();
+			} else {
+				db = com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().acquire(this.url,"admin", "admin");
+			}
 		} else {
-			db = com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().acquire(this.url,"admin", "admin");
+			//TODO conect to the master db
+			var url = "remote:local:" + this.getMaster() + "/" + this.dbName;
+			$log().info("Not the master, connecting to {}", url);
+			db = com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().acquire(url,"admin", "admin");
 		}
 		
 		return db;
