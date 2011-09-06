@@ -83,10 +83,13 @@ function OrientDBObjectManager() {
 	
 	this.createClusterCache = function() {
 		$log().info("Creating cluster cache...");
-		$cm().defineConfiguration(this.clusterCacheName, new org.infinispan.config.Configuration().fluent()
-		  .clustering()
-		  .mode(org.infinispan.config.Configuration.CacheMode.REPL_SYNC)
-		  .build());
+		if ($cm().clusteringEnabled()) {
+			$cm().defineConfiguration(this.clusterCacheName, new org.infinispan.config.Configuration().fluent()
+			  .clustering()
+			  .mode(org.infinispan.config.Configuration.CacheMode.REPL_SYNC)
+			  .build());
+		}
+		  
 		return this.getClusterCache();
 	};
 	
@@ -235,9 +238,9 @@ function OrientDBObjectManager() {
 			}
 		} else {
 			//TODO conect to the master db
-			var url = "remote:local:" + this.getMaster() + "/" + this.dbName;
+			var url = "remote:" + this.getMaster() + "/" + this.dbName;
 			$log().info("Not the master, connecting to {}", url);
-			db = com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().acquire(url,"admin", "admin");
+			db = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(url,"admin", "admin");
 		}
 		
 		return db;

@@ -17,10 +17,18 @@ function CacheManager() {
 	this.packages = new JavaImporter(
 		org.infinispan.manager.DefaultCacheManager
 	);
-	this.iCacheManager = new org.infinispan.manager.DefaultCacheManager($config().cache.configFile);
+	if ($config().cache.configFile) {
+		this.iCacheManager = new org.infinispan.manager.DefaultCacheManager($config().cache.configFile);
+	} else {
+		this.iCacheManager = new org.infinispan.manager.DefaultCacheManager();
+	}
 }
 
 CacheManager.instance;
+
+CacheManager.prototype.clusteringEnabled = function() {
+	return $config().cache.clustered == true;
+}
 
 CacheManager.prototype.getCache = function(cacheName, createIfAbsent) {
 	createIfAbsent = createIfAbsent || false;

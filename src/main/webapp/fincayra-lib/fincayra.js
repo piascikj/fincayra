@@ -47,7 +47,8 @@ fincayra.config = {
 		exportDir:"{}/tmp".tokenize($getProperty("user.home"))
 	},
 	cache: {
-		configFile:$app().getRootDir() + "/fincayra-lib/cache/distributed-udp.xml"
+		//configFile:$app().getRootDir() + "/fincayra-lib/cache/distributed-udp.xml",
+		clustered:false
 	},
 	search:"search/lucene-search.js",
 	mail: {
@@ -110,13 +111,13 @@ function $config(config) {
 	$app().setSecureUrl($config().secureUrl);
 	$app().setName($config().name);
 
+	//Load the cache lib
+	load("cache/cache.js");
+	
 	//New MailManager impl
 	load("mail/mail.js");
 	load($config().mail.impl);
 	$mm().init($config().mail);
-	
-	//Load the cache lib
-	load("cache/cache.js");
 	
 	//Create the Session cache
 	$getSessionCache();
