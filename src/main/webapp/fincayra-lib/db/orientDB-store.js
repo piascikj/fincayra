@@ -43,14 +43,14 @@ function OrientDBObjectManager() {
 	
 	this.origin;
 	this.originKey = "origin";
-	this.url = "local:fincayra-store";
-	this.dbName = "fincayra-store";
+	this.dbName = "fincayraStore";
+	this.url = "local:" + this.dbName;
 	this.clusterCacheName = this.dbName;
 	this.server;
 	
 	this.addToCluster = function() {
 		//$log().info("Cluster master is:{}", origin);
-		if (this.isMaster()){
+		if (this.isMaster()) {
 			//We must be the first in the cluster.  Listen for additions to the cache and share with new members
 			new org.innobuilt.fincayra.cache.ListenerAdapter().addCacheEntryCreatedListener(this.getClusterCache().iCache, new org.innobuilt.fincayra.cache.FincayraCacheListener({
 				handle:function(event) {
@@ -103,7 +103,12 @@ function OrientDBObjectManager() {
 	
 	this.isMaster = function() {
 		if (this.origin == undefined) {
-			this.origin = (this.getMaster() == null);
+			if (this.getMaster() == null) {
+				this.getClusterCache().put(this.originKey, $getHostAddress());
+				this.origin = true;
+			} else {
+				this.origin = false;
+			}
 		} 
 		return this.origin; 
 	};
@@ -115,13 +120,8 @@ function OrientDBObjectManager() {
 	this.initDb = function() {
 		this.createClusterCache();
 		var path = $app().getRootDir() + "/fincayra-lib/db/config/orientdb-server.xml";
-		var conf = org.apache.commons.io.FileUtils.readFileToString(new java.io.File(path)).replace("${ip}",$getHostAddress());
-		if (this.isMaster()) {
-			conf = conf.replace("${engine_host}","local:");
-			this.getClusterCache().put(this.originKey, $getHostAddress());
-		} else {
-			conf = conf.replace("${engine_host}", "remote:" + this.getMaster() + "/");
-		}
+		var conf = org.apache.commons.io.FileUtils.readFileToString(new java.io.File(path)).replace("${ip}",$getHostAddress()).replace("${url}",this.url).replace("${dbName}", this.dbName);
+		
 		$log().info(conf);
 
 		
@@ -240,7 +240,7 @@ function OrientDBObjectManager() {
 			//TODO conect to the master db
 			var url = "remote:" + this.getMaster() + "/" + this.dbName;
 			$log().info("Not the master, connecting to {}", url);
-			db = new com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx(url,"admin", "admin");
+			db = com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool.global().acquire(url,"admin", "admin");
 		}
 		
 		return db;

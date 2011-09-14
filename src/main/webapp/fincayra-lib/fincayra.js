@@ -48,6 +48,8 @@ fincayra.config = {
 	},
 	cache: {
 		//configFile:$app().getRootDir() + "/fincayra-lib/cache/distributed-udp.xml",
+		//clustered:true
+		
 		clustered:false
 	},
 	search:"search/lucene-search.js",

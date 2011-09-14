@@ -18,6 +18,7 @@ function CacheManager() {
 		org.infinispan.manager.DefaultCacheManager
 	);
 	if ($config().cache.configFile) {
+		$log().info("Using cache configuration:{}", $config().cache.configFile);
 		this.iCacheManager = new org.infinispan.manager.DefaultCacheManager($config().cache.configFile);
 	} else {
 		this.iCacheManager = new org.infinispan.manager.DefaultCacheManager();
