@@ -2,6 +2,6 @@
 .project
 .settings/
 target/
-fincayra-store/
+fincayraStore/
 fincayra-index/
 fincayra-cache/
