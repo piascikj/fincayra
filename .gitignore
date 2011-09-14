@@ -3,6 +3,9 @@
 .settings/
 target/
 fincayraStore/
+<<<<<<< HEAD
 fincayra-store/
+=======
+>>>>>>> 0acf7ac... ignore fincayraStore
 fincayra-index/
 fincayra-cache/
