@@ -29,7 +29,7 @@
         </listeners>
     </network>
     <storages>
-        <storage name="fincayra-store" path="${engine_host}fincayra-store" userName="admin" userPassword="admin" loaded-at-startup="true"/>
+        <storage name="${dbName}" path="${url}" userName="admin" userPassword="admin" loaded-at-startup="true"/>
     </storages>
     <users>
         <user name="root" password="2E0E6DC5ADDA" resources="*"/>

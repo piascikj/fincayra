@@ -17,7 +17,16 @@ function CacheManager() {
 	this.packages = new JavaImporter(
 		org.infinispan.manager.DefaultCacheManager
 	);
+<<<<<<< HEAD
 	this.iCacheManager = new org.infinispan.manager.DefaultCacheManager($config().cache.configFile);
+=======
+	if ($config().cache.configFile) {
+		$log().info("Using cache configuration:{}", $config().cache.configFile);
+		this.iCacheManager = new org.infinispan.manager.DefaultCacheManager($config().cache.configFile);
+	} else {
+		this.iCacheManager = new org.infinispan.manager.DefaultCacheManager();
+	}
+>>>>>>> 05faf9b... DB connection in cluster
 }
 
 CacheManager.instance;

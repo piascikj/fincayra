@@ -47,7 +47,14 @@ fincayra.config = {
 		exportDir:"{}/tmp".tokenize($getProperty("user.home"))
 	},
 	cache: {
+<<<<<<< HEAD
 		configFile:$app().getRootDir() + "/fincayra-lib/cache/distributed-udp.xml"
+=======
+		//configFile:$app().getRootDir() + "/fincayra-lib/cache/distributed-udp.xml",
+		//clustered:true
+		
+		clustered:false
+>>>>>>> 05faf9b... DB connection in cluster
 	},
 	search:"search/lucene-search.js",
 	mail: {
