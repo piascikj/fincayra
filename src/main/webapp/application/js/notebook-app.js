@@ -908,7 +908,7 @@ function TopicView() {
 		$this.allCollapsed = false;
 		$('.entry-body').each(function() {
 			if ($(this).is(':hidden'))
-				$(this).show("slide",{direction:"up"},500);
+				$(this).show();
 		});
 		$('.entry_collapse').each(function() {$(this).show();});
 		$('.entry_expand').each(function() {$(this).hide();});
@@ -1135,7 +1135,7 @@ function EntryView() {
 	
 	$('.entry_expand').live("click", function() {
 		var el = $(this).closest('.entry')
-		el.find('.entry-body').show("slide",{direction:"up"},500);
+		el.find('.entry-body').show();
 		el.find('.entry_collapse').show();
 		el.find('.entry_expand').hide();
 	});
