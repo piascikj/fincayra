@@ -1150,6 +1150,17 @@ function EntryView() {
 		el.printElement({printMode:'iframe'});
 	});
 	
+	$('.entry_link').live("click", function() {
+		var el = $(this).closest(".entry");
+		el.find(".entry-title").hide();
+		el.find(".entry-link").show().focus().select();
+		
+		setTimeout(function() {
+			el.find(".entry-link").hide();
+			el.find(".entry-title").show();
+		}, 10000);
+	});
+	
 	$('.entry_email').live("click", function() {
 		var el = $(this).closest(".entry");
 		var req = {

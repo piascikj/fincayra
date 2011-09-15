@@ -194,13 +194,18 @@ text-align:left;
 width:140px;
 }
 
-.stylized input[type=text], .stylized input[type=password], .stylized .static-value {
+.stylized input[type=text], .stylized input[type=password], .stylized .static-value, .entry-link {
 float:left;
 font-size:12px;
 padding:0 2px;
 border:solid 1px #aacfe4;
 width:200px;
 margin:2px 5px 20px 10px;
+}
+
+.entry-link {
+	float: none;
+	width: 400px;
 }
 
 .stylized .static-value {
