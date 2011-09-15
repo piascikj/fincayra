@@ -67,7 +67,7 @@ User.prototype.getResetString = function() {
 	//Set the reset string and timestamp
 	this.resetTimeStamp = new Date().getTime();
 	
-	this.resetString = encryptor.encryptPassword(this.email);
+	this.resetString = encryptor.encryptPassword($rootScope().uuid());
 	
 	return this.resetString;
 };

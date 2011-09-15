@@ -172,7 +172,7 @@ new Entry().define({
 		type:Type.Date
 	}
 });
-
+/*
 function Task(clone) {
 	this.createDate = new Date();
 	this.extend(new Storable(clone));
@@ -213,7 +213,7 @@ new Task().define({
 		type:User,
 	}
 });
-
+*/
 
 User.prototype.fixNoteBooks = function() {
 	var noteBooks = new NoteBook({owner:this}).findByProperty("owner");
