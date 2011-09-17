@@ -980,7 +980,6 @@ function TopicView() {
 				trigger:'focus',
 				gravity:'s'
 			});
-			//tip.tipsy(true).show();
 			$this.nameInput.select().focus();
 		}
 
@@ -1003,7 +1002,6 @@ function TopicView() {
 			$this.nameForm.hide();
 		} else {
 			$this.nameForm.hide();
-			//fincayra.noteBookView.list.accordion("activate",false);
 			$this.getLastTopic();
 		}
 
@@ -1113,6 +1111,14 @@ function EntryView() {
 
 	
 	$('.entry-body a').live('click', function(e) {
+		//if the href starts with #, just jump to the entry!!!
+		var href = $(this).attr("href");
+		if (href.indexOf("#") == 0) {
+			var uuid = href.substring(1);
+			$this.loadEntry(uuid);
+			e.stopPropagation();
+			return false;
+		}
 		e.stopPropagation();
 		return true;
 	});
@@ -1156,9 +1162,15 @@ function EntryView() {
 		el.find(".entry-link").show().focus().select();
 		
 		setTimeout(function() {
-			el.find(".entry-link").hide();
+			el.find(".entry-link").hide().blur();
 			el.find(".entry-title").show();
 		}, 10000);
+	});
+	
+	$('.entry-link').tipsy({
+		live: true,
+		trigger:'focus',
+		gravity:'s'
 	});
 	
 	$('.entry_email').live("click", function() {

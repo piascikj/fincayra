@@ -27,7 +27,7 @@
 				<span class="entry_email ui-icon ui-icon-mail-closed icon-button tip" title="mailTo:<%= fincayra.user.mailTo %>"></span>
 				<span class="entry_link ui-icon ui-icon-link icon-button tip" title="Copy a link to this entry"></span>
 				<span class="entry-title"><%= this.title%></span>
-				<input type="text" autocomplete="off" class="entry-link text" style="display:none;" value="/#<%= this.id%>"></input>
+				<input type="text" autocomplete="off" class="entry-link text" style="display:none;" title="Press ctrl+c to copy." value="[<%= this.title%>](#<%= this.id%>)"></input>
 				<span class="entry_delete ui-icon ui-icon-trash icon-button" title="Delete Entry"></span>
 				<span class="date">Created: <%= this.date %></span>
 			</div>
