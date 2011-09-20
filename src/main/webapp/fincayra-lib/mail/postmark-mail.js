@@ -1,6 +1,8 @@
 function PostMarkMailManager() {
 	var $this = this;
 	var httpClientPackages = new JavaImporter(
+		org.apache.http.util,		
+		org.apache.http.client,
 		org.apache.http.client.methods,
 		org.apache.http.entity,
 		org.apache.http.impl.client);
@@ -61,22 +63,39 @@ function PostMarkMailManager() {
 			$log().debug("Running messageSender");
 			if (!running) {
 				running = true;
-				while(!q.isEmpty()) {
-					var msg = q.dequeue();
-					$log().debug("Mail:{}", JSON.stringify(msg, null, "   "));
-					//TODO this should cacth and log exceptions
-					with (httpClientPackages) {
-						var post = new HttpPost(url); 
-						post.setHeader("Content-Type", "application/json"); 
-						post.setHeader("Accept", "application/json");
-						post.setHeader(apiKeyHeader, $this.config.apiKey);
-						post.setEntity(new StringEntity(JSON.stringify(msg),"UTF-8")); 
+				var msg;
+				try {
+					while(!q.isEmpty()) {
+						msg = q.dequeue();
+						$log().debug("Mail:{}", JSON.stringify(msg, null, "   "));
+						//TODO this should cacth and log exceptions
+						with (httpClientPackages) {
+							var post = new HttpPost(url); 
+							post.setHeader("Content-Type", "application/json"); 
+							post.setHeader("Accept", "application/json");
+							post.setHeader(apiKeyHeader, $this.config.apiKey);
+							post.setEntity(new StringEntity(JSON.stringify(msg),"UTF-8")); 
 
-						var responseHandler = new BasicResponseHandler(); 
-						var response = client.execute(post,responseHandler); 
+							var responseHandler = new JavaAdapter(org.apache.http.client.ResponseHandler,{
+							    handleResponse : function(response) {
+									var statusLine = response.getStatusLine();
+									if (statusLine.getStatusCode() >= 300) {
+										$log().error("Error sending Mail response:{}", response);
+									}
+									var entity = response.getEntity();
+									return entity == null ? null : EntityUtils.toString(entity);
+								}	
+							}); 
+							var response = client.execute(post,responseHandler); 
+						}
+						$log().debug("Mail response:{}", response);
 					}
-					$log().debug("Mail response:{}", response);
+				} catch (e) {
+					$log().error(e);
+					$log().error(JSON.stringify(msg));
+					e.printStackTrace();
 				}
+
 				running = false;
 			}
 		}
