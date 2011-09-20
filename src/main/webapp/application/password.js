@@ -15,5 +15,7 @@
 (function() {
 	requireAuth();
 	$e("/recover.js");
-	$("#user_form").attr("action", "password");
+	if ($isGET()) {
+		$("#user_form").attr("action", "password");
+	}
 })();

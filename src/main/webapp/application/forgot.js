@@ -55,9 +55,8 @@
 	
 	if (method == Methods.POST) {
 		$debug("PARENT: " + form.parent().html());
-		
-		Simple.feedback("<p>An account recovery email has been sent to " + user.email + ".  Follow the instructions in the email to recover your account.</p>", "info");
-		$("#content").html("");
+		form.remove();
+		Content.feedback("<p>An account recovery email has been sent to " + user.email + ".  Follow the instructions in the email to recover your account.</p>", "info");
 	}
 	
 

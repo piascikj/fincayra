@@ -13,6 +13,7 @@
  *   limitations under the License.
  */
 (function() {
+	$log().debug("In recover.js");
 	//populate the user from the params
 	var params = $getPageParams();
 	var user = new User(params);
@@ -59,6 +60,7 @@
 					}}
 				} else if (user.resetOK(params.resetString) || $getSession().user) {
 					try {
+						$log().debug("Okay to reset user, going ahead with reset");
 						user.password = params.password;
 						user.reset = true;
 						removePersistentKey();
@@ -91,7 +93,9 @@
 			}
 		}
 	});
-		
+	
+	$log().debug("recover.js after template call");
+	$log().debug($d().toString());		
 	var content = $("#content");
 	if (success && user && user.id) {
 		content.html("<h2>Thanks!</h2><p>Your password has been changed.</p>");

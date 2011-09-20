@@ -38,7 +38,7 @@
 			
 			if ($getMethod() == Methods.POST) {
 				//Get the user from the params
-				var user = (session.singlePageAuth && session.user)?session.user:new User(params);
+				var user = (session.singlePageAuth && session.user)?new User(session.user):new User(params);
 				var password = params.password;
 				//lookup the user
 				var users = [];

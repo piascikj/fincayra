@@ -13,7 +13,7 @@
  *   limitations under the License.
  */
 
-(function() {
+function Content() {
 	
 	var nav = $("#navigation");
 	var signNav = $("#sign_nav");
@@ -30,5 +30,14 @@
 	nav.append($href({page:"tour", text:"Tour"}));
 	
 	$("head").prepend('<link rel="shortcut icon" href="' + $app().url + 'images/favicon.ico">');
-})();
+}
 
+Content.feedback = function(msg, type) {
+	var feedback = $("#feedback");
+	feedback.append(msg);
+	var classes = feedback.attr("class");
+	feedback.attr("class", classes + " " + type);
+	feedback.attr("style", "display: block;");	
+};
+
+new Content();

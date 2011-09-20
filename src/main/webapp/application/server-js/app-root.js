@@ -53,6 +53,12 @@ function User(clone) {
 		if (!this.id || this.reset) {
 			this.password = encryptor.encryptPassword(this.password);
 		}
+		
+		if (!this.id) {
+			this.persistentKey = uuid();
+			this.lastTopicId = "";
+			this.getResetString();
+		}
 	};
 	
 	this.onValidate = onValidate = function() {
@@ -67,7 +73,7 @@ User.prototype.getResetString = function() {
 	//Set the reset string and timestamp
 	this.resetTimeStamp = new Date().getTime();
 	
-	this.resetString = encryptor.encryptPassword($rootScope().uuid());
+	this.resetString = $rootScope().uuid();
 	
 	return this.resetString;
 };

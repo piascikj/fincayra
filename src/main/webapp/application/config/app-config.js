@@ -16,19 +16,14 @@
 
 			//Create an admin user if one doesnt already exist
 			var admins = new User({role:Role.admin}).findByProperty("role");
-			/*
 			if (admins.length == 0) {
 				var user = new User({
 					name:"LeanNotes Admin",
 					email:"admin@leannotes.com",
 					nickname:"Admin",
 					role:Role.admin});
-				//TODO this should be done onSave
-				user.persistentKey = uuid();
-				user.getResetString();
 				user.save();
 			}
-			*/
 		},
 
 		onRequest : function(req) {
