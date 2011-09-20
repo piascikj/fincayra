@@ -1278,7 +1278,7 @@ Request.prototype.$source = function() {
  */
 Request.prototype.$e = Request.prototype.$execute = function(page, c) {
 	var mainContext = this.scope.context;
-	if (c) this.scope.context = c; 
+	if (c) {this.scope.context = c;}
 	
 	page = page.replace(/\.html$/g,".js");
 	
@@ -1288,7 +1288,7 @@ Request.prototype.$e = Request.prototype.$execute = function(page, c) {
 
 	this.$executePage(jsPage);
 	
-	if (c) this.scope.context = mainContext;
+	if (c) {this.scope.context = mainContext;}
 
 };
 
@@ -1395,7 +1395,11 @@ Request.prototype.$j = Request.prototype.$json = function(obj, replacer, content
  * 		el - the element to use as HTTP response document
  */
 Request.prototype.$d = Request.prototype.$doc = function(el) {
-	this.scope.context.setElement(el);
+	if (el) {
+		this.scope.context.setElement(el);
+	}
+	
+	return this.scope.context.getElement();
 };
 
 /*
