@@ -731,11 +731,11 @@ function OrientDBObjectManager() {
 		with(orientDB.packages) {
 			try {
 				db = deebee || manager.openDB();
+				obj = storable.findById(deebee);
+				obj.onRemove(db);
 				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(storable.id));
 				if (results.size() > 0) {
-					obj = storable.findById(deebee);
 					doc = results.get(0);
-					obj.onRemove(db);
 					//since delete is a key word we have to do it this way
 					doc["delete"]();
 				}
