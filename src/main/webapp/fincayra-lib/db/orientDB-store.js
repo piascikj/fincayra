@@ -541,7 +541,7 @@ function OrientDBObjectManager() {
 						limit: limit
 					};
 				} else {
-					objects = objectsTmp;
+					objects = {results:objectsTmp};
 				}
 				
 			} finally {
