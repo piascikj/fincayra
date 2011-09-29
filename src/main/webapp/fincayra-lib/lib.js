@@ -31,7 +31,7 @@ function $init() {
 	clearSchedule();
 	$log().info("Fincayra is restarting.");
 	$app().mergeEngine.init();
-};
+}
 
 function $destroy() {
 	$log().info("Fincayra is shutting down!");
@@ -39,7 +39,22 @@ function $destroy() {
 	if ($sm().destroy != undefined) $sm().destroy();
 	$cm().stop();
 	clearSchedule();
-};
+}
+
+function $readFileToString(fileName) {
+	var file;
+	if (fileName instanceof java.io.File) {
+		file = fileName;
+	} else {
+		file = new java.io.File(fileName);
+	}
+	return org.apache.commons.io.FileUtils.readFileToString(file);
+}
+
+function $listFiles(dirName) {
+	 var dir = new java.io.File(dirName);
+	 return dir.list();
+}
 
 //for deep extend
 function $extend(object, oSuper) { 
