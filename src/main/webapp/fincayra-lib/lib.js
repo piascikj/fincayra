@@ -53,7 +53,9 @@ function $readFileToString(fileName) {
 
 function $listFiles(dirName) {
 	 var dir = new java.io.File(dirName);
-	 return dir.list();
+	 var files = dir.list();
+	 java.util.Arrays.sort(files);
+	 return files;
 }
 
 //for deep extend
