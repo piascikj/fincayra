@@ -599,7 +599,6 @@ Storable.prototype.findByProperty = function(prop, extraClause, offset, limit, t
 /*
 	Func: search
 	Find an object in permanent storage by the given qry appended to the path.
-	For Example: [jcr:contains(@description, 'The')]
 	
 	Parameters:
 		qry - The query
@@ -613,6 +612,21 @@ Storable.prototype.findByProperty = function(prop, extraClause, offset, limit, t
 Storable.prototype.search = function(qry, offset, limit, txnContext) {
 	return $om().search(this, qry, offset, limit, txnContext);
 };
+
+/*
+	Func: count
+	Count the number of records matching the given query
+	
+	Parameters:
+		qry - The query
+
+	Returns:
+	The number of records matching the query
+*/
+Storable.prototype.count = function(qry, txnContext) {
+	return $om().search(this, qry, undefined, undefined, txnContext, true);
+};
+
 
 /*
 	Func: findById

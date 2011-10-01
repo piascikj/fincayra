@@ -422,9 +422,9 @@ function OrientDBObjectManager() {
 		return finder.findByProperty(storable, prop, clause, offset, limit, txnContext);
 	};
 	
-	this.search = function(storable, qry, offset, limit, txnContext) {
+	this.search = function(storable, qry, offset, limit, txnContext, count) {
 		var finder = new Finder();
-		return finder.search(storable, qry, offset, limit, txnContext);	
+		return finder.search(storable, qry, offset, limit, txnContext, count);	
 	};
 
 	this.findById = function(storable, id, txnContext) {
@@ -512,36 +512,41 @@ function OrientDBObjectManager() {
 			return objects;
 		};
 
-		this.search = function(storable, qry, offset, limit, deebee) {
+		this.search = function(storable, qry, offset, limit, deebee, count) {
 			var finder = this;
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
-			var db;
-			var results;
+			var db, results, func="";
+			if (count) func = "count(*) ";
+			
 			var objectsTmp = [], objects;
 			try {
 				db = deebee || manager.openDB();
 				with(orientDB.packages) {
 					$log().debug("FIND TYPE: " + type + " WHERE " + qry);
-					var query = OrientDBHelper.createQuery("select from " + type + " where " + qry);
+					var query = OrientDBHelper.createQuery("select "  + func + "from " + type + " where " + qry);
 					if (limit) query.setLimit(limit);
 					if (offset)	query.setBeginRange(new ORecordId(offset));
 					results = db.query(query);
 				}
 				
-				//loop the results and get the objects
-				results.toArray().each(function(doc) {
-					objectsTmp.push(finder.getObject(type, doc));
-				});
-				
-				if (offset != undefined && limit != undefined && objectsTmp.length > 0) {
-					objects = {
-						results: objectsTmp,
-						nextOffset: manager.nextOffset(objectsTmp[objectsTmp.length - 1].id),
-						limit: limit
-					};
+				if (count) {
+					return new Number(results.toArray()[0].field("count"));
 				} else {
-					objects = {results:objectsTmp};
+					//loop the results and get the objects
+					results.toArray().each(function(doc) {
+						objectsTmp.push(finder.getObject(type, doc));
+					});
+
+					if (offset != undefined && limit != undefined && objectsTmp.length > 0) {
+						objects = {
+							results: objectsTmp,
+							nextOffset: manager.nextOffset(objectsTmp[objectsTmp.length - 1].id),
+							limit: limit
+						};
+					} else {
+						objects = {results:objectsTmp};
+					}
 				}
 				
 			} finally {
