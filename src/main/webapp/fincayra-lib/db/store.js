@@ -503,7 +503,7 @@ Storable.prototype.validate = function(config) {
 				if (result == undefined) result = {};
 				result[prop] = propSpec.error;
 			}
-		}		
+		}	
 	}}
 	
 	return result;

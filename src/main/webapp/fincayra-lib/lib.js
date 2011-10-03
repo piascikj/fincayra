@@ -61,7 +61,10 @@ function $listFiles(dirName) {
 //for deep extend
 function $extend(object, oSuper) { 
 	for (sProperty in oSuper) {
-		if (typeof object[sProperty] === "object" && object[sProperty] !== null) {
+		if (typeof oSuper[sProperty] === "object") {
+			if (object[sProperty] == null) {
+				object[sProperty] = {};
+			}
 			object[sProperty] = $extend(object[sProperty],oSuper[sProperty]);
 		} else {
 			object[sProperty] = oSuper[sProperty]; 
