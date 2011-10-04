@@ -47,11 +47,15 @@ function PostMarkMailManager() {
 	
 	var getMailTemplate = function(msg) {
 		var template = $extend({},mailTemplate);
-		msg = $extend($extend(template,{From:$this.config.senderSignature}), msg);
-		return msg;
+		var msgTemplate = $extend(template,{From:$this.config.senderSignature});
+		$log().debug("postmark-mail.js.getMailTemplate messageTemplate:{}", JSON.stringify(msgTemplate, null, "   "));
+		newMsg = msgTemplate.extend(msg);
+		$log().debug("postmark-mail.js.getMailTemplate msg:{}", JSON.stringify(newMsg, null, "   "));
+		return newMsg;
 	}
 	
 	this.send = function(msg) {
+		$log().debug("postmark-mail.js.send msg:{}", JSON.stringify(msg, null, "   "));
 		this.q.enqueue(getMailTemplate(msg));
 	};
 	
