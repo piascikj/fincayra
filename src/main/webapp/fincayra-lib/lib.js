@@ -15,16 +15,18 @@ Methods = {
 	DELETE: "DELETE"
 }
 
-function AuthRequiredException(msg) {
+function AuthRequiredException(msg, name) {
 	this.message = "You must sign in to see this page.";
 	this.extend(new Error(msg || this.message));
 	this.statusCode = 401;
+	if (name) this.name=name;
 }
 
-function ForbiddenException(msg) {
+function ForbiddenException(msg, name) {
 	this.message = "This request is forbidden";
 	this.extend(new Error(msg || this.message));
 	this.statusCode = 403;
+	if (name) this.name=name;
 }
 
 function $init() {
