@@ -1056,6 +1056,17 @@ Request.prototype.$getMethod = function() {
 };
 
 /*
+	Func: $getHeader
+	Get an HTTP header value
+	
+	Returns:
+	The HTTP header value for the key passed in
+*/
+Request.prototype.$getHeader = function(key) {
+	return new String(this.scope.context.getRequest().getHeader(key));
+};
+
+/*
 	Func: $isPOST
 	Check if this is a POST request
 	
@@ -1276,6 +1287,7 @@ Request.prototype.$source = function() {
 	};
 	
 	p("requestURL:" + this.scope.context.request.requestURL);
+	p("requestURI:" + this.$getRequestURI());
 	p("contextPath:" + this.scope.context.request.contextPath);
 	p("serverName:" + this.scope.context.request.serverName);
 	p("serverPort:" + this.scope.context.request.serverPort);
