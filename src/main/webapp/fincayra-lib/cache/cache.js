@@ -113,3 +113,7 @@ Cache.prototype.remove = function(key) {
 	return this.iCache.remove(key);
 };
 
+Cache.prototype.keys = function() {
+	return this.iCache.keySet().toArray();
+};
+
