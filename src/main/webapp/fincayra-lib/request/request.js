@@ -55,5 +55,18 @@ try {
 		$f($getErrorPage());
 	}
 } finally {
+	//version at end of css and js
+	if (this.context.getJson() == null) {
+		$('head script[src]').each(function (el){
+			var src = el.attr("src");
+			el.attr("src", src + "?v=" + $config().version);
+		});
+		
+		$('head link[rel=stylesheet]').each(function (el){
+			var href = el.attr("href");
+			el.attr("href", href + "?v=" + $config().version);
+		});
+	}
+	
 	$saveSession();
 }

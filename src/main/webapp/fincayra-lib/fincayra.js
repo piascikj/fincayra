@@ -27,6 +27,7 @@ $log().debug("User home:{}",$getProperty("user.home"));
 $hide(["config"]);
 
 fincayra.config = {
+	version:"0",
 	preInit:function(){},
 	postInit:function(){},
 	preInitDb:function(){},

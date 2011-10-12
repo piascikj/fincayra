@@ -936,7 +936,10 @@ Request.prototype.$ = function(str) {
 		var elements = this.scope.context.getElement().select(str).toArray();
 		if (elements.length > 1) {
 			return elements;
+		} else if (elements == undefined || elements.length < 1) {
+			return [];
 		}
+		
 		return elements[0];
 	}
 };
