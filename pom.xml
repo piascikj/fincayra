@@ -77,14 +77,6 @@
 		  <artifactId>javaee-web-api</artifactId>
 		  <version>6.0</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.4</version>
-			<scope>provided</scope>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
@@ -96,17 +88,9 @@
 			<artifactId>js</artifactId>
 			<version>1.7R2</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.5</version>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<!--<version>1.5.2</version>-->
 			<version>1.6.1</version>
 		</dependency>
 		<dependency>
@@ -129,13 +113,6 @@
 			<artifactId>mail</artifactId>
 			<version>1.4.1</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>2.2</version>
-		</dependency>
-		-->
 		<!-- Logging (require SLF4J API for compiling, but use Log4J and its SLF4J binding for testing) -->
 		<dependency>
 		  <groupId>org.slf4j</groupId>
@@ -173,13 +150,6 @@
 		  <artifactId>httpclient</artifactId>
 		  <version>4.1.1</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>xerces</groupId>
-			<artifactId>xercesImpl</artifactId>
-			<version>2.9.1</version>
-		</dependency>
-		-->
 	</dependencies>
 
 	<build>
