@@ -181,7 +181,12 @@ function OrientDBObjectManager() {
 									
 									if (linkedType != undefined) {
 										oProperty = oClass.createProperty(propName, oPropType, linkedType);
+<<<<<<< HEAD
 									} else {	
+=======
+									} else {
+										$log().debug("oClass={}, propName={}, oPropType={}",[oClass,propName, oPropType]);
+>>>>>>> ab3724b... switch back to rc4 of orientdb
 										oProperty = oClass.createProperty(propName, oPropType);
 									}
 								}
@@ -202,6 +207,11 @@ function OrientDBObjectManager() {
 								}
 
 							}
+<<<<<<< HEAD
+=======
+							
+							//schema.save();
+>>>>>>> ab3724b... switch back to rc4 of orientdb
 						}
 						
 						schema.save();
