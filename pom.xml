@@ -30,7 +30,13 @@
 		<orientDB-version>1.0rc4</orientDB-version>
 	</properties>
 	<dependencies>
-		<!-- Document DB -->
+		<!-- MongoDB -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.6.5</version>
+		</dependency>
+		<!-- Orient Document DB -->
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orient-commons</artifactId>

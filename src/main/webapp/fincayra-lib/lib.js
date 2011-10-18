@@ -942,6 +942,8 @@ Request.prototype.$ = function(str) {
 		
 		return elements[0];
 	}
+	
+	return [];
 };
 
 /*

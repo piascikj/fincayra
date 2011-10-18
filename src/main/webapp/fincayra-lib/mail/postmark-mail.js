@@ -11,7 +11,8 @@ function PostMarkMailManager() {
 	var apiKeyHeader = "X-Postmark-Server-Token";
 	var mailTemplate = {
 	  //"Headers" : [{ "Name" : "CUSTOM-HEADER", "Value" : "value" }],
-	  "From" : "sender@example.com",
+	  "From":$config().mail.senderSignature,
+	  "ReplyTo" : $config().mail.from,
 	  "To" : "receiver@example.com",
 	  //"Cc" : "copied@example.com",
 	  //"Bcc": "blank-copied@example.com",
@@ -46,8 +47,7 @@ function PostMarkMailManager() {
 	};
 	
 	var getMailTemplate = function(msg) {
-		var template = $extend({},mailTemplate);
-		var msgTemplate = $extend(template,{From:$this.config.senderSignature});
+		var msgTemplate = $extend({},mailTemplate);
 		$log().debug("postmark-mail.js.getMailTemplate messageTemplate:{}", JSON.stringify(msgTemplate, null, "   "));
 		newMsg = msgTemplate.extend(msg);
 		$log().debug("postmark-mail.js.getMailTemplate msg:{}", JSON.stringify(newMsg, null, "   "));

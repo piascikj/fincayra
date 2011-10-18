@@ -44,6 +44,9 @@ fincayra.config = {
 	errorPage:"/error",
 	sessionCacheName:"fincayra-session",
 	store:{
+		//mongoDB config
+		//impl:"db/mongoDB-store.js",
+		//location:"localhost"
 		impl:"db/orientDB-store.js",
 		exportDir:"{}/tmp".tokenize($getProperty("user.home"))
 	},
@@ -53,7 +56,6 @@ fincayra.config = {
 =======
 		//configFile:$app().getRootDir() + "/fincayra-lib/cache/distributed-udp.xml",
 		//clustered:true
-		
 		clustered:false
 >>>>>>> 05faf9b... DB connection in cluster
 	},
