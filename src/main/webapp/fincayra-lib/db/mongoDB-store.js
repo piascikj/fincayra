@@ -145,7 +145,7 @@ function MongoDBObjectManager() {
 				var doc = coll.findOne(searchById);
 				if (doc != null) {
 					if (isProp) {
-						return rid;
+						return obj.id;
 					} else {
 						if (doc.containsField("uuid")) existing = true;
 					}
@@ -185,22 +185,27 @@ function MongoDBObjectManager() {
 									doc.put(prop, val);
 								}
 							} else if (rel == Relationship.ownsA) {
-								$log().debug("SETTING ownsA or hasA PROPERTY " + prop + "|" + propType);
+								$log().debug("SETTING ownsA PROPERTY " + prop + "|" + propType);
 								var propDoc = manager.saveObject(coll, manager.cast(obj[prop],propType), true);
 								doc.put(prop, propDoc);
 							} else if  (rel == Relationship.hasA) {
-								//Store as reference in own collection, it should have been saved on it's own first, so we only store it's uuid
+								$log().debug("SETTING hasA PROPERTY " + prop + "|" + propType);
+								//Store as reference, it should have been saved on it's own first, so we only store it's uuid
 								doc.put(prop, obj[prop].uuid.toString());
-							} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-								//TODO IM HERE
-								var values = java.lang.reflect.Array.newInstance(ODocument, obj[prop].length);
+							} else if (rel == Relationship.ownsMany) {
+								var values = java.lang.reflect.Array.newInstance(BasicDBObject, obj[prop].length);
 								obj[prop].each(function(val, i) {
-									$log().debug("SETTING hasMany or ownsMany PROPERTY " + prop + "|" + propType);
+									$log().debug("SETTING ownsMany PROPERTY " + prop + "|" + propType);
 									var propDoc = manager.saveObject(db, manager.cast(val,propType), true);
 									values[i] = propDoc;
 								});
-								doc.field(prop, java.util.Arrays.asList(values));
-								
+								doc.put(prop, java.util.Arrays.asList(values));
+							} else if (rel == Relationship.hasMany) {
+								obj[prop].each(function(val, i) {
+									$log().debug("SETTING hasMany PROPERTY " + prop + "|" + propType);
+									values[i] = val.uuid;
+								});
+								doc.put(prop, java.util.Arrays.asList(values));								
 							} else {
 								throw new Error("Relationship not defined");
 							}
@@ -239,194 +244,103 @@ function MongoDBObjectManager() {
 		//Keeps us from getting in a recursive call
 		this.index = {};
 		
-		this.findById = function(storable, id, deebee) {
+		this.findById = function(storable, id, collection) {
 			var finder = this;
 			$log().debug(JSON.stringify(storable, null, "   "));
 			if(!manager.isStorable(storable)) throw new NotStorableException();
-			var obj,doc,db;
+			var obj,doc,coll;
 			var type = $type(storable);
-			with(orientDB.packages) {
-				try {
-					db = deebee || manager.openDB();
-					var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(id));
-					if (results.size() > 0) {
-						doc = results.get(0);
-						obj = finder.getObject(type, doc);
-					}
-				} finally {
-					if (deebee == undefined) db.close();
+			with(mongoDB.packages) {
+				coll = collection || manager.openDB().getCollection(type);
+				var oid = new ObjectId(id);
+				searchById = new BasicDBObject("_id", oid);
+				doc = coll.findOne(searchById);
+				if (doc != null) {
+					obj = finder.getObject(type, doc);
 				}
 			}
 			
 			return obj;
 		};
 		
-		this.findByProperty = function(storable, prop, clause, offset, limit, deebee) {
+		this.findByProperty = function(storable, prop, clause, offset, limit, collection) {
 			var finder = this;
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
+			var coll = collection || manager.openDB().getCollection(type);
 			var propType = manager.classDefs[type][prop].type;
-			var db, results;
+			var results;
 			var objects = [];
 			
-			try {
-				db = deebee || manager.openDB();
-				$log().debug("PROPTYPE: " + propType);
-				
-				with(orientDB.packages) {
-					//If propType is simple use sql, otherwise use reference
-					if(Type[propType]) {
-						$log().debug("FIND TYPE: " + type + " BY: " + prop);
-						var val = storable[prop];
-						var qryString = "select from " + type + " where " + prop + " = ?";
-						if (clause != undefined) qryString = qryString+ " " + clause;
-						$log().debug("Running query: {}",qryString);
-						var query = OrientDBHelper.createQuery(qryString);
-						if (limit) query.setLimit(limit);
-						if (offset)	query.setBeginRange(new ORecordId(offset));
-						var jProp = manager.toJava(val,propType);
-						$log().debug("? = {}",jProp);
-						results = db.query(query,jProp);
-					} else {
-						var qryString = "select from " + type + " where " + prop + ".@rid = ?";
-						if (clause != undefined) qryString = qryString + " " + clause;
-						$log().debug("Running query: {}",qryString);
-						var query = OrientDBHelper.createQuery(qryString);
-						if (limit) query.setLimit(limit);
-						if (offset)	query.setBeginRange(new ORecordId(offset));
-						results = db.query(query, new ORecordId(storable[prop].id));
-					}
+			$log().debug("PROPTYPE: " + propType);
+			
+			with(mongoDB.packages) {
+				if(Type[propType]) {
+					$log().debug("FIND TYPE: " + type + " BY: " + prop);
+					var qry = getDBObject({prop:storable[prop]});
+					objects = finder.search(storable, qry, offset, limit);
+				} else {
+					$log().debug("FIND TYPE: " + type + " BY: " + prop);
+					var qry = getDBObject({prop:storable[prop].uuid});
+					objects = finder.search(storable, qry, offset, limit);
 				}
-				//loop the results and get the objects
-				results.toArray().each(function(doc) {
-					objects.push(finder.getObject(type, doc));
-				});
-			} finally {
-				if (deebee == undefined && db != undefined) db.close();
 			}
 			
 			$log().debug("Found objects:" + JSON.stringify(objects, null, "   "));
 			return objects;
 		};
 
-		this.search = function(storable, qry, offset, limit, deebee, count) {
+		this.search = function(storable, qry, offset, limit, collection, count) {
 			var finder = this;
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
-			var db, results, func="";
-			if (count) func = "count(*) ";
+			var cursor;
 			
 			var objectsTmp = [], objects;
-			try {
-				db = deebee || manager.openDB();
-				with(orientDB.packages) {
-					$log().debug("FIND TYPE: " + type + " WHERE " + qry);
-					var query = OrientDBHelper.createQuery("select "  + func + "from " + type + " where " + qry);
-					if (limit) query.setLimit(limit);
-					if (offset)	query.setBeginRange(new ORecordId(offset));
-					results = db.query(query);
-				}
-				
-				if (count) {
-					return new Number(results.toArray()[0].field("count"));
-				} else {
-					//loop the results and get the objects
-					results.toArray().each(function(doc) {
-						objectsTmp.push(finder.getObject(type, doc));
-					});
-
-					if (offset != undefined && limit != undefined && objectsTmp.length > 0) {
-						objects = {
-							results: objectsTmp,
-							nextOffset: manager.nextOffset(objectsTmp[objectsTmp.length - 1].id),
-							limit: limit
-						};
-					} else {
-						objects = {results:objectsTmp};
-					}
-				}
-				
-			} finally {
-				if (deebee == undefined && db != undefined) db.close();
+			var coll = collection || manager.openDB().getCollection(type);
+			with(mongoDB.packages) {
+				var query = finder.getDBObject(qry);
+				cursor = collection.find(query);
 			}
+			
+			if (count) {
+				return new Number(cursor.count());
+			} else {
+				if (limit) cursor.limit(limit);
+				if (offset)	cursor.skip(offset);
+				//loop the results and get the objects
+				cursor.toArray().each(function(doc) {
+					objectsTmp.push(finder.getObject(type, doc));
+				});
+
+				if (offset != undefined && limit != undefined && objectsTmp.length > 0) {
+					objects = {
+						results: objectsTmp,
+						nextOffset: offset + limit,
+						limit: limit
+					};
+				} else {
+					objects = {results:objectsTmp};
+				}
+			}
+			
 			return objects;
 		};
 		
-		this.searchSelective = function(opts) {
-			var finder = this;
-			//TODO allow the caller to defined fields that will be returned
-			var defaults = {
-				//storable:undefined, 
-				//qry:undefined, 
-				//offset:undefined,
-				//limit:undefined,
-				//deebee:undefined,
-				//fields:undefined
-			};
-			opts = opts.extend(defaults);
-			
-			if(!manager.isStorable(opts.storable)) throw new NotStorableException();
-			var type = $type(opts.storable);
-			var db;
-			var results;
-			var objectsTmp = [], objects;
-			try {
-				db = opts.deebee || manager.openDB();
-				with(orientDB.packages) {
-					$log().debug("FIND TYPE: " + type + " WHERE " + opts.qry);
-					var query = OrientDBHelper.createQuery("select from " + type + " where " + opts.qry);
-					if (opts.limit) query.setLimit(opts.limit);
-					if (opts.offset)	query.setBeginRange(new ORecordId(opts.offset));
-					results = db.query(query);
-				}
-				
-				//loop the results and get the objects
-				results.toArray().each(function(doc) {
-					objectsTmp.push(finder.getObject(type, doc));
-				});
-				
-				if (opts.offset != undefined && opts.limit != undefined && objectsTmp.length > 0) {
-					objects = {
-						results: objectsTmp,
-						nextOffset: manager.nextOffset(objectsTmp[objectsTmp.length - 1].id),
-						limit: opts.limit
-					};
-				} else {
-					objects = objectsTmp;
-				}
-				
-			} finally {
-				if (opts.deebee == undefined && db != undefined) db.close();
-			}
-			return objects;
-		};
+		this.getDBObject = function(obj) {
+			return com.mongodb.util.JSON.parse(JSON.stringify(obj));
+		}; 
 
-		this.getAll = function(storable, offset, limit, deebee) {
+		this.getAll = function(storable, offset, limit, collection) {
 			var finder = this;
 			if(!manager.isStorable(storable)) throw new NotStorableException();
 			var type = $type(storable);
-			var db;
-			var results;
+			var coll = collection || manager.openDB().getCollection(type);
+			var cursor = coll.find();
 			var objects = [];
-			try {
-				db = deebee || manager.openDB();
-				with(orientDB.packages) {
-					$log().debug("FIND TYPE: " + type);
-					var query = OrientDBHelper.createQuery("select from " + type);
-					if (limit) query.setLimit(limit);
-					if (offset) query.setBeginRange(new ORecordId(offset));
-					results = db.query(query);
-				}
-				
-				if (results.size() > 0) {
-					//loop the results and get the objects
-					results.toArray().each(function(doc) {
-						objects.push(finder.getObject(type, doc));
-					});
-				}
-			} finally {
-				if (deebee == undefined && db != undefined) db.close();
-			}
+			cursor.toArray().each(function(doc) {
+				objects.push(finder.getObject(type, doc));
+			});
 			return objects;
 		};
 		
@@ -435,7 +349,7 @@ function MongoDBObjectManager() {
 			var finder = this;
 			var classDef = manager.getClassDef(type);
 			var obj = manager.cast({}, type);
-			obj.id = new String(doc.getIdentity().toString()).replace(/^\#/,"");
+			obj.id = new String(doc.get("_id"));
 			
 			//If it's in the index, get it there
 			if (finder.index[obj.id]) {return finder.index[obj.id];}
@@ -455,7 +369,7 @@ function MongoDBObjectManager() {
 						//Doesn't matter if the rel is ownsA or hasA, ownsMany or HasMany.  We still use a node property for simple types;
 						if (rel == Relationship.ownsMany || rel == Relationship.hasMany) {
 							$log().debug("GETTING SIMPLE ownsMany or hasMany PROPERTY " + prop + "|" + propType);
-							var field = doc.field(prop, orientDB.Type[propType]);
+							var field = doc.get(prop);
 							var propValues = [];
 							if (field != null) {
 								var values = field.toArray();
@@ -466,21 +380,34 @@ function MongoDBObjectManager() {
 							obj[prop] = propValues;
 						} else { 
 							$log().debug("GETTING SIMPLE ownsA or hasA PROPERTY " + prop + "|" + propType);
-							obj[prop] = finder.getValue(doc.field(prop, orientDB.Type[propType]), propType);
+							obj[prop] = finder.getValue(doc.get(prop), propType);
 						}
-					} else if (rel == Relationship.ownsA || rel == Relationship.hasA) {
+					} else if (rel == Relationship.ownsA) {
 						$log().debug("GETTING ownsA PROPERTY " + prop + "|" + propType);
-						var propDoc = doc.field(prop);
+						var propDoc = doc.get(prop);
 						if (propDoc != null) {obj[prop] = finder.getObject(propType,propDoc);}
-						
-					} else if (rel == Relationship.hasMany || rel == Relationship.ownsMany) {
-						$log().debug("GETTING ownsMany or hasMany PROPERTY " + prop + "|" + propType);
+					} else if (rel == Relationship.hasA) {
+						obj[prop] = manager.cast({uuid:doc.get(prop)},propType).findByUUId();
+					} else if (rel == Relationship.ownsMany) {
+						$log().debug("GETTING ownsMany PROPERTY " + prop + "|" + propType);
+						var propValues = [];
+						var field = doc.get(prop);
+						if (field != null) {
+							var values = field.toArray();
+							values.each(function(propDoc) {
+								if (propDoc != null) {propValues.push(finder.getObject(propType,propDoc));}
+							});
+						}
+						obj[prop] = propValues;
+
+					} else if (rel == Relationship.hasMany) {
+						$log().debug("GETTING hasMany PROPERTY " + prop + "|" + propType);
 						var propValues = [];
 						var field = doc.field(prop);
 						if (field != null) {
 							var values = doc.field(prop).toArray();
-							values.each(function(propDoc) {
-								if (propDoc != null) {propValues.push(finder.getObject(propType,propDoc));}
+							values.each(function(uuid) {
+								if (uuid != null) {propValues.push(manager.cast({uuid:doc.get(prop)},propType).findByUUId());}
 							});
 						}
 						obj[prop] = propValues;
@@ -526,29 +453,18 @@ function MongoDBObjectManager() {
 
 	};
 	
-	this.remove = function(storable, deebee) {
+	this.remove = function(storable, collection) {
 		if(!manager.isStorable(storable)) throw new NotStorableException();
-		var obj,doc,db;
+		var obj,doc;
 		var type = $type(storable);
-		with(orientDB.packages) {
-			try {
-				db = deebee || manager.openDB();
-				obj = storable.findById(deebee);
-				obj.onRemove(db);
-				var results = db.query(OrientDBHelper.createQuery("select from " + type + " where @rid = ?"), new ORecordId(storable.id));
-				if (results.size() > 0) {
-					doc = results.get(0);
-					//since delete is a key word we have to do it this way
-					doc["delete"]();
-				}
-			} catch(e) {
-				if ($log().isDebugEnabled()) {
-					e.printStackTrace();
-				}
-				throw e;
-			} finally {
-				if (deebee == undefined && db != undefined) db.close();
-			}
+		with(mongoDB.packages) {
+			var coll = collection || manager.openDB().getCollection(type);
+			obj = storable.findById(coll);
+			obj.onRemove(coll);
+			var oid = new ObjectId(obj.id);
+			searchById = new BasicDBObject("_id", oid);
+			doc = coll.findOne(searchById);
+			coll.remove(doc);
 		}
 		
 		return obj;
@@ -622,17 +538,6 @@ function MongoDBObjectManager() {
 	};
 }
 
-
-OrientDBObjectManager.prototype.nextOffset = function(seed) {
-	$log().debug("seed:{}", seed);
-	var regex = /^(\d+\:)(\d+)$/;
-	if (regex.test(seed)) {
-		var pieces = regex.exec(seed);
-		return pieces[1] + (new Number(pieces[2]) + 1);
-	}
-	
-	return null;
-}
 
 MongoDBObjectManager.extend(ObjectManager);
 ObjectManager.instance = new MongoDBObjectManager();
